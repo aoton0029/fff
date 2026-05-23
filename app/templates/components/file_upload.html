@@ -1,0 +1,77 @@
+{#
+  ファイルアップロードコンポーネント
+  引数:
+    field_name  : input[name]属性 (デフォルト: "files")
+    accept      : 受け付けるMIME/拡張子 (デフォルト: "*")
+    max_files   : 最大ファイル数 (デフォルト: 10)
+  使い方:
+    {% include "components/file_upload.html" with context %}
+    ※ form 要素は呼び出し元で定義し、enctype="multipart/form-data" を設定すること
+#}
+{% set _field_name = field_name | default("files") %}
+{% set _accept     = accept     | default("*")     %}
+{% set _max_files  = max_files  | default(10)      %}
+
+<div class="drop-zone" id="dropZone">
+  <i class="bi bi-cloud-upload drop-icon d-block mb-2"></i>
+  <p class="mb-1">ファイルをドラッグ&amp;ドロップ、またはクリックして選択</p>
+  <p class="text-muted small">最大 {{ _max_files }} ファイルまで選択できます</p>
+  <input
+    type="file"
+    name="{{ _field_name }}"
+    id="fileInput"
+    accept="{{ _accept }}"
+    multiple
+    class="d-none"
+  />
+</div>
+
+<ul class="list-group mt-2" id="fileList"></ul>
+
+<script>
+(function () {
+  const zone  = document.getElementById("dropZone");
+  const input = document.getElementById("fileInput");
+  const list  = document.getElementById("fileList");
+  const MAX   = {{ _max_files }};
+  let files   = [];
+
+  zone.addEventListener("click", () => input.click());
+
+  ["dragover", "dragenter"].forEach((ev) => {
+    zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.add("drag-over"); });
+  });
+  ["dragleave", "drop"].forEach((ev) => {
+    zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.remove("drag-over"); });
+  });
+  zone.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+  input.addEventListener("change", () => addFiles(input.files));
+
+  function addFiles(newFiles) {
+    for (const f of newFiles) {
+      if (files.length >= MAX) break;
+      if (!files.find((x) => x.name === f.name && x.size === f.size)) files.push(f);
+    }
+    render();
+    syncInput();
+  }
+
+  function render() {
+    list.innerHTML = "";
+    files.forEach((f, i) => {
+      const li = document.createElement("li");
+      li.className = "list-group-item d-flex justify-content-between align-items-center";
+      li.innerHTML = `<span><i class="bi bi-file-earmark me-2"></i>${f.name} <small class="text-muted">(${(f.size / 1024).toFixed(1)} KB)</small></span>
+        <button type="button" class="btn btn-sm btn-outline-danger" data-idx="${i}"><i class="bi bi-x"></i></button>`;
+      li.querySelector("button").addEventListener("click", () => { files.splice(i, 1); render(); syncInput(); });
+      list.appendChild(li);
+    });
+  }
+
+  function syncInput() {
+    const dt = new DataTransfer();
+    files.forEach((f) => dt.items.add(f));
+    input.files = dt.files;
+  }
+})();
+</script>

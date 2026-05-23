@@ -1,0 +1,50 @@
+{#
+  コンファームモーダルコンポーネント
+  使い方:
+    {% include "components/confirm_modal.html" %}
+  呼び出し側でのJS:
+    ConfirmModal.show({
+      title: "削除確認",
+      message: "本当に削除しますか？",
+      onConfirm: () => htmx.trigger("#some-element", "confirmed")
+    });
+#}
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmModalLabel">確認</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="confirmModalMessage">
+        実行してよろしいですか？
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+        <button type="button" class="btn btn-danger" id="confirmModalOk">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ConfirmModal = (() => {
+  let _onConfirm = null;
+  const modalEl = document.getElementById("confirmModal");
+  const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+  document.getElementById("confirmModalOk").addEventListener("click", () => {
+    bsModal.hide();
+    if (typeof _onConfirm === "function") _onConfirm();
+  });
+
+  return {
+    show({ title = "確認", message = "実行してよろしいですか？", onConfirm = null } = {}) {
+      document.getElementById("confirmModalLabel").textContent = title;
+      document.getElementById("confirmModalMessage").textContent = message;
+      _onConfirm = onConfirm;
+      bsModal.show();
+    },
+  };
+})();
+</script>

@@ -1,0 +1,39 @@
+{#
+  アラートモーダルコンポーネント
+  使い方:
+    {% include "components/alert_modal.html" %}
+  呼び出し側でのJS:
+    AlertModal.show({ title: "エラー", message: "処理に失敗しました", type: "danger" });
+#}
+<div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" id="alertModalHeader">
+        <h5 class="modal-title" id="alertModalLabel">お知らせ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="alertModalMessage"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const AlertModal = (() => {
+  const modalEl = document.getElementById("alertModal");
+  const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  const headerEl = document.getElementById("alertModalHeader");
+  const colorMap = { success: "bg-success text-white", danger: "bg-danger text-white", warning: "bg-warning", info: "bg-info text-white" };
+
+  return {
+    show({ title = "お知らせ", message = "", type = "info" } = {}) {
+      document.getElementById("alertModalLabel").textContent = title;
+      document.getElementById("alertModalMessage").textContent = message;
+      headerEl.className = "modal-header " + (colorMap[type] ?? "");
+      bsModal.show();
+    },
+  };
+})();
+</script>

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}500 サーバーエラー{% endblock %}
+{% block page_title %}500 サーバーエラー{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 class="display-1 text-muted">500</h1>
+  <p class="lead">サーバー内部でエラーが発生しました。しばらく経ってから再試行してください。</p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-primary">トップへ戻る</a>
+</div>
+{% endblock %}

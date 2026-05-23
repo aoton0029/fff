@@ -1,0 +1,43 @@
+import logging
+from flask import Flask
+from .config import get_config
+from .extensions import db, login_manager, csrf
+from .errors import register_error_handlers
+
+
+def create_app() -> Flask:
+    app = Flask(__name__)
+    app.config.from_object(get_config())
+
+    _configure_logging(app)
+
+    db.init_app(app)
+    login_manager.init_app(app)
+    csrf.init_app(app)
+
+    _register_blueprints(app)
+    register_error_handlers(app)
+
+    return app
+
+
+def _configure_logging(app: Flask) -> None:
+    level = logging.DEBUG if app.config.get("DEBUG") else logging.INFO
+    handler = logging.StreamHandler()
+    handler.setLevel(level)
+    formatter = logging.Formatter(
+        "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    )
+    handler.setFormatter(formatter)
+    app.logger.addHandler(handler)
+    app.logger.setLevel(level)
+
+
+def _register_blueprints(app: Flask) -> None:
+    from .views.auth import auth_bp
+    from .views.main import main_bp
+    from .api import api_bp
+
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(main_bp)
+    app.register_blueprint(api_bp, url_prefix="/api")

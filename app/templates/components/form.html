@@ -1,0 +1,70 @@
+{#
+  汎用フォームコンポーネント
+  引数:
+    form        : WTFormsのフォームオブジェクト
+    action      : フォームのaction URL (デフォルト: request.path)
+    method      : "post" | "get" (デフォルト: "post")
+    multipart   : ファイルアップロード時にTrue
+    submit_label: 送信ボタンのラベル (デフォルト: "保存")
+    cancel_url  : キャンセルボタンのURL (Noneで非表示)
+  使い方:
+    {% from "components/form.html" import render_form %}
+    {{ render_form(form=form, action=url_for("views.create"), cancel_url=url_for("views.index")) }}
+#}
+{% macro render_form(
+    form,
+    action=None,
+    method="post",
+    multipart=False,
+    submit_label="保存",
+    cancel_url=None
+  ) %}
+{% set _action = action or request.path %}
+<form
+  method="{{ method }}"
+  action="{{ _action }}"
+  {% if multipart %}enctype="multipart/form-data"{% endif %}
+  novalidate
+>
+  {{ form.hidden_tag() }}
+
+  {% for field in form if field.widget.input_type != "hidden" and field.name != "submit" %}
+  <div class="mb-3">
+    {{ field.label(class="form-label") }}
+    {% if field.type == "BooleanField" %}
+      <div class="form-check">
+        {{ field(class="form-check-input" + (" is-invalid" if field.errors else "")) }}
+        {% for error in field.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% elif field.type == "TextAreaField" %}
+      {{ field(class="form-control" + (" is-invalid" if field.errors else ""), rows=4) }}
+      {% for error in field.errors %}
+        <div class="invalid-feedback">{{ error }}</div>
+      {% endfor %}
+    {% elif field.type == "SelectField" %}
+      {{ field(class="form-select" + (" is-invalid" if field.errors else "")) }}
+      {% for error in field.errors %}
+        <div class="invalid-feedback">{{ error }}</div>
+      {% endfor %}
+    {% else %}
+      {{ field(class="form-control" + (" is-invalid" if field.errors else "")) }}
+      {% for error in field.errors %}
+        <div class="invalid-feedback">{{ error }}</div>
+      {% endfor %}
+    {% endif %}
+    {% if field.description %}
+      <div class="form-text">{{ field.description }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <div class="d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+    {% if cancel_url %}
+    <a href="{{ cancel_url }}" class="btn btn-secondary">キャンセル</a>
+    {% endif %}
+  </div>
+</form>
+{% endmacro %}

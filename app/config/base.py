@@ -1,12 +1,18 @@
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
+
+load_dotenv()
 
 class Config:
     """Base configuration for the application."""
     DEBUG: bool = False
     TESTING: bool = False
-    SQLALCHEMY_DATABASE_URI: str = "sqlite:///app.db"
+    SECRET_KEY: str = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
+    SQLALCHEMY_DATABASE_URI: str = os.environ.get("DATABASE_URL", "sqlite:///app.db")
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
+    PERMANENT_SESSION_LIFETIME: timedelta = timedelta(hours=8)
+    SESSION_PROTECTION: str = "strong"
 
     @staticmethod
     def _build_db_uri() -> str:

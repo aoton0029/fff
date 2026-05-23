@@ -1,0 +1,108 @@
+/* =============================================
+   Sidebar Layout
+   ============================================= */
+#wrapper {
+  min-height: 100vh;
+}
+
+#sidebar {
+  width: 250px;
+  min-height: 100vh;
+  transition: width 0.2s ease;
+  overflow-x: hidden;
+}
+
+#sidebar.collapsed {
+  width: 0;
+  padding: 0 !important;
+}
+
+#page-content-wrapper {
+  min-width: 0;
+}
+
+/* Sidebar nav items */
+#sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+
+#sidebar .nav-link:hover,
+#sidebar .nav-link.active {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+#sidebar .nav-link i {
+  width: 1.25rem;
+  text-align: center;
+}
+
+/* =============================================
+   Table Component
+   ============================================= */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+th[data-sort] {
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+th[data-sort]:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+th[data-sort] .sort-icon {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  margin-left: 0.25rem;
+}
+
+th[data-sort].asc .sort-icon::before  { content: "\F235"; font-family: "bootstrap-icons"; opacity: 1; }
+th[data-sort].desc .sort-icon::before { content: "\F229"; font-family: "bootstrap-icons"; opacity: 1; }
+
+/* =============================================
+   File Upload Component
+   ============================================= */
+.drop-zone {
+  border: 2px dashed #ced4da;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.drop-zone .drop-icon {
+  font-size: 2rem;
+  color: #adb5bd;
+}
+
+/* =============================================
+   Misc
+   ============================================= */
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator {
+  display: inline-block;
+}
