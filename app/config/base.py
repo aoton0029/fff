@@ -13,6 +13,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
     PERMANENT_SESSION_LIFETIME: timedelta = timedelta(hours=8)
     SESSION_PROTECTION: str = "strong"
+    MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024  # 16 MB per file
 
     @staticmethod
     def _build_db_uri() -> str:

@@ -20,4 +20,14 @@
       bsAlert.close();
     }, 5000);
   });
+
+  // htmx: 非GETリクエストにCSRFトークンを付与
+  document.addEventListener("htmx:configRequest", (evt) => {
+    if (evt.detail.verb !== "get") {
+      const meta = document.querySelector('meta[name="csrf-token"]');
+      if (meta) {
+        evt.detail.headers["X-CSRFToken"] = meta.content;
+      }
+    }
+  });
 })();

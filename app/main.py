@@ -1,4 +1,5 @@
 import logging
+import os
 from flask import Flask
 from .config import get_config
 from .extensions import db, login_manager, csrf
@@ -8,12 +9,19 @@ from .errors import register_error_handlers
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_object(get_config())
+    app.config["UPLOAD_FOLDER"] = os.path.join(app.instance_path, "uploads")
 
     _configure_logging(app)
 
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
+
+    with app.app_context():
+        from . import models  # noqa: F401 — ensure models are registered before create_all
+        db.create_all()
+        from .seeds import seed_db
+        seed_db()
 
     _register_blueprints(app)
     register_error_handlers(app)
@@ -36,8 +44,10 @@ def _configure_logging(app: Flask) -> None:
 def _register_blueprints(app: Flask) -> None:
     from .views.auth import auth_bp
     from .views.main import main_bp
+    from .views.files import files_bp
     from .api import api_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(files_bp, url_prefix="/files")
     app.register_blueprint(api_bp, url_prefix="/api")

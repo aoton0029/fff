@@ -1,0 +1,37 @@
+<dl class="row mb-0">
+  <dt class="col-sm-4">ファイル名</dt>
+  <dd class="col-sm-8">{{ file.original_filename }}</dd>
+
+  <dt class="col-sm-4">ファイルサイズ</dt>
+  <dd class="col-sm-8">{{ (file.file_size / 1024) | round(1) }} KB（{{ file.file_size }} bytes）</dd>
+
+  <dt class="col-sm-4">MIMEタイプ</dt>
+  <dd class="col-sm-8">{{ file.mime_type or '-' }}</dd>
+
+  <dt class="col-sm-4">ステータス</dt>
+  <dd class="col-sm-8">
+    {% if file.status == 'processed' %}
+      <span class="badge bg-success">処理済み</span>
+    {% elif file.status == 'error' %}
+      <span class="badge bg-danger">エラー</span>
+    {% else %}
+      <span class="badge bg-secondary">アップロード済み</span>
+    {% endif %}
+  </dd>
+
+  {% if file.row_count is not none %}
+  <dt class="col-sm-4">行数</dt>
+  <dd class="col-sm-8">{{ file.row_count }} 行</dd>
+  {% endif %}
+
+  {% if file.error_message %}
+  <dt class="col-sm-4">エラー詳細</dt>
+  <dd class="col-sm-8 text-danger"><code>{{ file.error_message }}</code></dd>
+  {% endif %}
+
+  <dt class="col-sm-4">アップロード日時</dt>
+  <dd class="col-sm-8">{{ file.created_at.strftime('%Y-%m-%d %H:%M:%S') if file.created_at else '-' }}</dd>
+
+  <dt class="col-sm-4">アップロードユーザー</dt>
+  <dd class="col-sm-8">{{ file.created_by or '-' }}</dd>
+</dl>
