@@ -1,0 +1,608 @@
+{% extends "orm/base.html" %}
+
+{# ── ORM パターンとの対比 ──────────────────────────────────────────────
+   db パターン  : extends "base.html"
+                  UPLOAD_URL = "/api/files/upload-one"
+                  fetch(`/api/files/${fileId}/preview`, ...)
+                  fetch(`/api/files/${fileId}/delete-json`, ...)
+
+   ORM パターン : extends "orm/base.html"
+                  UPLOAD_URL = "/orm/api/files/upload-one"   ← 変更
+                  fetch(`/orm/api/files/${fileId}/preview`)   ← 変更
+                  fetch(`/orm/api/files/${fileId}/delete-json`) ← 変更
+#}
+
+{% block title %}Excelデータ抽出{% endblock %}
+{% block page_title %}Excelデータ抽出{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-9">
+
+    {# ── ドロップゾーン ── #}
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-file-earmark-excel me-2 text-success"></i>Excelファイルを選択
+      </div>
+      <div class="card-body">
+        <div class="drop-zone" id="dropZone">
+          <i class="bi bi-cloud-upload drop-icon d-block mb-2"></i>
+          <p class="mb-1">ファイルをドラッグ&amp;ドロップ、またはクリックして選択</p>
+          <p class="text-muted small mb-0">対応形式: .xlsx / .xls &nbsp;|&nbsp; 最大 10 ファイルまで</p>
+          <input type="file" id="fileInput" accept=".xlsx,.xls" multiple class="d-none" />
+        </div>
+      </div>
+    </div>
+
+    {# ── ファイルリスト + 操作ボタン ── #}
+    <div id="fileListSection" class="d-none">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <h6 class="mb-0 me-auto">選択中のファイル</h6>
+        <button id="btnStart" class="btn btn-primary btn-sm">
+          <i class="bi bi-play-fill me-1"></i>アップロード開始
+        </button>
+        <button id="btnCancel" class="btn btn-outline-danger btn-sm d-none">
+          <i class="bi bi-x-circle me-1"></i>すべてキャンセル
+        </button>
+        <button id="btnClear" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-trash me-1"></i>クリア
+        </button>
+      </div>
+
+      {# 進捗サマリーバー #}
+      <div id="summaryBar" class="d-none mb-3">
+        <div class="d-flex justify-content-between small text-muted mb-1">
+          <span id="summaryText">0 / 0 完了</span>
+          <span id="summaryPct">0%</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div id="summaryProgress" class="progress-bar bg-success" role="progressbar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div id="fileItems"></div>
+    </div>
+
+    {# ── 結果テーブル ── #}
+    <div id="resultSection" class="d-none">
+      <div class="card">
+        <div class="card-header fw-semibold">
+          <i class="bi bi-table me-2"></i>抽出結果
+          <span id="resultCount" class="badge bg-secondary ms-2">0</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-container">
+            <table class="table table-hover table-bordered align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>ファイル名</th>
+                  <th>サイズ</th>
+                  <th>シート名</th>
+                  <th>行数（1枚目）</th>
+                  <th>ステータス</th>
+                  <th>確認</th>
+                  <th>削除</th>
+                </tr>
+              </thead>
+              <tbody id="resultTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{# ── データプレビューモーダル ── #}
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="previewModalLabel">
+          <i class="bi bi-table me-2"></i><span id="previewModalTitle">データプレビュー</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0" id="previewModalBody">
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">読み込み中...</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <small class="text-muted me-auto" id="previewModalInfo"></small>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── 削除確認モーダル ── #}
+<div class="modal fade" id="extractConfirmModal" tabindex="-1" aria-labelledby="extractConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="extractConfirmModalLabel">確認</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="extractConfirmModalMessage">
+        実行してよろしいですか？
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+        <button type="button" class="btn btn-danger" id="extractConfirmOkBtn">削除する</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  "use strict";
+
+  const MAX_FILES     = 10;
+  const CSRF_TOKEN    = document.querySelector('meta[name="csrf-token"]').content;
+  // ── ORM パターンとの対比 ────────────────────────────────────────────
+  // db パターン  : UPLOAD_URL = "/api/files/upload-one"
+  // ORM パターン : UPLOAD_URL = "/orm/api/files/upload-one"
+  const UPLOAD_URL    = "/orm/api/files/upload-one";
+
+  // ── DOM refs ──
+  const dropZone       = document.getElementById("dropZone");
+  const fileInput      = document.getElementById("fileInput");
+  const fileListSection= document.getElementById("fileListSection");
+  const fileItems      = document.getElementById("fileItems");
+  const btnStart       = document.getElementById("btnStart");
+  const btnCancel      = document.getElementById("btnCancel");
+  const btnClear       = document.getElementById("btnClear");
+  const summaryBar     = document.getElementById("summaryBar");
+  const summaryText    = document.getElementById("summaryText");
+  const summaryPct     = document.getElementById("summaryPct");
+  const summaryProgress= document.getElementById("summaryProgress");
+  const resultSection  = document.getElementById("resultSection");
+  const resultTableBody= document.getElementById("resultTableBody");
+  const resultCount    = document.getElementById("resultCount");
+
+  // ── State ──
+  let pendingFiles   = [];   // File objects selected by user
+  let uploadItems    = [];   // { file, status, xhr, id }
+  let isUploading    = false;
+  let cancelRequested= false;
+
+  // ── Drop zone ──
+  dropZone.addEventListener("click", () => {
+    if (!isUploading) fileInput.click();
+  });
+  ["dragover", "dragenter"].forEach(ev =>
+    dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add("drag-over"); })
+  );
+  ["dragleave", "drop"].forEach(ev =>
+    dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove("drag-over"); })
+  );
+  dropZone.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+  fileInput.addEventListener("change", () => { addFiles(fileInput.files); fileInput.value = ""; });
+
+  function addFiles(fileList) {
+    if (isUploading) return;
+    for (const f of fileList) {
+      if (pendingFiles.length >= MAX_FILES) break;
+      const ext = f.name.split(".").pop().toLowerCase();
+      if (!["xlsx", "xls"].includes(ext)) {
+        showAlert(`「${f.name}」はExcelファイルではないためスキップしました。`, "warning");
+        continue;
+      }
+      if (!pendingFiles.find(x => x.name === f.name && x.size === f.size)) {
+        pendingFiles.push(f);
+      }
+    }
+    renderFileList();
+  }
+
+  function renderFileList() {
+    if (pendingFiles.length === 0) {
+      fileListSection.classList.add("d-none");
+      return;
+    }
+    fileListSection.classList.remove("d-none");
+    fileItems.innerHTML = "";
+    pendingFiles.forEach((f, i) => {
+      const el = document.createElement("div");
+      el.className = "excel-file-item mb-2";
+      el.id = `file-item-${i}`;
+      el.innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-excel text-success fs-5 flex-shrink-0"></i>
+          <div class="flex-grow-1 min-w-0">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-semibold text-truncate" title="${escHtml(f.name)}">${escHtml(f.name)}</span>
+              <span class="text-muted small ms-2 flex-shrink-0">${formatSize(f.size)}</span>
+            </div>
+            <div class="progress" style="height: 5px;" id="progress-bar-wrap-${i}">
+              <div class="progress-bar" id="progress-bar-${i}" role="progressbar" style="width:0%"></div>
+            </div>
+          </div>
+          <span class="badge badge-status bg-secondary ms-2 flex-shrink-0" id="status-badge-${i}">待機中</span>
+          <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-1 flex-shrink-0 btn-remove"
+                  data-idx="${i}" title="削除" ${isUploading ? "disabled" : ""}>
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <div class="excel-file-result small text-muted mt-1 d-none" id="result-inline-${i}"></div>
+      `;
+      el.querySelector(".btn-remove").addEventListener("click", () => {
+        if (!isUploading) { pendingFiles.splice(i, 1); renderFileList(); }
+      });
+      fileItems.appendChild(el);
+    });
+  }
+
+  // ── Buttons ──
+  btnStart.addEventListener("click", startUpload);
+  btnCancel.addEventListener("click", cancelAll);
+  btnClear.addEventListener("click", () => {
+    if (isUploading) return;
+    pendingFiles = [];
+    uploadItems  = [];
+    renderFileList();
+    resultSection.classList.add("d-none");
+    resultTableBody.innerHTML = "";
+    summaryBar.classList.add("d-none");
+  });
+
+  // ── Upload logic ──
+  async function startUpload() {
+    if (pendingFiles.length === 0 || isUploading) return;
+
+    isUploading     = true;
+    cancelRequested = false;
+
+    uploadItems = pendingFiles.map(f => ({ file: f, status: "pending", xhr: null }));
+
+    btnStart.classList.add("d-none");
+    btnClear.disabled = true;
+    btnCancel.classList.remove("d-none");
+    resultSection.classList.add("d-none");
+    resultTableBody.innerHTML = "";
+    summaryBar.classList.remove("d-none");
+    updateSummary();
+
+    let doneCount = 0;
+    const total   = uploadItems.length;
+
+    for (let i = 0; i < total; i++) {
+      if (cancelRequested) {
+        for (let j = i; j < total; j++) {
+          uploadItems[j].status = "cancelled";
+          setStatus(j, "キャンセル", "secondary");
+        }
+        break;
+      }
+
+      setStatus(i, "アップロード中", "primary");
+      setProgress(i, 0, "primary");
+
+      try {
+        const result = await uploadFile(uploadItems[i], i);
+        doneCount++;
+
+        if (result.error_message) {
+          uploadItems[i].status = "error";
+          setStatus(i, "エラー", "danger");
+          setProgress(i, 100, "danger");
+          showInlineResult(i, null, result.error_message);
+          appendResultRow(result.filename || uploadItems[i].file.name, uploadItems[i].file.size, result, "error");
+        } else {
+          uploadItems[i].status = "done";
+          setStatus(i, "完了", "success");
+          setProgress(i, 100, "success");
+          showInlineResult(i, result);
+          appendResultRow(result.filename, uploadItems[i].file.size, result, "done");
+        }
+      } catch (err) {
+        if (err === "aborted") {
+          uploadItems[i].status = "cancelled";
+          setStatus(i, "キャンセル", "secondary");
+          setProgress(i, 0, "secondary");
+        } else {
+          uploadItems[i].status = "error";
+          setStatus(i, "エラー", "danger");
+          setProgress(i, 100, "danger");
+          showInlineResult(i, null, String(err));
+          appendResultRow(uploadItems[i].file.name, uploadItems[i].file.size, {}, "error");
+        }
+        doneCount++;
+      }
+
+      updateSummary();
+    }
+
+    isUploading = false;
+    btnCancel.classList.add("d-none");
+    btnStart.classList.remove("d-none");
+    btnClear.disabled = false;
+
+    if (resultTableBody.children.length > 0) {
+      resultSection.classList.remove("d-none");
+      resultCount.textContent = resultTableBody.children.length;
+    }
+  }
+
+  function uploadFile(item, idx) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      item.xhr  = xhr;
+
+      xhr.upload.addEventListener("progress", e => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 90);
+          setProgress(idx, pct, "primary");
+        }
+      });
+
+      xhr.upload.addEventListener("load", () => {
+        setStatus(idx, "処理中", "info");
+        setProgress(idx, 95, "info");
+      });
+
+      xhr.addEventListener("load", () => {
+        if (xhr.status >= 400) {
+          try {
+            const err = JSON.parse(xhr.responseText);
+            reject(err.error || `HTTP ${xhr.status}`);
+          } catch {
+            reject(`HTTP ${xhr.status}`);
+          }
+          return;
+        }
+        try {
+          resolve(JSON.parse(xhr.responseText));
+        } catch {
+          reject("サーバーからの応答を解析できませんでした");
+        }
+      });
+
+      xhr.addEventListener("error",   () => reject("通信エラーが発生しました"));
+      xhr.addEventListener("abort",   () => reject("aborted"));
+
+      const formData = new FormData();
+      formData.append("file", item.file);
+
+      xhr.open("POST", UPLOAD_URL);
+      xhr.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
+      xhr.send(formData);
+    });
+  }
+
+  function cancelAll() {
+    cancelRequested = true;
+    const current = uploadItems.find(x => x.status === "pending" || x.xhr?.readyState === 1 || x.xhr?.readyState === 2 || x.xhr?.readyState === 3);
+    if (current?.xhr) current.xhr.abort();
+  }
+
+  // ── UI helpers ──
+  function setStatus(idx, label, color) {
+    const el = document.getElementById(`status-badge-${idx}`);
+    if (!el) return;
+    el.textContent = label;
+    el.className   = `badge badge-status bg-${color} ms-2 flex-shrink-0`;
+  }
+
+  function setProgress(idx, pct, color) {
+    const bar = document.getElementById(`progress-bar-${idx}`);
+    if (!bar) return;
+    bar.style.width = `${pct}%`;
+    bar.className   = `progress-bar bg-${color}`;
+  }
+
+  function showInlineResult(idx, result, errorMsg) {
+    const el = document.getElementById(`result-inline-${idx}`);
+    if (!el) return;
+    el.classList.remove("d-none");
+    if (errorMsg) {
+      el.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>${escHtml(errorMsg)}</span>`;
+    } else {
+      const sheets = result.sheet_names
+        ? `シート: <strong>${escHtml(result.sheet_names)}</strong> &nbsp;|&nbsp;`
+        : "";
+      const rows = result.row_count != null
+        ? `行数（1枚目）: <strong>${result.row_count}</strong>`
+        : "";
+      el.innerHTML = `<span class="text-success"><i class="bi bi-check-circle me-1"></i>${sheets}${rows}</span>`;
+    }
+  }
+
+  function appendResultRow(filename, fileSize, result, state) {
+    const tr     = document.createElement("tr");
+    const fileId = result.id || null;
+    const statusCell = state === "done"
+      ? `<span class="badge bg-success">完了</span>`
+      : `<span class="badge bg-danger">エラー</span>`;
+    const sheets = result.sheet_names
+      ? escHtml(result.sheet_names.split(",").join("、"))
+      : '<span class="text-muted">-</span>';
+    const rows = result.row_count != null ? result.row_count : '<span class="text-muted">-</span>';
+    const confirmBtn = (fileId && state === "done")
+      ? `<button type="button" class="btn btn-sm btn-outline-primary btn-preview-row"><i class="bi bi-eye me-1"></i>確認</button>`
+      : `<span class="text-muted small">-</span>`;
+    const deleteBtn = fileId
+      ? `<button type="button" class="btn btn-sm btn-outline-danger btn-delete-row"><i class="bi bi-trash me-1"></i>削除</button>`
+      : `<span class="text-muted small">-</span>`;
+    tr.innerHTML = `
+      <td><i class="bi bi-file-earmark-excel me-1 text-success"></i>${escHtml(filename || "")}</td>
+      <td class="text-nowrap">${formatSize(fileSize)}</td>
+      <td>${sheets}</td>
+      <td>${rows}</td>
+      <td>${statusCell}</td>
+      <td>${confirmBtn}</td>
+      <td>${deleteBtn}</td>
+    `;
+    if (fileId && state === "done") {
+      tr.querySelector(".btn-preview-row").addEventListener("click", () => showPreview(fileId, filename || ""));
+    }
+    if (fileId) {
+      tr.querySelector(".btn-delete-row").addEventListener("click", () => deleteExtractFile(fileId, filename || "", tr));
+    }
+    if (result.error_message) {
+      const detailRow = document.createElement("tr");
+      detailRow.innerHTML = `<td colspan="7" class="text-danger small py-1 ps-5"><i class="bi bi-exclamation-triangle me-1"></i>${escHtml(result.error_message)}</td>`;
+      resultTableBody.appendChild(tr);
+      resultTableBody.appendChild(detailRow);
+    } else {
+      resultTableBody.appendChild(tr);
+    }
+  }
+
+  function updateSummary() {
+    const total   = uploadItems.length;
+    const done    = uploadItems.filter(x => x.status === "done" || x.status === "error" || x.status === "cancelled").length;
+    const success = uploadItems.filter(x => x.status === "done").length;
+    const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
+    summaryText.textContent = `${done} / ${total} 完了（成功: ${success}）`;
+    summaryPct.textContent  = `${pct}%`;
+    summaryProgress.style.width = `${pct}%`;
+  }
+
+  function showAlert(msg, type) {
+    const area = document.getElementById("alert-area");
+    const div  = document.createElement("div");
+    div.className = `alert alert-${type} alert-dismissible fade show`;
+    div.setAttribute("role", "alert");
+    div.innerHTML = `${escHtml(msg)}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    area.appendChild(div);
+    setTimeout(() => bootstrap.Alert.getOrCreateInstance(div).close(), 5000);
+  }
+
+  function formatSize(bytes) {
+    if (bytes == null) return "-";
+    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  function escHtml(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  // ── プレビューモーダル ──
+  async function showPreview(fileId, filename) {
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("previewModal"));
+    document.getElementById("previewModalTitle").textContent = filename;
+    document.getElementById("previewModalInfo").textContent = "";
+    document.getElementById("previewModalBody").innerHTML = `
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">読み込み中...</span>
+        </div>
+      </div>`;
+    modal.show();
+    try {
+      // ── ORM パターンとの対比 ─────────────────────────────────────────
+      // db パターン  : fetch(`/api/files/${fileId}/preview`, ...)
+      // ORM パターン : fetch(`/orm/api/files/${fileId}/preview`, ...)
+      const resp = await fetch(`/orm/api/files/${fileId}/preview`, {
+        headers: { "X-CSRFToken": CSRF_TOKEN },
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        document.getElementById("previewModalBody").innerHTML =
+          `<p class="text-danger p-3"><i class="bi bi-exclamation-triangle me-1"></i>${escHtml(data.error || "エラーが発生しました")}</p>`;
+        return;
+      }
+      const { columns, rows, sheet_name, total_rows } = data;
+      const thHtml = columns.map(c => `<th class="text-nowrap">${escHtml(c)}</th>`).join("");
+      const tbHtml = rows.map(row =>
+        `<tr>${row.map(cell => `<td>${escHtml(cell == null ? "" : String(cell))}</td>`).join("")}</tr>`
+      ).join("");
+      document.getElementById("previewModalBody").innerHTML = `
+        <div style="overflow:auto; max-height:60vh;">
+          <table class="table table-sm table-hover table-bordered align-middle mb-0">
+            <thead class="table-light sticky-top"><tr>${thHtml}</tr></thead>
+            <tbody>${tbHtml}</tbody>
+          </table>
+        </div>`;
+      const shown = rows.length;
+      const note  = (total_rows != null && total_rows > shown)
+        ? `シート: ${escHtml(sheet_name)} | 表示中: ${shown} / ${total_rows} 行`
+        : `シート: ${escHtml(sheet_name)} | ${shown} 行`;
+      document.getElementById("previewModalInfo").textContent = note;
+    } catch (err) {
+      document.getElementById("previewModalBody").innerHTML =
+        `<p class="text-danger p-3"><i class="bi bi-exclamation-triangle me-1"></i>${escHtml(String(err))}</p>`;
+    }
+  }
+
+  // ── 削除確認モーダル ──
+  let _confirmCb = null;
+  document.getElementById("extractConfirmOkBtn").addEventListener("click", () => {
+    bootstrap.Modal.getInstance(document.getElementById("extractConfirmModal"))?.hide();
+    if (typeof _confirmCb === "function") _confirmCb();
+  });
+
+  function showConfirm({ title = "確認", message = "実行してよろしいですか？", onConfirm = null } = {}) {
+    document.getElementById("extractConfirmModalLabel").textContent = title;
+    document.getElementById("extractConfirmModalMessage").textContent = message;
+    _confirmCb = onConfirm;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("extractConfirmModal")).show();
+  }
+
+  async function deleteExtractFile(fileId, filename, rowEl) {
+    showConfirm({
+      title:     "削除確認",
+      message:   `「${filename}」を削除しますか？この操作は元に戻せません。`,
+      onConfirm: async () => {
+        try {
+          // ── ORM パターンとの対比 ─────────────────────────────────────
+          // db パターン  : fetch(`/api/files/${fileId}/delete-json`, ...)
+          // ORM パターン : fetch(`/orm/api/files/${fileId}/delete-json`, ...)
+          const resp = await fetch(`/orm/api/files/${fileId}/delete-json`, {
+            method:  "POST",
+            headers: { "X-CSRFToken": CSRF_TOKEN },
+          });
+          if (resp.ok) {
+            const next = rowEl.nextElementSibling;
+            if (next && next.querySelector("td[colspan]")) next.remove();
+            rowEl.remove();
+            const count = resultTableBody.children.length;
+            resultCount.textContent = count;
+            if (count === 0) resultSection.classList.add("d-none");
+          } else {
+            const data = await resp.json();
+            showAlert(data.error || "削除に失敗しました", "danger");
+          }
+        } catch (err) {
+          showAlert(String(err), "danger");
+        }
+      },
+    });
+  }
+
+  // ── ナビゲーション離脱警告 ──
+  window.addEventListener("beforeunload", e => {
+    if (isUploading) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  window.addEventListener("pagehide", () => {
+    if (isUploading) {
+      uploadItems.forEach(item => {
+        if (item.xhr) item.xhr.abort();
+      });
+    }
+  });
+
+})();
+</script>
+{% endblock %}

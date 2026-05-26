@@ -1,13 +1,7 @@
-import os
+# Deprecated: use app.files.views
+from ..files.views import files_bp  # noqa: F401
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_required
-
-from ..forms.file_form import FileUploadForm
-from ..services import file_service
-from ..services.file_service import ALLOWED_EXTENSIONS
-
-files_bp = Blueprint("files", __name__)
+__all__ = ["files_bp"]
 
 _COLUMNS = [
     {"key": "original_filename", "label": "ファイル名",       "sortable": True},
@@ -56,6 +50,12 @@ def upload():
         return redirect(url_for("files.index"))
 
     return render_template("files/upload.html", form=form)
+
+
+@files_bp.route("/excel-extract")
+@login_required
+def excel_extract():
+    return render_template("files/excel_extract.html")
 
 
 @files_bp.route("/<int:file_id>")

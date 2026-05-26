@@ -22,9 +22,12 @@ def create_app() -> Flask:
         db.create_all()
         from .seeds import seed_db
         seed_db()
+        from .excel_imports.service import load_domain_config
+        load_domain_config(app)
 
     _register_blueprints(app)
     register_error_handlers(app)
+    _register_context_processors(app)
 
     return app
 
@@ -41,13 +44,43 @@ def _configure_logging(app: Flask) -> None:
     app.logger.setLevel(level)
 
 
+def _register_context_processors(app: Flask) -> None:
+    from .excel_imports.service import get_domain_config
+
+    @app.context_processor
+    def inject_excel_domains():
+        return {"excel_domain_config": get_domain_config()}
+
+
 def _register_blueprints(app: Flask) -> None:
+<<<<<<< HEAD
+    from .auth import auth_bp
+    from .home import main_bp
+    from .files import files_bp, files_api_bp
+    from .excel_imports import excel_imports_bp, excel_imports_api_bp
+=======
     from .views.auth import auth_bp
     from .views.main import main_bp
     from .views.files import files_bp
+    from .views.auth_orm import auth_orm_bp
+    from .views.files_orm import files_orm_bp
     from .api import api_bp
+    from .api.files_orm import api_orm_bp
+>>>>>>> 4338afad389814a878391d7019d553facd2a4f71
 
+    # db パターン (raw SQL + pandas + dataclass)
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(files_bp, url_prefix="/files")
+<<<<<<< HEAD
+    app.register_blueprint(files_api_bp, url_prefix="/api/files")
+    app.register_blueprint(excel_imports_bp, url_prefix="/excel-imports")
+    app.register_blueprint(excel_imports_api_bp, url_prefix="/api/excel-imports")
+=======
     app.register_blueprint(api_bp, url_prefix="/api")
+
+    # ORM パターン (SQLAlchemy ORM model)
+    app.register_blueprint(auth_orm_bp)               # /orm/auth/*
+    app.register_blueprint(files_orm_bp)              # /orm/files/*
+    app.register_blueprint(api_orm_bp, url_prefix="/orm/api")  # /orm/api/files/*
+>>>>>>> 4338afad389814a878391d7019d553facd2a4f71

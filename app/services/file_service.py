@@ -1,5 +1,26 @@
+<<<<<<< HEAD
+# Deprecated: use app.files.service
+from ..files.service import (  # noqa: F401
+    ALLOWED_EXTENSIONS,
+    save_file,
+    get_file_list,
+    get_file_by_id,
+    delete_file,
+    export_to_excel,
+)
+
+__all__ = [
+    "ALLOWED_EXTENSIONS",
+    "save_file",
+    "get_file_list",
+    "get_file_by_id",
+    "delete_file",
+    "export_to_excel",
+]
+=======
 import os
 import uuid
+from datetime import datetime, timezone
 from io import BytesIO
 
 import pandas as pd
@@ -7,23 +28,30 @@ from flask import current_app
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
-from ..extensions import db
-from ..models.file import UploadedFile
+from ..db import db_manager
+from ..db.records import FileRecord, SimplePagination
 
 ALLOWED_EXTENSIONS: set[str] = {
     ".xlsx", ".xls", ".csv",
     ".pdf", ".png", ".jpg", ".jpeg", ".docx",
 }
+>>>>>>> 4338afad389814a878391d7019d553facd2a4f71
+
+EXCEL_EXTENSIONS: set[str] = {".xlsx", ".xls"}
 
 _SPREADSHEET_EXTENSIONS: set[str] = {".xlsx", ".xls", ".csv"}
 
+_SORT_COLUMNS: frozenset[str] = frozenset(
+    {"original_filename", "file_size", "mime_type", "status", "created_at"}
+)
 
-def save_file(file: FileStorage, username: str | None = None) -> UploadedFile:
-    """Save an uploaded file to disk and create a database record.
 
-    The original filename is sanitised with ``secure_filename``.  A UUID-based
-    name is used for the file stored on disk to avoid collisions.
-    """
+def _now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def save_file(file: FileStorage, username: str | None = None) -> FileRecord:
+    """Save an uploaded file to disk and create a database record."""
     original_name = secure_filename(file.filename or "unnamed") or "unnamed"
     ext = os.path.splitext(original_name)[1].lower()
 
@@ -34,31 +62,60 @@ def save_file(file: FileStorage, username: str | None = None) -> UploadedFile:
     full_path = os.path.join(upload_dir, stored_name)
     file.save(full_path)
 
-    record = UploadedFile(
-        original_filename=original_name,
-        stored_filename=stored_name,
-        file_path=full_path,
-        file_size=os.path.getsize(full_path),
-        mime_type=file.mimetype or "",
-        status="uploaded",
-        created_by=username,
-        updated_by=username,
+    now = _now()
+    row_df = pd.DataFrame([{
+        "original_filename": original_name,
+        "stored_filename":   stored_name,
+        "file_path":         full_path,
+        "file_size":         os.path.getsize(full_path),
+        "mime_type":         file.mimetype or "",
+        "status":            "uploaded",
+        "row_count":         None,
+        "sheet_names":       None,
+        "error_message":     None,
+        "created_by":        username,
+        "updated_by":        username,
+        "created_at":        now,
+        "updated_at":        now,
+    }])
+    db_manager.insert_df("uploaded_files", row_df)
+
+    df = db_manager.fetch(
+        "SELECT * FROM uploaded_files WHERE stored_filename = :sf",
+        {"sf": stored_name},
     )
-    db.session.add(record)
-    db.session.flush()  # populate id before further processing
+    record = FileRecord.from_row(df.iloc[0])
 
     if ext in _SPREADSHEET_EXTENSIONS:
         _process_spreadsheet(record, full_path, ext)
+        db_manager.update(
+            "uploaded_files",
+            {
+                "status":        record.status,
+                "row_count":     record.row_count,
+                "sheet_names":   record.sheet_names,
+                "error_message": record.error_message,
+                "updated_by":    username,
+                "updated_at":    _now(),
+            },
+            "id = :_id",
+            {"_id": record.id},
+        )
 
-    db.session.commit()
     return record
 
 
-def _process_spreadsheet(record: UploadedFile, path: str, ext: str) -> None:
-    """Read a spreadsheet with Pandas and store the row count on the record."""
+def _process_spreadsheet(record: FileRecord, path: str, ext: str) -> None:
+    """Read a spreadsheet with pandas and populate metadata on *record*."""
     try:
-        df = pd.read_csv(path) if ext == ".csv" else pd.read_excel(path)
-        record.row_count = len(df)
+        if ext == ".csv":
+            df = pd.read_csv(path)
+            record.row_count = len(df)
+        else:
+            xf = pd.ExcelFile(path)
+            record.sheet_names = ",".join(xf.sheet_names)
+            df = xf.parse(xf.sheet_names[0])
+            record.row_count = len(df)
         record.status = "processed"
     except Exception as exc:  # noqa: BLE001
         record.status = "error"
@@ -71,33 +128,44 @@ def get_file_list(
     q: str = "",
     sort_key: str = "created_at",
     sort_dir: str = "desc",
-):
-    """Return a paginated, filtered, and sorted SQLAlchemy ``Pagination`` object."""
-    _col_map = {
-        "original_filename": UploadedFile.original_filename,
-        "file_size": UploadedFile.file_size,
-        "mime_type": UploadedFile.mime_type,
-        "status": UploadedFile.status,
-        "created_at": UploadedFile.created_at,
-    }
-    query = UploadedFile.query
+) -> SimplePagination[FileRecord]:
+    """Return a paginated, filtered, and sorted list of file records."""
+    safe_key = sort_key if sort_key in _SORT_COLUMNS else "created_at"
+    safe_dir = "ASC" if sort_dir.lower() == "asc" else "DESC"
+    order_by = f"{safe_key} {safe_dir}"
+
     if q:
-        query = query.filter(UploadedFile.original_filename.ilike(f"%{q}%"))
-    col = _col_map.get(sort_key, UploadedFile.created_at)
-    query = query.order_by(col.asc() if sort_dir == "asc" else col.desc())
-    return query.paginate(page=page, per_page=per_page, error_out=False)
+        base_sql = (
+            "SELECT * FROM uploaded_files"
+            " WHERE original_filename LIKE :q"
+        )
+        params: dict = {"q": f"%{q}%"}
+    else:
+        base_sql = "SELECT * FROM uploaded_files"
+        params = {}
+
+    df, total = db_manager.fetch_page(
+        base_sql, page, per_page, order_by=order_by, params=params
+    )
+    items = [FileRecord.from_row(row) for _, row in df.iterrows()]
+    return SimplePagination(items=items, page=page, per_page=per_page, total=total)
 
 
-def get_file_by_id(file_id: int) -> UploadedFile | None:
-    return db.session.get(UploadedFile, file_id)
+def get_file_by_id(file_id: int) -> FileRecord | None:
+    df = db_manager.fetch(
+        "SELECT * FROM uploaded_files WHERE id = :id",
+        {"id": file_id},
+    )
+    if df.empty:
+        return None
+    return FileRecord.from_row(df.iloc[0])
 
 
-def delete_file(record: UploadedFile) -> None:
+def delete_file(record: FileRecord) -> None:
     """Remove the file from disk and delete the database record."""
     if os.path.exists(record.file_path):
         os.remove(record.file_path)
-    db.session.delete(record)
-    db.session.commit()
+    db_manager.delete("uploaded_files", "id = :id", {"id": record.id})
 
 
 def export_to_excel(
@@ -105,26 +173,39 @@ def export_to_excel(
     sort_key: str = "created_at",
     sort_dir: str = "desc",
 ) -> BytesIO:
-    """Build an in-memory Excel workbook of the current file list and return it."""
-    pagination = get_file_list(
-        page=1, per_page=100_000, q=q, sort_key=sort_key, sort_dir=sort_dir
-    )
-    rows = [
-        {
-            "ファイル名": f.original_filename,
-            "サイズ (bytes)": f.file_size,
-            "MIMEタイプ": f.mime_type or "",
-            "ステータス": f.status,
-            "行数": f.row_count if f.row_count is not None else "",
-            "アップロード日時": (
-                f.created_at.strftime("%Y-%m-%d %H:%M:%S") if f.created_at else ""
-            ),
-            "アップロードユーザー": f.created_by or "",
-        }
-        for f in pagination.items
-    ]
+    """Build an in-memory Excel workbook of the current file list."""
+    safe_key = sort_key if sort_key in _SORT_COLUMNS else "created_at"
+    safe_dir = "ASC" if sort_dir.lower() == "asc" else "DESC"
+
+    if q:
+        sql = (
+            f"SELECT * FROM uploaded_files"
+            f" WHERE original_filename LIKE :q"
+            f" ORDER BY {safe_key} {safe_dir}"
+        )
+        params: dict = {"q": f"%{q}%"}
+    else:
+        sql = f"SELECT * FROM uploaded_files ORDER BY {safe_key} {safe_dir}"
+        params = {}
+
+    df = db_manager.fetch(sql, params)
+
+    export_df = pd.DataFrame({
+        "ファイル名":         df["original_filename"],
+        "サイズ (bytes)":     df["file_size"],
+        "MIMEタイプ":         df["mime_type"].fillna(""),
+        "ステータス":         df["status"],
+        "行数":               df["row_count"].fillna(""),
+        "アップロード日時":   df["created_at"].apply(
+            lambda x: pd.to_datetime(x).strftime("%Y-%m-%d %H:%M:%S")
+            if pd.notna(x) else ""
+        ),
+        "アップロードユーザー": df["created_by"].fillna(""),
+    })
+
     buffer = BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        pd.DataFrame(rows).to_excel(writer, index=False, sheet_name="ファイル一覧")
+        export_df.to_excel(writer, index=False, sheet_name="ファイル一覧")
     buffer.seek(0)
     return buffer
+

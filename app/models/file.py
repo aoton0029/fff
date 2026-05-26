@@ -16,6 +16,7 @@ class UploadedFile(BaseModel, db.Model):
     mime_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="uploaded")
     row_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    sheet_names: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     error_message: Mapped[str | None] = mapped_column(String(1024), nullable=True)
 
     def __repr__(self) -> str:

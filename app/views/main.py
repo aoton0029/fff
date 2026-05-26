@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template
-from flask_login import login_required
+# Deprecated: use app.home.views
+from ..home.views import main_bp  # noqa: F401
 
-main_bp = Blueprint("main", __name__)
+__all__ = ["main_bp"]
 
 
 @main_bp.route("/")

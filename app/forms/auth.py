@@ -1,9 +1,7 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Length
+# Deprecated: use app.auth.forms
+from ..auth.forms import LoginForm  # noqa: F401
 
-
-class LoginForm(FlaskForm):
+__all__ = ["LoginForm"]
     username = StringField(
         "ユーザーID",
         validators=[DataRequired(message="ユーザーIDを入力してください"), Length(max=255)],

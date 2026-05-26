@@ -106,3 +106,37 @@ th[data-sort].desc .sort-icon::before { content: "\F229"; font-family: "bootstra
 .htmx-request .htmx-indicator {
   display: inline-block;
 }
+
+/* =============================================
+   Excel Extract — File Item Cards
+   ============================================= */
+.excel-file-item {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  transition: border-color 0.15s;
+}
+
+.excel-file-item:has(.badge.bg-success) {
+  border-color: #198754;
+  background-color: #f0fff4;
+}
+
+.excel-file-item:has(.badge.bg-danger) {
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.excel-file-item:has(.badge.bg-secondary) {
+  opacity: 0.65;
+}
+
+.badge-status {
+  min-width: 5rem;
+  text-align: center;
+}
+
+.min-w-0 {
+  min-width: 0;
+}

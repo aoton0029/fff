@@ -1,8 +1,4 @@
-from flask_wtf import FlaskForm
-from wtforms import SubmitField
+# Deprecated: use app.files.forms
+from ..files.forms import FileUploadForm  # noqa: F401
 
-
-class FileUploadForm(FlaskForm):
-    """CSRF-protected form for file uploads. Files are handled via request.files."""
-
-    submit = SubmitField("アップロード")
+__all__ = ["FileUploadForm"]

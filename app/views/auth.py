@@ -1,9 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_user, logout_user, login_required, current_user
-from ..forms.auth import LoginForm
-from ..services.auth_service import authenticate_user
+# Deprecated: use app.auth.views
+from ..auth.views import auth_bp  # noqa: F401
 
-auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+__all__ = ["auth_bp"]
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])

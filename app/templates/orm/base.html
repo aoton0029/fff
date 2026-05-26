@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{# ── ORM パターン用ベーステンプレート ──────────────────────────────────
+   db パターン  : base.html            → /auth/*, /files/*, /api/files/*
+   ORM パターン : orm/base.html (here) → /orm/auth/*, /orm/files/*, /orm/api/files/*
+
+   差分: サイドバーナビのリンク先 + ログアウト URL のみ変更。
+#}
+
+{% block logout_url %}{{ url_for('auth_orm.logout') }}{% endblock %}
+
+{% block sidebar_nav %}
+<li class="nav-item">
+  <a href="{{ url_for('main.index') }}"
+     class="nav-link {{ 'active' if request.endpoint == 'main.index' else '' }}">
+    <i class="bi bi-house me-2"></i>ホーム
+  </a>
+</li>
+<li class="nav-item">
+  <a href="{{ url_for('files_orm.index') }}"
+     class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('files_orm.') and request.endpoint != 'files_orm.excel_extract' else '' }}">
+    <i class="bi bi-folder me-2"></i>ファイル管理
+  </a>
+</li>
+<li class="nav-item">
+  <a href="{{ url_for('files_orm.excel_extract') }}"
+     class="nav-link {{ 'active' if request.endpoint == 'files_orm.excel_extract' else '' }}">
+    <i class="bi bi-file-earmark-excel me-2"></i>Excelデータ抽出
+  </a>
+</li>
+{% endblock %}

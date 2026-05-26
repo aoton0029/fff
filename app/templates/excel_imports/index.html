@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% from "components/modal.html" import render_modal %}
+
+{% block title %}{{ domain_cfg.display_name }} - Excel取込{% endblock %}
+{% block page_title %}Excel取込 — {{ domain_cfg.display_name }}{% endblock %}
+
+{% block content %}
+{% include "components/confirm_modal.html" %}
+
+{# ── 承認確認モーダル ── #}
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="approveModalLabel">
+          <i class="bi bi-patch-check-fill text-danger me-2"></i>角印・承認確定
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="approveModalMessage">このデータを承認しますか？</p>
+        <div class="alert alert-warning mb-0 py-2">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          承認後は取り消しできません。
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+        <button type="button" class="btn btn-danger" id="approveModalOk">
+          <i class="bi bi-patch-check me-1"></i>承認確定
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── データ確認モーダル ── #}
+{% call render_modal(modal_id="data-modal", title="取込データ確認", size="xl", scrollable=True) %}
+  <div class="modal-body p-0" id="data-modal-body">
+    <div class="text-center text-muted py-4">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      読み込み中...
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+  </div>
+{% endcall %}
+
+{# ── ドメイン情報バッジ ── #}
+<div class="mb-3 d-flex align-items-center gap-3 text-muted small">
+  <span><i class="bi bi-journal-text me-1"></i>シート名: <strong class="text-body">{{ domain_cfg.sheet_name }}</strong></span>
+  <span><i class="bi bi-layout-three-columns me-1"></i>ヘッダ行: <strong class="text-body">{{ domain_cfg.header_row }} 行目</strong></span>
+  {% if domain_cfg.usecols %}
+  <span><i class="bi bi-columns-gap me-1"></i>取込列: <strong class="text-body">{{ domain_cfg.usecols }}</strong></span>
+  {% endif %}
+</div>
+
+{# ── アップロードカード ── #}
+<div class="card mb-4">
+  <div class="card-header fw-semibold">
+    <i class="bi bi-upload me-2"></i>Excelファイル取込
+  </div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('excel_imports.upload', domain=domain) }}" enctype="multipart/form-data" novalidate>
+      {{ form.hidden_tag() }}
+
+      {# ファイルドロップゾーン #}
+      {% set field_name = "files" %}
+      {% set accept = ".xlsx,.xls" %}
+      {% set max_files = 10 %}
+      {% include "components/file_upload.html" with context %}
+
+      <div class="mt-3 d-flex align-items-center gap-3">
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-upload me-1"></i>取込実行
+        </button>
+        <span class="text-muted small">対応形式: xlsx / xls &nbsp;|&nbsp; 最大 16 MB × 10 ファイル</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ── テーブルカード ── #}
+<div class="card">
+  <div class="card-header fw-semibold">
+    <i class="bi bi-table me-2"></i>取込済みデータ一覧
+  </div>
+  <div class="card-body p-0">
+    <div
+      id="excel-imports-table-wrapper"
+      hx-get="/api/excel-imports/{{ domain }}/table"
+      hx-trigger="load"
+      hx-swap="outerHTML"
+    >
+      <div class="text-center py-5 text-muted">
+        <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+        読み込み中...
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── 承認モーダル ──
+const approveModal = bootstrap.Modal.getOrCreateInstance(document.getElementById("approveModal"));
+const approveOkBtn = document.getElementById("approveModalOk");
+let _approveImportId = null;
+
+function showApproveModal(btn) {
+  _approveImportId = btn.dataset.importId;
+  document.getElementById("approveModalMessage").textContent =
+    `「${btn.dataset.fileName}」を承認しますか？`;
+  approveModal.show();
+}
+
+approveOkBtn.addEventListener("click", () => {
+  approveModal.hide();
+  if (_approveImportId) {
+    htmx.ajax("POST", `/api/excel-imports/${_approveImportId}/approve`, {
+      target: "#excel-imports-table-wrapper",
+      swap: "outerHTML",
+    });
+    _approveImportId = null;
+  }
+});
+</script>
+{% endblock %}
