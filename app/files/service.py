@@ -4,6 +4,7 @@ from io import BytesIO
 
 import pandas as pd
 from flask import current_app
+from sqlalchemy import select
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
@@ -73,12 +74,12 @@ def get_file_list(
         "status": UploadedFile.status,
         "created_at": UploadedFile.created_at,
     }
-    query = UploadedFile.query
+    stmt = select(UploadedFile)
     if q:
-        query = query.filter(UploadedFile.original_filename.ilike(f"%{q}%"))
+        stmt = stmt.where(UploadedFile.original_filename.ilike(f"%{q}%"))
     col = _col_map.get(sort_key, UploadedFile.created_at)
-    query = query.order_by(col.asc() if sort_dir == "asc" else col.desc())
-    return query.paginate(page=page, per_page=per_page, error_out=False)
+    stmt = stmt.order_by(col.asc() if sort_dir == "asc" else col.desc())
+    return db.paginate(stmt, page=page, per_page=per_page, error_out=False)
 
 
 def get_file_by_id(file_id: int) -> UploadedFile | None:

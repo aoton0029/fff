@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 import yaml
 
+from sqlalchemy import select
+
 from ..extensions import db
 from ..models.excel_import import ExcelImport
 from ..models.inventory_data import InventoryData
@@ -213,13 +215,13 @@ def get_import_list(
     sort_dir: str = "desc",
     domain: str | None = None,
 ):
-    query = ExcelImport.query
+    stmt = select(ExcelImport)
 
     if domain:
-        query = query.filter(ExcelImport.domain == domain)
+        stmt = stmt.where(ExcelImport.domain == domain)
 
     if q:
-        query = query.filter(ExcelImport.original_filename.ilike(f"%{q}%"))
+        stmt = stmt.where(ExcelImport.original_filename.ilike(f"%{q}%"))
 
     sortable = {
         "original_filename": ExcelImport.original_filename,
@@ -229,9 +231,9 @@ def get_import_list(
         "created_at": ExcelImport.created_at,
     }
     col = sortable.get(sort_key, ExcelImport.created_at)
-    query = query.order_by(col.asc() if sort_dir == "asc" else col.desc())
+    stmt = stmt.order_by(col.asc() if sort_dir == "asc" else col.desc())
 
-    return query.paginate(page=page, per_page=per_page, error_out=False)
+    return db.paginate(stmt, page=page, per_page=per_page, error_out=False)
 
 
 def get_import_by_id(import_id: int) -> ExcelImport | None:
@@ -261,7 +263,9 @@ def delete_import(record: ExcelImport) -> None:
     """ExcelImport とドメインデータ行（CASCADE）を削除する"""
     model_cls = _DOMAIN_MODEL_MAP.get(record.domain)
     if model_cls is not None:
-        model_cls.query.filter_by(import_id=record.id).delete()
+        db.session.execute(
+            db.delete(model_cls).where(model_cls.import_id == record.id)
+        )
     db.session.delete(record)
     db.session.commit()
 
@@ -274,4 +278,6 @@ def get_import_rows(import_id: int, domain: str) -> list[Any]:
     model_cls = _DOMAIN_MODEL_MAP.get(domain)
     if model_cls is None:
         return []
-    return model_cls.query.filter_by(import_id=import_id).all()
+    return db.session.execute(
+        select(model_cls).where(model_cls.import_id == import_id)
+    ).scalars().all()

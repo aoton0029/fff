@@ -13,14 +13,7 @@ login_manager.login_message_category = "warning"
 
 @login_manager.user_loader
 def load_user(user_id: str):
-    from .db import db_manager
-    from .db.records import UserRecord
+    from .models.user import User
 
-    df = db_manager.fetch(
-        "SELECT * FROM users WHERE id = :id",
-        {"id": int(user_id)},
-    )
-    if df.empty:
-        return None
-    return UserRecord.from_row(df.iloc[0])
+    return db.session.get(User, int(user_id))
 
