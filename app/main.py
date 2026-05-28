@@ -31,19 +31,20 @@ def create_app(config_name: str | None = None) -> Flask:
     login_manager.login_message_category = 'warning'
 
     # Register blueprints
-    from .views.main import main_bp
+    from .views import main_bp
+    from .views import main as _  # noqa: F401
+    from .views import salary as _  # noqa: F401
+    from .views import allocation as _  # noqa: F401
+    from .views import labor as _  # noqa: F401
+    from .views import maintenance as _  # noqa: F401
+    from .api import salary as _  # noqa: F401
+    from .api import allocation as _  # noqa: F401
+    from .api import labor as _  # noqa: F401
+    from .api import maintenance as _  # noqa: F401
     from .views.auth import auth_bp
-    from .views.salary import salary_bp
-    from .views.allocation import allocation_bp
-    from .views.labor import labor_bp
-    from .views.maintenance import maintenance_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
-    app.register_blueprint(salary_bp, url_prefix='/salary')
-    app.register_blueprint(allocation_bp, url_prefix='/allocation')
-    app.register_blueprint(labor_bp, url_prefix='/labor')
-    app.register_blueprint(maintenance_bp, url_prefix='/maintenance')
 
     # Error handlers
     @app.errorhandler(403)

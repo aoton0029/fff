@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% from 'components/macros.html' import render_pagination %}
+{% block title %}部署マスタ管琁E% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><i class="bi bi-building me-2"></i>部署マスタ管琁E/h4>
+  <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+    <i class="bi bi-plus-circle me-1"></i>新規追加
+  </button>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover table-sm align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>部署コーチE/th><th>部署吁E/th><th>地区コーチE/th><th>課コーチE/th><th>勘定科目コーチE/th><th>原価センタコーチE/th><th class="text-end">操佁E/th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in departments %}
+      <tr>
+        <td>{{ d.department_code }}</td>
+        <td>{{ d.department_name }}</td>
+        <td>{{ d.district_code }}</td>
+        <td>{{ d.section_code }}</td>
+        <td>{{ d.account_code }}</td>
+        <td>{{ d.cost_center_code }}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-secondary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editModal{{ loop.index }}"
+                  title="編雁E><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger"
+                  data-bs-toggle="modal"
+                  data-bs-target="#delModal{{ loop.index }}"
+                  title="削除"><i class="bi bi-trash"></i></button>
+
+          {# Edit modal #}
+          <div class="modal fade" id="editModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <form method="POST" action="{{ url_for('main.department_update', department_code=d.department_code) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <div class="modal-header">
+                    <h5 class="modal-title">部署マスタ編雁E/h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-2"><label class="form-label">部署コーチE/label><input type="text" class="form-control" value="{{ d.department_code }}" disabled></div>
+                    <div class="mb-2"><label class="form-label">部署吁E<span class="text-danger">*</span></label><input type="text" name="department_name" class="form-control" value="{{ d.department_name }}" required></div>
+                    <div class="mb-2"><label class="form-label">地区コーチE<span class="text-danger">*</span></label><input type="text" name="district_code" class="form-control" value="{{ d.district_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">課コーチE<span class="text-danger">*</span></label><input type="text" name="section_code" class="form-control" value="{{ d.section_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">勘定科目コーチE<span class="text-danger">*</span></label><input type="text" name="account_code" class="form-control" value="{{ d.account_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">原価センタコーチE<span class="text-danger">*</span></label><input type="text" name="cost_center_code" class="form-control" value="{{ d.cost_center_code }}" required></div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">更新</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {# Delete modal #}
+          <div class="modal fade" id="delModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <form method="POST" action="{{ url_for('main.department_delete', department_code=d.department_code) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <div class="modal-header"><h5 class="modal-title">削除の確誁E/h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                  <div class="modal-body"><strong>{{ d.department_code }} / {{ d.department_name }}</strong> を削除します。よろしぁE��すか?</div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-danger">削除</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="text-center text-muted py-4">チE�Eタがありません</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ render_pagination(pagination, 'main.department_list') }}
+
+{# Create modal #}
+<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('main.department_create') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header"><h5 class="modal-title">部署マスタ新規追加</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-2"><label class="form-label">部署コーチE<span class="text-danger">*</span></label><input type="text" name="department_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">部署吁E<span class="text-danger">*</span></label><input type="text" name="department_name" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">地区コーチE<span class="text-danger">*</span></label><input type="text" name="district_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">課コーチE<span class="text-danger">*</span></label><input type="text" name="section_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">勘定科目コーチE<span class="text-danger">*</span></label><input type="text" name="account_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">原価センタコーチE<span class="text-danger">*</span></label><input type="text" name="cost_center_code" class="form-control" required></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+          <button type="submit" class="btn btn-primary">追加</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

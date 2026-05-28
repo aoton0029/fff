@@ -17,7 +17,7 @@
           <h6 class="card-title mb-0 fw-semibold">給与データ取り込み</h6>
         </div>
         <p class="card-text text-muted small flex-grow-1">給与データのExcelファイルを取り込み、配賦計算の元データとして登録します。</p>
-        <a href="{{ url_for('salary.index') }}" class="btn btn-sm btn-outline-primary mt-2">
+        <a href="{{ url_for('main.salary_index') }}" class="btn btn-sm btn-outline-primary mt-2">
           <i class="bi bi-arrow-right-circle"></i> 開く
         </a>
       </div>
@@ -32,7 +32,7 @@
           <h6 class="card-title mb-0 fw-semibold">配賦データ取り込み</h6>
         </div>
         <p class="card-text text-muted small flex-grow-1">配賦比率データのExcelファイルを取り込み、部門間の費用配分を管理します。</p>
-        <a href="{{ url_for('allocation.index') }}" class="btn btn-sm btn-outline-success mt-2">
+        <a href="{{ url_for('main.allocation_index') }}" class="btn btn-sm btn-outline-success mt-2">
           <i class="bi bi-arrow-right-circle"></i> 開く
         </a>
       </div>
@@ -47,7 +47,7 @@
           <h6 class="card-title mb-0 fw-semibold">労務費振替データ取り込み</h6>
         </div>
         <p class="card-text text-muted small flex-grow-1">労務費振替データのExcelファイルを取り込み、部門間振替の記録を管理します。</p>
-        <a href="{{ url_for('labor.index') }}" class="btn btn-sm btn-outline-warning mt-2">
+        <a href="{{ url_for('main.labor_index') }}" class="btn btn-sm btn-outline-warning mt-2">
           <i class="bi bi-arrow-right-circle"></i> 開く
         </a>
       </div>
@@ -62,7 +62,7 @@
           <h6 class="card-title mb-0 fw-semibold">課マスタ管理</h6>
         </div>
         <p class="card-text text-muted small flex-grow-1">課（セクション）マスタの登録・編集・削除を行います。</p>
-        <a href="{{ url_for('maintenance.section_list') }}" class="btn btn-sm btn-outline-secondary mt-2">
+        <a href="{{ url_for('main.section_list') }}" class="btn btn-sm btn-outline-secondary mt-2">
           <i class="bi bi-arrow-right-circle"></i> 開く
         </a>
       </div>
@@ -77,7 +77,7 @@
           <h6 class="card-title mb-0 fw-semibold">部署マスタ管理</h6>
         </div>
         <p class="card-text text-muted small flex-grow-1">部署（デパートメント）マスタの登録・編集・削除を行います。</p>
-        <a href="{{ url_for('maintenance.department_list') }}" class="btn btn-sm btn-outline-secondary mt-2">
+        <a href="{{ url_for('main.department_list') }}" class="btn btn-sm btn-outline-secondary mt-2">
           <i class="bi bi-arrow-right-circle"></i> 開く
         </a>
       </div>
@@ -92,7 +92,7 @@
           <h6 class="card-title mb-0 fw-semibold">テーブルデータ出力</h6>
         </div>
         <p class="card-text text-muted small flex-grow-1">システム内のテーブルデータをExcel形式でエクスポートします。</p>
-        <a href="{{ url_for('maintenance.data_output') }}" class="btn btn-sm btn-outline-info mt-2">
+        <a href="{{ url_for('main.data_output') }}" class="btn btn-sm btn-outline-info mt-2">
           <i class="bi bi-arrow-right-circle"></i> 開く
         </a>
       </div>

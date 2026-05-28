@@ -5,14 +5,14 @@
 {% from 'components/macros.html' import render_pagination %}
 
 {% set detail_url_map = {
-  'salary': 'salary.detail',
-  'allocation': 'allocation.detail',
-  'labor_transfer': 'labor.detail',
+  'salary': 'main.salary_detail',
+  'allocation': 'main.allocation_detail',
+  'labor_transfer': 'main.labor_detail',
 } %}
 {% set delete_url_map = {
-  'salary': 'salary.delete',
-  'allocation': 'allocation.delete',
-  'labor_transfer': 'labor.delete',
+  'salary': 'main.salary_delete',
+  'allocation': 'main.allocation_delete',
+  'labor_transfer': 'main.labor_delete',
 } %}
 
 <div id="table-area">

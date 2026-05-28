@@ -18,42 +18,42 @@
 		<div class="sidebar-nav">
 			<ul class="nav flex-column">
 				<li>
-					<a class="sidebar-link {% if request.blueprint == 'main' %}active{% endif %}" href="{{ url_for('main.index') }}">
+					<a class="sidebar-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}">
 						<i class="bi bi-house-fill"></i>ホーム
 					</a>
 				</li>
 				<li><div class="sidebar-section">配賦</div></li>
 				<li>
-					<a class="sidebar-link {% if request.blueprint == 'salary' %}active{% endif %}" href="{{ url_for('salary.index') }}">
+					<a class="sidebar-link {% if request.endpoint == 'main.salary_index' %}active{% endif %}" href="{{ url_for('main.salary_index') }}">
 						<i class="bi bi-caret-right-fill"></i>給与データ取り込み
 					</a>
 				</li>
 				<li>
-					<a class="sidebar-link {% if request.blueprint == 'allocation' %}active{% endif %}" href="{{ url_for('allocation.index') }}">
+					<a class="sidebar-link {% if request.endpoint == 'main.allocation_index' %}active{% endif %}" href="{{ url_for('main.allocation_index') }}">
 						<i class="bi bi-caret-right-fill"></i>配賦データ取り込み
 					</a>
 				</li>
 
 				<li><div class="sidebar-section">労務費</div></li>
 				<li>
-					<a class="sidebar-link {% if request.blueprint == 'labor' %}active{% endif %}" href="{{ url_for('labor.index') }}">
+					<a class="sidebar-link {% if request.endpoint == 'main.labor_index' %}active{% endif %}" href="{{ url_for('main.labor_index') }}">
 						<i class="bi bi-caret-right-fill"></i>労務費振替データ取り込み
 					</a>
 				</li>
 
 				<li><div class="sidebar-section">システムメンテナンス</div></li>
 				<li>
-					<a class="sidebar-link {% if request.endpoint == 'maintenance.section_list' %}active{% endif %}" href="{{ url_for('maintenance.section_list') }}">
+					<a class="sidebar-link {% if request.endpoint == 'main.section_list' %}active{% endif %}" href="{{ url_for('main.section_list') }}">
 						<i class="bi bi-caret-right-fill"></i>課マスタ管理
 					</a>
 				</li>
 				<li>
-					<a class="sidebar-link {% if request.endpoint == 'maintenance.department_list' %}active{% endif %}" href="{{ url_for('maintenance.department_list') }}">
+					<a class="sidebar-link {% if request.endpoint == 'main.department_list' %}active{% endif %}" href="{{ url_for('main.department_list') }}">
 						<i class="bi bi-caret-right-fill"></i>部署マスタ管理
 					</a>
 				</li>
 				<li>
-					<a class="sidebar-link {% if request.endpoint == 'maintenance.data_output' %}active{% endif %}" href="{{ url_for('maintenance.data_output') }}">
+					<a class="sidebar-link {% if request.endpoint == 'main.data_output' %}active{% endif %}" href="{{ url_for('main.data_output') }}">
 						<i class="bi bi-caret-right-fill"></i>テーブルデータ出力
 					</a>
 				</li>
