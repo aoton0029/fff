@@ -1,0 +1,31 @@
+{# Detail modal body: salary #}
+<div class="table-responsive">
+  <p class="text-muted small mb-2">
+    ファイル名: <strong>{{ batch.file_name }}</strong> &nbsp;|&nbsp;
+    アップロード: {{ batch.created_at.strftime('%Y-%m-%d %H:%M') }} by {{ batch.creator.username }}
+  </p>
+  <table class="table table-sm table-striped">
+    <thead class="table-light">
+      <tr>
+        <th>部署コード</th><th class="text-end">本給</th><th class="text-end">能力給</th>
+        <th class="text-end">報酬</th><th class="text-end">手当</th>
+        <th class="text-end">人員数</th><th class="text-end">給与額</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td>{{ r.department_code }}</td>
+        <td class="text-end">{{ '{:,}'.format(r.base_salary) }}</td>
+        <td class="text-end">{{ '{:,}'.format(r.ability_salary) }}</td>
+        <td class="text-end">{{ '{:,}'.format(r.compensation) }}</td>
+        <td class="text-end">{{ '{:,}'.format(r.allowance) }}</td>
+        <td class="text-end">{{ '{:,}'.format(r.headcount) }}</td>
+        <td class="text-end">{{ '{:,}'.format(r.total_salary) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="text-center text-muted">データがありません</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

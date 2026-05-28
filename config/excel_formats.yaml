@@ -1,0 +1,48 @@
+salary:
+  display_name: 給与データ
+  sheet_name: 給与データ
+  header_row: 1
+  use_cols: A:G
+  columns:
+    - name: 部署コード
+      type: str
+    - name: 本給
+      type: int
+    - name: 能力給
+      type: int
+    - name: 報酬
+      type: int
+    - name: 手当
+      type: int
+    - name: 人員数
+      type: int
+    - name: 給与額
+      type: int
+
+allocation:
+  display_name: 配賦データ
+  sheet_name: 配賦データ
+  header_row: 2
+  use_cols: A:C
+  columns:
+    - name: 地区コード
+      type: str
+    - name: 課コード
+      type: str
+    - name: 按分人員数
+      type: float
+
+labor_transfer:
+  display_name: 労務費振替データ
+  sheet_name: 労務費振替データ
+  header_row: 1
+  use_cols: A:D
+  columns:
+    - name: 勘定科目コード
+      type: str
+    - name: from課コード
+      type: str
+    - name: to課コード
+      type: str
+    - name: 作業時間
+      type: float

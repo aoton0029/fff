@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}テーブルデータ出力{% endblock %}
+
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-download me-2"></i>テーブルデータ出力</h4>
+
+<div class="row g-3">
+  {% set tables = [
+    ('salary', '給与データ', 'bi-cash-stack'),
+    ('allocation', '配賦データ', 'bi-pie-chart'),
+    ('labor_transfer', '労務費振替データ', 'bi-arrow-left-right'),
+    ('section', '課マスタ', 'bi-people'),
+    ('department', '部署マスタ', 'bi-building'),
+  ] %}
+  {% for key, label, icon in tables %}
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column align-items-start">
+        <h6 class="card-title"><i class="bi {{ icon }} me-2"></i>{{ label }}</h6>
+        <a href="{{ url_for('maintenance.data_output_download', table_name=key) }}"
+           class="btn btn-outline-success btn-sm mt-auto">
+          <i class="bi bi-file-earmark-csv me-1"></i>CSVダウンロード
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

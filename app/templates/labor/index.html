@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% from 'components/macros.html' import upload_form %}
+{% block title %}労務費振替データ取り込み{% endblock %}
+
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-file-earmark-spreadsheet me-2"></i>労務費振替データ取り込み</h4>
+
+{{ upload_form(url_for('labor.upload'), result_target='#upload-result', form=form) }}
+
+<div id="upload-result">
+  {% include 'partials/batch_table.html' %}
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">労務費振替データ詳細</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="detail-modal-body">
+        <div class="text-center py-4">
+          <div class="spinner-border" role="status"><span class="visually-hidden">読み込み中...</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

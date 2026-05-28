@@ -1,0 +1,26 @@
+{# Detail modal body: labor transfer #}
+<div class="table-responsive">
+  <p class="text-muted small mb-2">
+    ファイル名: <strong>{{ batch.file_name }}</strong> &nbsp;|&nbsp;
+    アップロード: {{ batch.created_at.strftime('%Y-%m-%d %H:%M') }} by {{ batch.creator.username }}
+  </p>
+  <table class="table table-sm table-striped">
+    <thead class="table-light">
+      <tr>
+        <th>勘定科目コード</th><th>from課コード</th><th>to課コード</th><th class="text-end">作業時間</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td>{{ r.account_code }}</td>
+        <td>{{ r.from_section_code }}</td>
+        <td>{{ r.to_section_code }}</td>
+        <td class="text-end">{{ r.work_hours }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="text-center text-muted">データがありません</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

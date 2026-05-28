@@ -1,0 +1,141 @@
+{# ================================================================
+   Macro: upload_form
+   Renders an accordion-wrapped drag-and-drop upload form.
+   upload_url: the hx-post target URL
+   result_target: CSS selector for htmx swap target (e.g. '#upload-result')
+   ================================================================ #}
+{% macro upload_form(upload_url, result_target='#upload-result', form=None) %}
+<div class="accordion mb-3" id="uploadAccordion">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="uploadHeading">
+      <button class="accordion-button collapsed" type="button"
+              data-bs-toggle="collapse" data-bs-target="#uploadCollapse"
+              aria-expanded="false" aria-controls="uploadCollapse">
+        <i class="bi bi-upload me-2"></i>ファイルアップロード
+      </button>
+    </h2>
+    <div id="uploadCollapse" class="accordion-collapse collapse" aria-labelledby="uploadHeading">
+      <div class="accordion-body">
+        <form id="uploadForm"
+              hx-post="{{ upload_url }}"
+              hx-target="{{ result_target }}"
+              hx-swap="innerHTML"
+              hx-encoding="multipart/form-data"
+              hx-indicator="#uploadSpinner"
+              novalidate>
+          {% if form %}{{ form.hidden_tag() }}{% endif %}
+
+          <div class="upload-area" id="dropZone">
+            <i class="bi bi-file-earmark-excel fs-1 text-success"></i>
+            <p class="mt-2 mb-1">ここにExcelファイルをドラッグ＆ドロップ</p>
+            <p class="text-muted small">またはクリックしてファイルを選択</p>
+            <input type="file" id="fileInput" name="file"
+                   accept=".xlsx,.xls" multiple class="d-none">
+          </div>
+
+          <ul id="fileList" class="list-group mt-2"></ul>
+
+          <div class="mt-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <span id="uploadSpinner" class="spinner-border spinner-border-sm htmx-indicator me-1" role="status"></span>
+              アップロード
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="clearFiles">クリア</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+
+{# ================================================================
+   Macro: pagination
+   ================================================================ #}
+{% macro pagination(pagination, endpoint, file_type=None, hx_target='#table-area') %}
+{% if pagination.pages > 1 %}
+<nav aria-label="ページネーション">
+  <ul class="pagination pagination-sm justify-content-end mb-0">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link"
+         href="?page={{ pagination.prev_num }}"
+         hx-get="?page={{ pagination.prev_num }}"
+         hx-target="{{ hx_target }}"
+         hx-push-url="true">前へ</a>
+    </li>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link"
+             href="?page={{ p }}"
+             hx-get="?page={{ p }}"
+             hx-target="{{ hx_target }}"
+             hx-push-url="true">{{ p }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link"
+         href="?page={{ pagination.next_num }}"
+         hx-get="?page={{ pagination.next_num }}"
+         hx-target="{{ hx_target }}"
+         hx-push-url="true">次へ</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+{% endmacro %}
+
+
+{# ================================================================
+   Macro: confirm_modal
+   Generic delete-confirmation modal.
+   modal_id, title, body_text, action_url, method ('DELETE'|'POST')
+   ================================================================ #}
+{% macro confirm_modal(modal_id, title, body_text, action_url, hx_target='#table-area') %}
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">{{ body_text }}</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+        <button type="button" class="btn btn-danger"
+                hx-delete="{{ action_url }}"
+                hx-target="{{ hx_target }}"
+                hx-swap="innerHTML"
+                data-bs-dismiss="modal">削除</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+
+{# ================================================================
+   Macro: detail_modal
+   Generic detail-view modal that loads content via HTMX.
+   ================================================================ #}
+{% macro detail_modal(modal_id, title) %}
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="{{ modal_id }}-body">
+        <div class="text-center py-4">
+          <div class="spinner-border" role="status"><span class="visually-hidden">読み込み中...</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}

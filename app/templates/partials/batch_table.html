@@ -1,0 +1,81 @@
+{# Partial: batch_table.html
+   Shared by salary / allocation / labor views.
+   Variables: batches, pagination, file_type
+#}
+{% from 'components/macros.html' import pagination %}
+
+{% set detail_url_map = {
+  'salary': 'salary.detail',
+  'allocation': 'allocation.detail',
+  'labor_transfer': 'labor.detail',
+} %}
+{% set delete_url_map = {
+  'salary': 'salary.delete',
+  'allocation': 'allocation.delete',
+  'labor_transfer': 'labor.delete',
+} %}
+
+<div id="table-area">
+  {% if batches %}
+  <table class="table table-hover table-sm align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>ファイル名</th>
+        <th>アップロード日時</th>
+        <th>アップロード者</th>
+        <th class="text-end">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for batch in batches %}
+      <tr>
+        <td>{{ batch.file_name }}</td>
+        <td>{{ batch.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ batch.creator.username }}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary"
+                  hx-get="{{ url_for(detail_url_map[file_type], batch_id=batch.id) }}"
+                  hx-target="#detail-modal-body"
+                  hx-swap="innerHTML"
+                  data-bs-toggle="modal"
+                  data-bs-target="#detailModal">
+            <i class="bi bi-eye"></i> 確認
+          </button>
+          <button class="btn btn-sm btn-outline-danger"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteModal{{ batch.id }}">
+            <i class="bi bi-trash"></i> 削除
+          </button>
+
+          {# Delete confirmation modal for each row #}
+          <div class="modal fade" id="deleteModal{{ batch.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">削除の確認</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <strong>{{ batch.file_name }}</strong> のデータを削除します。この操作は取り消せません。
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                  <button type="button" class="btn btn-danger"
+                          hx-post="{{ url_for(delete_url_map[file_type], batch_id=batch.id) }}"
+                          hx-target="#table-area"
+                          hx-swap="outerHTML"
+                          data-bs-dismiss="modal">削除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ pagination(pagination, '', hx_target='#table-area') }}
+  {% else %}
+  <p class="text-muted text-center py-4">アップロードされたファイルはありません。</p>
+  {% endif %}
+</div>
