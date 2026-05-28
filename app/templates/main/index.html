@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}ホーム - 労務費管理システム{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h4 class="fw-bold mb-1">ホーム</h4>
+  <p class="text-muted mb-0">労務費管理システムへようこそ</p>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-currency-yen fs-4 text-primary"></i>
+          <h6 class="card-title mb-0 fw-semibold">給与データ取り込み</h6>
+        </div>
+        <p class="card-text text-muted small flex-grow-1">給与データのExcelファイルを取り込み、配賦計算の元データとして登録します。</p>
+        <a href="{{ url_for('salary.index') }}" class="btn btn-sm btn-outline-primary mt-2">
+          <i class="bi bi-arrow-right-circle"></i> 開く
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-diagram-3 fs-4 text-success"></i>
+          <h6 class="card-title mb-0 fw-semibold">配賦データ取り込み</h6>
+        </div>
+        <p class="card-text text-muted small flex-grow-1">配賦比率データのExcelファイルを取り込み、部門間の費用配分を管理します。</p>
+        <a href="{{ url_for('allocation.index') }}" class="btn btn-sm btn-outline-success mt-2">
+          <i class="bi bi-arrow-right-circle"></i> 開く
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-arrow-left-right fs-4 text-warning"></i>
+          <h6 class="card-title mb-0 fw-semibold">労務費振替データ取り込み</h6>
+        </div>
+        <p class="card-text text-muted small flex-grow-1">労務費振替データのExcelファイルを取り込み、部門間振替の記録を管理します。</p>
+        <a href="{{ url_for('labor.index') }}" class="btn btn-sm btn-outline-warning mt-2">
+          <i class="bi bi-arrow-right-circle"></i> 開く
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-building fs-4 text-secondary"></i>
+          <h6 class="card-title mb-0 fw-semibold">課マスタ管理</h6>
+        </div>
+        <p class="card-text text-muted small flex-grow-1">課（セクション）マスタの登録・編集・削除を行います。</p>
+        <a href="{{ url_for('maintenance.section_list') }}" class="btn btn-sm btn-outline-secondary mt-2">
+          <i class="bi bi-arrow-right-circle"></i> 開く
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-buildings fs-4 text-secondary"></i>
+          <h6 class="card-title mb-0 fw-semibold">部署マスタ管理</h6>
+        </div>
+        <p class="card-text text-muted small flex-grow-1">部署（デパートメント）マスタの登録・編集・削除を行います。</p>
+        <a href="{{ url_for('maintenance.department_list') }}" class="btn btn-sm btn-outline-secondary mt-2">
+          <i class="bi bi-arrow-right-circle"></i> 開く
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-table fs-4 text-info"></i>
+          <h6 class="card-title mb-0 fw-semibold">テーブルデータ出力</h6>
+        </div>
+        <p class="card-text text-muted small flex-grow-1">システム内のテーブルデータをExcel形式でエクスポートします。</p>
+        <a href="{{ url_for('maintenance.data_output') }}" class="btn btn-sm btn-outline-info mt-2">
+          <i class="bi bi-arrow-right-circle"></i> 開く
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

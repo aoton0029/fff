@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'components/macros.html' import pagination %}
+{% from 'components/macros.html' import render_pagination %}
 {% block title %}課マスタ管理{% endblock %}
 
 {% block content %}
@@ -104,7 +104,7 @@
     </tbody>
   </table>
 </div>
-{{ pagination(pagination, 'maintenance.section_list') }}
+{{ render_pagination(pagination, 'maintenance.section_list') }}
 
 {# Create modal #}
 <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">

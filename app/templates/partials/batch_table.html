@@ -2,7 +2,7 @@
    Shared by salary / allocation / labor views.
    Variables: batches, pagination, file_type
 #}
-{% from 'components/macros.html' import pagination %}
+{% from 'components/macros.html' import render_pagination %}
 
 {% set detail_url_map = {
   'salary': 'salary.detail',
@@ -74,7 +74,7 @@
       {% endfor %}
     </tbody>
   </table>
-  {{ pagination(pagination, '', hx_target='#table-area') }}
+  {{ render_pagination(pagination, '', hx_target='#table-area') }}
   {% else %}
   <p class="text-muted text-center py-4">アップロードされたファイルはありません。</p>
   {% endif %}

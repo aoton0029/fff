@@ -51,9 +51,9 @@
 
 
 {# ================================================================
-   Macro: pagination
+   Macro: render_pagination
    ================================================================ #}
-{% macro pagination(pagination, endpoint, file_type=None, hx_target='#table-area') %}
+{% macro render_pagination(pagination, endpoint, file_type=None, hx_target='#table-area') %}
 {% if pagination.pages > 1 %}
 <nav aria-label="ページネーション">
   <ul class="pagination pagination-sm justify-content-end mb-0">

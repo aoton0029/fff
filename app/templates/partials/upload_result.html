@@ -3,7 +3,7 @@
    Shows success/error message, then refreshes table area.
    Variables: success, saved_count, errors, batches, pagination, file_type
 #}
-{% from 'components/macros.html' import pagination %}
+{% from 'components/macros.html' import render_pagination %}
 {% include 'partials/batch_table.html' %}
 
 {% if success %}

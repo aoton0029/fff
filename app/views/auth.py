@@ -10,7 +10,7 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('salary.index'))
+        return redirect(url_for('main.index'))
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -18,7 +18,7 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user)
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('salary.index'))
+            return redirect(next_page or url_for('main.index'))
         flash('ユーザー名またはパスワードが正しくありません。', 'danger')
 
     return render_template('auth/login.html', form=form)
