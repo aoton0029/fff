@@ -1,11 +1,15 @@
 import os
 from flask import Flask, render_template
-from .extensions import db, login_manager, htmx, csrf
+from .extensions import db, migrate, login_manager, htmx, csrf
+from .config.base import TestingConfig
 from .config.dev import DevelopmentConfig
+from .config.stg import StagingConfig
 from .config.prd import ProductionConfig
 
 config_map = {
+    'testing': TestingConfig,
     'development': DevelopmentConfig,
+    'staging': StagingConfig,
     'production': ProductionConfig,
 }
 
@@ -22,6 +26,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     # Initialize extensions
     db.init_app(app)
+    migrate.init_app(app, db)
     login_manager.init_app(app)
     htmx.init_app(app)
     csrf.init_app(app)
@@ -60,17 +65,6 @@ def create_app(config_name: str | None = None) -> Flask:
     @app.errorhandler(500)
     def internal_error(e):
         return render_template('errors/500.html'), 500
-
-    # Create tables + SQLite migration
-    with app.app_context():
-        db.create_all()
-        # Add year_month column to upload_batches if it doesn't exist yet (SQLite has no IF NOT EXISTS for ADD COLUMN)
-        with db.engine.connect() as conn:
-            try:
-                conn.execute(db.text("ALTER TABLE upload_batches ADD COLUMN year_month VARCHAR(7)"))
-                conn.commit()
-            except Exception:
-                pass  # Column already exists
 
     # Context processor: inject current processing year_month into all templates
     @app.context_processor

@@ -11,13 +11,13 @@ def _build_mssql_uri(trust_cert: str) -> str:
 	driver = urllib.parse.quote_plus('ODBC Driver 18 for SQL Server')
 	return (
 		f'mssql+pyodbc://{username}:{password}@{server}/{database}'
-		f'?driver={driver}&Encrypt=yes&TrustServerCertificate={trust_cert}'
+		f'?driver={driver}&Encrypt=yes&TrustServerCertificate=yes'
 	)
 
 
-class ProductionConfig(Config):
-	DEBUG: bool = False
-	SQLALCHEMY_DATABASE_URI = _build_mssql_uri(trust_cert='no')
+class StagingConfig(Config):
+	DEBUG: bool = True
+	SQLALCHEMY_DATABASE_URI = _build_mssql_uri(trust_cert='yes')
 	SQLALCHEMY_ENGINE_OPTIONS = {
 		'pool_pre_ping': True,
 		'pool_recycle': 1800,

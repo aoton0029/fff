@@ -11,5 +11,6 @@ wheels/
 
 /instance
 .env
+.env.*
 
 /docs/sql/

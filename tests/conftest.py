@@ -7,13 +7,7 @@ from app.models.user import User
 @pytest.fixture(scope='session')
 def app():
     """Create application with in-memory SQLite for testing."""
-    test_app = create_app('development')
-    test_app.config.update({
-        'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
-        'WTF_CSRF_ENABLED': False,
-        'SECRET_KEY': 'test-secret',
-    })
+    test_app = create_app('testing')
 
     with test_app.app_context():
         _db.create_all()
