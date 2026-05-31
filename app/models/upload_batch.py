@@ -8,6 +8,7 @@ class UploadBatch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_name = db.Column(db.String(255), nullable=False)
     file_type = db.Column(db.String(50), nullable=False)  # salary / allocation / labor_transfer
+    year_month = db.Column(db.String(7), nullable=True)  # YYYY-MM (月次処理年月)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     record_count = db.Column(db.Integer, default=0, nullable=False)

@@ -1,38 +1,92 @@
 {# Partial: upload_result.html
-   Rendered by HTMX after upload POST.
-   Shows success/error message, then refreshes table area.
-   Variables: success, saved_count, errors, batches, pagination, file_type
+   Rendered by HTMX after allocation / labor upload POST (target: #upload-result innerHTML).
+   Variables: file_results ({filename, success, saved_count, errors}[] | None),
+              global_error (str | None), batches, pagination, file_type
 #}
 {% from 'components/macros.html' import render_pagination %}
 {% include 'partials/batch_table.html' %}
 
-{% if success %}
-<div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+{# OOB: inject alert into the upload accordion's alert area #}
+<div id="upload-alert-area" hx-swap-oob="innerHTML">
+{% if global_error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ global_error }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+{% elif file_results %}
+{% set success_list = file_results | selectattr('success') | list %}
+{% set success_count = success_list | length %}
+{% set total_saved = success_list | sum(attribute='saved_count') %}
+
+{% if success_count == file_results | length %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
   <i class="bi bi-check-circle-fill me-1"></i>
-  {{ saved_count }} 件のデータを保存しました。
+  <strong>{{ file_results | length }}ファイルすべて成功</strong> — {{ total_saved }}件を保存しました。
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% elif success_count > 0 %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <i class="bi bi-exclamation-circle-fill me-1"></i>
+  <strong>{{ success_count }}/{{ file_results | length }}ファイルが成功</strong> — {{ total_saved }}件を保存しました。
   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 {% else %}
-<div class="alert alert-danger mt-2" role="alert">
-  <i class="bi bi-exclamation-triangle-fill me-1"></i>
-  <strong>アップロードに失敗しました。</strong>
-  {% if errors %}
-  <div class="mt-2">
-    <table class="table table-sm table-danger mb-0">
-      <thead>
-        <tr><th>行番号</th><th>フィールド</th><th>エラー内容</th></tr>
-      </thead>
-      <tbody>
-        {% for err in errors %}
-        <tr>
-          <td>{{ err.row }}</td>
-          <td>{{ err.field }}</td>
-          <td>{{ err.message }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
+<div class="alert alert-danger" role="alert">
+  <i class="bi bi-x-circle-fill me-1"></i>
+  <strong>すべてのファイルでエラーが発生しました。</strong>
 </div>
 {% endif %}
+
+{% if file_results | length > 1 or success_count < file_results | length %}
+<div class="accordion mt-2" id="fileResultsAccordion">
+  {% for r in file_results %}
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="fh{{ loop.index }}">
+      <button class="accordion-button py-2 {% if r.success %}collapsed{% endif %}" type="button"
+              data-bs-toggle="collapse" data-bs-target="#fc{{ loop.index }}"
+              aria-expanded="{{ 'false' if r.success else 'true' }}">
+        {% if r.success %}
+        <i class="bi bi-check-circle-fill text-success me-2 flex-shrink-0"></i>
+        {% else %}
+        <i class="bi bi-x-circle-fill text-danger me-2 flex-shrink-0"></i>
+        {% endif %}
+        <span class="text-truncate me-auto" style="max-width:40ch">{{ r.filename }}</span>
+        {% if r.success %}
+        <span class="badge bg-success ms-2">{{ r.saved_count }}件保存</span>
+        {% else %}
+        <span class="badge bg-danger ms-2">エラー {{ r.errors | length }}件</span>
+        {% endif %}
+      </button>
+    </h2>
+    <div id="fc{{ loop.index }}" class="accordion-collapse collapse {% if not r.success %}show{% endif %}"
+         aria-labelledby="fh{{ loop.index }}">
+      <div class="accordion-body p-2">
+        {% if r.success %}
+        <p class="text-success mb-0"><i class="bi bi-check-lg me-1"></i>{{ r.saved_count }}件のデータを保存しました。</p>
+        {% else %}
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered mb-0 small">
+            <thead class="table-danger">
+              <tr><th>行番号</th><th>フィールド</th><th>エラー内容</th></tr>
+            </thead>
+            <tbody>
+              {% for err in r.errors %}
+              <tr class="table-danger">
+                <td>{{ err.row }}</td>
+                <td>{{ err.field }}</td>
+                <td>{{ err.message }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endif %}
+</div>

@@ -81,6 +81,13 @@
 
 	<div class="main-content">
 		<div class="content-body">
+			{% if current_year_month and request.endpoint and request.endpoint.startswith('main.') and request.endpoint not in ['main.section_list', 'main.department_list', 'main.data_output'] %}
+			<div class="d-flex justify-content-end mb-2">
+				<span class="badge text-bg-primary fs-6 fw-normal px-3 py-2">
+					<i class="bi bi-calendar3 me-1"></i>{{ current_year_month }} 月次処理中
+				</span>
+			</div>
+			{% endif %}
 			{% with messages = get_flashed_messages(with_categories=true) %}
 				{% if messages %}
 					<div class="flash-messages mb-3">

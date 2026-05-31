@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'components/macros.html' import upload_form %}
+{% from 'components/macros.html' import upload_form, format_info_modal %}
 {% block title %}労務費振替データ取り込み{% endblock %}
 
 {% block content %}
@@ -10,12 +10,58 @@
 
 {{ upload_form(url_for('main.labor_upload'), result_target='#upload-result', form=form) }}
 
+{# ---- 労務費単価カード ---- #}
 <div class="card mt-3">
-  <div class="card-header"><i class="bi bi-list me-1"></i>取込済みバッチ</div>
+  <div class="card-header">
+    <i class="bi bi-currency-yen me-1"></i>労務費単価
+  </div>
+  <div class="card-body">
+    {% if current_year_month %}
+    <form method="POST" action="{{ url_for('main.labor_unit_price_set') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="year_month" value="{{ current_year_month }}">
+      <div class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label class="form-label mb-1">処理年月</label>
+          <input type="text" class="form-control form-control-sm" value="{{ current_year_month }}" disabled>
+        </div>
+        <div class="col-auto">
+          <label class="form-label mb-1">単価（円/時間）<span class="text-danger">*</span></label>
+          <input type="number" name="unit_price" class="form-control form-control-sm"
+                 value="{{ current_unit_price.unit_price if current_unit_price else '' }}"
+                 step="0.01" min="0" required placeholder="0.00">
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bi bi-save me-1"></i>保存
+          </button>
+        </div>
+      </div>
+    </form>
+    {% else %}
+    <p class="text-muted mb-0"><i class="bi bi-info-circle me-1"></i>給与データをアップロードすると処理年月が設定されます。</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-list me-1"></i>取込済みバッチ</span>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('main.labor_sap_output') }}" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-download me-1"></i>SAP出力
+      </a>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#formatInfo">
+        <i class="bi bi-info-circle me-1"></i>ファイル形式について
+      </button>
+    </div>
+  </div>
   <div class="card-body p-0" id="upload-result">
     {% include 'partials/batch_table.html' %}
   </div>
 </div>
+
+{{ format_info_modal(excel_format) }}
 
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">

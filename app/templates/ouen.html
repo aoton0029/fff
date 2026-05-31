@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'components/macros.html' import upload_form, render_pagination %}
+{% from 'components/macros.html' import upload_form, render_pagination, format_info_modal %}
 {% block title %}応援連絡{% endblock %}
 
 {% block content %}
@@ -123,38 +123,7 @@
 {# ====== Modals ====== #}
 
 {# ファイル形式 Modal #}
-<div class="modal fade" id="formatInfo" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>ファイル形式について</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p class="small text-muted mb-2">以下の列順でExcelファイルを作成してください（1行目はヘッダー行）。</p>
-        <table class="table table-sm table-bordered small mb-2">
-          <thead class="table-light">
-            <tr><th>列番号</th><th>列名</th><th>型</th><th>必須</th><th>説明</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>地区</td><td>文字列</td><td><span class="badge bg-danger">必須</span></td><td>送り出し</td></tr>
-            <tr><td>2</td><td>課コード</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td>送り出し</td></tr>
-            <tr><td>3</td><td>地区</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td>受け入れ</td></tr>
-            <tr><td>4</td><td>課コード</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td>受け入れ</td></tr>
-            <tr><td>5</td><td>出課日</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
-            <tr><td>6</td><td>帰課日</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
-            <tr><td>7</td><td>日数</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
-            <tr><td>8</td><td>延日数</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
-            <tr><td>9</td><td>備考</td><td>文字列</td><td><span class="badge bg-secondary">任意</span></td><td></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-      </div>
-    </div>
-  </div>
-</div>
+{{ format_info_modal(excel_format) }}
 
 {# データ詳細 Modal (HTMX-loaded) #}
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">

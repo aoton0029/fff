@@ -8,6 +8,9 @@ from ..views import main_bp
 from ..extensions import db
 from ..models.section import SectionMaster
 from ..models.department import DepartmentMaster
+from ..models.district import DistrictMaster
+from ..models.account import AccountMaster
+from ..models.cost_center import CostCenterMaster
 from ..models.salary import SalaryData
 from ..models.allocation import AllocationData
 from ..models.labor_transfer import LaborTransferData
@@ -114,6 +117,9 @@ def data_output_download(table_name: str):
         'labor_transfer': (LaborTransferData, ['id', 'batch_id', 'account_code', 'from_section_code', 'to_section_code', 'work_hours', 'created_at', 'created_by']),
         'section': (SectionMaster, ['section_code', 'section_name', 'district_code', 'cost_center_code']),
         'department': (DepartmentMaster, ['department_code', 'department_name', 'district_code', 'section_code', 'account_code', 'cost_center_code']),
+        'district': (DistrictMaster, ['district_code', 'district_name']),
+        'account': (AccountMaster, ['account_code', 'account_name']),
+        'cost_center': (CostCenterMaster, ['cost_center_code', 'cost_center_name']),
     }
 
     if table_name not in allowed:

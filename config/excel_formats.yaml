@@ -6,112 +6,197 @@ salary:
   columns:
     - name: 地区
       type: str
+      required: false
     - name: 課コード
       type: str
+      required: false
     - name: 地区+課コード
       type: str
+      required: false
     - name: 集約課コード
       type: str
+      required: false
     - name: 地区+集約課コード
       type: str
+      required: false
     - name: 原価センタ
       type: str
+      required: false
     - name: 区分
       type: str
+      required: false
     - name: 勘定科目
       type: str
+      required: false
     - name: 行ラベル
       type: str
+      required: true
+      description: 人事所属コード（8桁）
     - name: 所属名
       type: str
+      required: false
     - name: 合計/(明細1)本給
       type: int
+      required: true
     - name: 合計/(明細1)能力給
       type: int
+      required: true
     - name: 合計/(明細1)職務・役割給
       type: int
+      required: true
     - name: 合計/(明細1)役割業績給
       type: int
+      required: true
     - name: 合計/(明細1)報酬
       type: int
+      required: false
     - name: 合計/(明細1)本俸
       type: int
+      required: false
     - name: 合計/(明細1)基本賃金
       type: int
+      required: false
     - name: 合計/(明細1)国内給与
       type: int
+      required: false
     - name: 合計/(明細1)駐在員給与調整
       type: int
+      required: false
     - name: 合計/(明細1)家族手当
       type: int
+      required: false
     - name: 合計/(明細1)資格手当
       type: int
+      required: false
     - name: 合計/(明細1)交替勤務加算給
       type: int
+      required: false
     - name: 合計/(明細1)振替勤務就業手当
       type: int
+      required: false
     - name: 合計/(明細1)早出残業手当
       type: int
+      required: false
     - name: 合計/(明細1)休日出勤手当
       type: int
+      required: false
     - name: 合計/(明細1)特定休日出勤手当
       type: int
+      required: false
     - name: 合計/(明細1)交替勤務手当
       type: int
+      required: false
     - name: 合計/(明細1)守衛手当
       type: int
+      required: false
     - name: 合計/(明細1)深夜業手当
       type: int
+      required: false
     - name: 合計/(明細1)単身赴任手当
       type: int
+      required: false
     - name: 合計/(明細1)一時帰省旅費
       type: int
+      required: false
     - name: 合計/(明細1)夜間呼出手当
       type: int
+      required: false
     - name: 合計/(明細1)出向補償時間
       type: int
+      required: false
     - name: 合計/(明細1)その他手当
       type: int
+      required: false
     - name: 合計/(明細1)前月育介金額
       type: int
+      required: false
     - name: 合計/(明細1)公的資格手当
       type: int
+      required: false
     - name: 合計/(明細1)賃金控除
       type: int
+      required: false
     - name: 合計/(明細2)職場離脱(会計)
       type: int
+      required: false
     - name: 合計/(明細2)人件費人数(会計)
       type: int
+      required: false
     - name: 合計
       type: int
+      required: false
 
 allocation:
-  display_name: 配賦データ
-  sheet_name: 配賦データ
-  header_row: 2
-  use_cols: A:C
+  display_name: 工程配賦データ
+  sheet_name: 工程配賦
+  header_row: 1
+  use_cols: A:I
   columns:
-    - name: 地区コード
+    - name: 事業部
       type: str
+      required: true
+    - name: 地区
+      type: str
+      required: true
     - name: 課コード
       type: str
-    - name: 按分人員数
+      required: true
+    - name: 原価区分
+      type: str
+      required: true
+    - name: 工程
+      type: str
+      required: true
+    - name: 日数
       type: float
+      required: true
+    - name: 工程名
+      type: str
+      required: false
+    - name: 編成
+      type: float
+      required: true
+    - name: 固定
+      type: float
+      required: true
 
 labor_transfer:
   display_name: 労務費振替データ
-  sheet_name: 労務費振替データ
+  sheet_name: 労務費振替依頼書
   header_row: 1
-  use_cols: A:D
+  use_cols: A:J
   columns:
     - name: 勘定科目コード
       type: str
-    - name: from課コード
+      required: true
+      description: 数字8桁
+    - name: 原価センタ
       type: str
-    - name: to課コード
+      required: false
+    - name: 負担課
       type: str
+      required: false
+    - name: 担当課
+      type: str
+      required: true
+    - name: 工事名
+      type: str
+      required: false
     - name: 作業時間
       type: float
+      required: true
+    - name: WBS
+      type: str
+      required: false
+    - name: 資産集約番号
+      type: str
+      required: false
+    - name: 指図
+      type: str
+      required: false
+    - name: 備考
+      type: str
+      required: false
 
 ouen:
   display_name: 応援連絡票
@@ -121,19 +206,28 @@ ouen:
   columns:
     - name: 送り出し地区
       type: str
+      required: true
     - name: 送り出し課コード
       type: str
+      required: true
     - name: 受け入れ地区
       type: str
+      required: true
     - name: 受け入れ課コード
       type: str
+      required: true
     - name: 出課日
       type: date
+      required: false
     - name: 帰課日
       type: date
+      required: false
     - name: 日数
       type: int
+      required: true
     - name: 延日数
       type: int
+      required: true
     - name: 備考
       type: str
+      required: false

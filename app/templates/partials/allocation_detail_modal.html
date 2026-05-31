@@ -7,18 +7,26 @@
   <table class="table table-sm table-striped">
     <thead class="table-light">
       <tr>
-        <th>地区コード</th><th>課コード</th><th class="text-end">按分人員数</th>
+        <th>事業部</th><th>地区</th><th>課コード</th><th>原価区分</th><th>工程</th><th>工程名</th>
+        <th class="text-end">日数</th><th class="text-end">編成</th><th class="text-end">固定</th><th class="text-end">人員計</th>
       </tr>
     </thead>
     <tbody>
       {% for r in records %}
       <tr>
+        <td>{{ r.division_code }}</td>
         <td>{{ r.district_code }}</td>
         <td>{{ r.section_code }}</td>
-        <td class="text-end">{{ r.allocation_ratio }}</td>
+        <td>{{ r.cost_category }}</td>
+        <td>{{ r.process_code }}</td>
+        <td>{{ r.process_name or '' }}</td>
+        <td class="text-end">{{ r.days }}</td>
+        <td class="text-end">{{ r.formation }}</td>
+        <td class="text-end">{{ r.fixed_count }}</td>
+        <td class="text-end">{{ r.formation + r.fixed_count }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="3" class="text-center text-muted">データがありません</td></tr>
+      <tr><td colspan="10" class="text-center text-muted">データがありません</td></tr>
       {% endfor %}
     </tbody>
   </table>

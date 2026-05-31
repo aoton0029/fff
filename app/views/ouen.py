@@ -3,6 +3,7 @@ from flask_login import login_required
 
 from . import main_bp
 from ..extensions import htmx
+from ..services.excel_reader import get_format_config
 from ..view_models.ouen import OuenIndexViewModel
 
 _PER_PAGE = 20
@@ -25,4 +26,5 @@ def ouen_index():
         batches=vm.batches,
         pagination=vm.pagination,
         salary_count=vm.salary_count,
+        excel_format=get_format_config('ouen'),
     )

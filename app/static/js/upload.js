@@ -91,4 +91,32 @@
   function escapeHtml(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
+
+  // Clear alert area before each upload request
+  document.body.addEventListener('htmx:beforeRequest', function (evt) {
+    var alertArea = document.getElementById('upload-alert-area');
+    if (alertArea) alertArea.innerHTML = '';
+  });
+
+  // Clear selected files after upload completes (success or failure)
+  document.body.addEventListener('htmx:afterRequest', function (evt) {
+    if (evt.detail.elt && evt.detail.elt.id === 'uploadForm') {
+      selectedFiles = [];
+      fileInput.value = '';
+      renderFileList();
+    }
+  });
+
+  // After HTMX OOB swap populates the alert area, open the accordion
+  document.body.addEventListener('htmx:afterSettle', function () {
+    var alertArea = document.getElementById('upload-alert-area');
+    if (alertArea && alertArea.innerHTML.trim() !== '') {
+      var collapseEl = document.getElementById('uploadCollapse');
+      if (collapseEl && !collapseEl.classList.contains('show')) {
+        var bsCollapse = bootstrap.Collapse.getInstance(collapseEl)
+                         || new bootstrap.Collapse(collapseEl, { toggle: false });
+        bsCollapse.show();
+      }
+    }
+  });
 })();

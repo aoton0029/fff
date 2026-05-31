@@ -109,17 +109,29 @@ def _build_db_record(model: Any, file_type: str, batch_id: int, user_id: int) ->
         )
     elif file_type == 'allocation':
         return AllocationData(
-            district_code=model.地区コード,
+            division_code=model.事業部,
+            district_code=model.地区,
             section_code=model.課コード,
-            allocation_ratio=model.按分人員数,
+            cost_category=model.原価区分,
+            process_code=model.工程,
+            days=model.日数,
+            process_name=model.工程名,
+            formation=model.編成,
+            fixed_count=model.固定,
             **common,
         )
     elif file_type == 'labor_transfer':
         return LaborTransferData(
             account_code=model.勘定科目コード,
-            from_section_code=model.from課コード,
-            to_section_code=model.to課コード,
+            cost_center=model.原価センタ,
+            burden_section=model.負担課,
+            charge_section=model.担当課,
+            construction_name=model.工事名,
             work_hours=model.作業時間,
+            wbs=model.WBS,
+            asset_number=model.資産集約番号,
+            order_number=model.指図,
+            note=model.備考,
             **common,
         )
     elif file_type == 'ouen':
@@ -138,7 +150,7 @@ def _build_db_record(model: Any, file_type: str, batch_id: int, user_id: int) ->
     raise ValueError(f'未定義のファイル種別: {file_type}')
 
 
-def import_excel_file(file_storage, file_type: str, user_id: int) -> ImportResult:
+def import_excel_file(file_storage, file_type: str, user_id: int, year_month: str | None = None) -> ImportResult:
     """Process an uploaded FileStorage object.
 
     Saves to a temp file, reads, validates, persists to DB, then deletes the temp file.
@@ -163,6 +175,7 @@ def import_excel_file(file_storage, file_type: str, user_id: int) -> ImportResul
             file_name=file_storage.filename,
             file_type=file_type,
             created_by=user_id,
+            year_month=year_month,
         )
         db.session.add(batch)
         db.session.flush()  # get batch.id

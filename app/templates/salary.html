@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from 'components/macros.html' import format_info_modal %}
 {% block title %}給与データ取り込み{% endblock %}
 
 {% block content %}
@@ -55,36 +56,7 @@
 </div>
 
 {# ── Format Info Modal ── #}
-<div class="modal fade" id="formatInfo" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>ファイル形式について</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p class="small text-muted mb-2">以下の列を含むExcelファイル（1行目ヘッダー）を使用してください。</p>
-        <table class="table table-sm table-bordered small mb-2">
-          <thead class="table-light">
-            <tr><th>列番号</th><th>列名</th><th>型</th><th>必須</th><th>説明</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>9</td><td>行ラベル（人事所属コード）</td><td>文字列</td><td><span class="badge bg-danger">必須</span></td><td>数字8桁</td></tr>
-            <tr><td>6</td><td>原価センタ</td><td>文字列</td><td><span class="badge bg-secondary">任意</span></td><td></td></tr>
-            <tr><td>11</td><td>合計/(明細1)本給</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
-            <tr><td>12</td><td>合計/(明細1)能力給</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
-            <tr><td>13</td><td>合計/(明細1)職務・役割給</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
-            <tr><td>14</td><td>合計/(明細1)役割業績給</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
-            <tr><td>40</td><td>合計</td><td>数値</td><td><span class="badge bg-secondary">任意</span></td><td></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-      </div>
-    </div>
-  </div>
-</div>
+{{ format_info_modal(excel_format) }}
 
 {# ── Detail Modal (shell; body loaded via HTMX) ── #}
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">

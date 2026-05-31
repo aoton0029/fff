@@ -1,29 +1,44 @@
-from flask import render_template, request, flash, redirect, url_for
+import os
+
+from flask import Response, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 
 from ..views import main_bp
 from ..extensions import htmx, db
-from ..forms.upload import UploadForm
 from ..models.upload_batch import UploadBatch
 from ..models.labor_transfer import LaborTransferData
+from ..models.labor_unit_price import LaborUnitPrice
 from ..services.data_importer import import_excel_file
+from ..services.sap_exporter import build_labor_tsv
 
 _PER_PAGE = 20
 _FILE_TYPE = 'labor_transfer'
+_ALLOWED_EXT = {'.xlsx', '.xls'}
 
 
 @main_bp.route('/labor/upload', methods=['POST'])
 @login_required
 def labor_upload():
-    form = UploadForm()
-    if not form.validate_on_submit():
-        errors = [{'row': '-', 'field': f, 'message': '; '.join(errs)} for f, errs in form.errors.items()]
-        if htmx:
-            return render_template('partials/upload_result.html', success=False, errors=errors), 422
-        flash('アップロードフォームにエラーがあります。', 'danger')
-        return redirect(url_for('main.labor_index'))
+    files = [f for f in request.files.getlist('file') if f and f.filename]
+    file_results = None
+    global_error = None
 
-    result = import_excel_file(form.file.data, _FILE_TYPE, current_user.id)
+    if not files:
+        global_error = 'ファイルを選択してください。'
+    else:
+        bad = [f.filename for f in files if os.path.splitext(f.filename)[1].lower() not in _ALLOWED_EXT]
+        if bad:
+            global_error = f'Excelファイル(.xlsx/.xls)のみアップロードできます: {", ".join(bad)}'
+        else:
+            file_results = []
+            for f in files:
+                result = import_excel_file(f, _FILE_TYPE, current_user.id)
+                file_results.append({
+                    'filename': f.filename,
+                    'success': result.success,
+                    'saved_count': result.saved_count,
+                    'errors': result.errors,
+                })
 
     if htmx:
         page = request.args.get('page', 1, type=int)
@@ -31,18 +46,24 @@ def labor_upload():
         pagination = query.paginate(page=page, per_page=_PER_PAGE, error_out=False)
         return render_template(
             'partials/upload_result.html',
-            success=result.success,
-            saved_count=result.saved_count,
-            errors=result.errors,
+            file_results=file_results,
+            global_error=global_error,
             batches=pagination.items,
             pagination=pagination,
             file_type=_FILE_TYPE,
         )
 
-    if result.success:
-        flash(f'{result.saved_count} 件のデータを保存しました。', 'success')
-    else:
-        flash('アップロードに失敗しました。', 'danger')
+    if global_error:
+        flash(global_error, 'danger')
+    elif file_results:
+        total_saved = sum(r['saved_count'] for r in file_results if r['success'])
+        success_count = sum(1 for r in file_results if r['success'])
+        if success_count == len(file_results):
+            flash(f'{total_saved}件のデータを保存しました。', 'success')
+        elif success_count > 0:
+            flash(f'{success_count}/{len(file_results)}ファイルが成功しました。', 'warning')
+        else:
+            flash('アップロードに失敗しました。', 'danger')
     return redirect(url_for('main.labor_index'))
 
 
@@ -52,6 +73,27 @@ def labor_detail(batch_id: int):
     batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
     records = LaborTransferData.query.filter_by(batch_id=batch_id).all()
     return render_template('partials/labor_detail_modal.html', batch=batch, records=records)
+
+
+@main_bp.route('/labor/sap-output')
+@login_required
+def labor_sap_output():
+    salary_batch = UploadBatch.query.filter_by(file_type='salary').order_by(
+        UploadBatch.created_at.desc()
+    ).first()
+    yr_mo = salary_batch.year_month if salary_batch and salary_batch.year_month else None
+    unit_price_record = LaborUnitPrice.query.filter_by(year_month=yr_mo).first() if yr_mo else None
+    if not unit_price_record:
+        flash('労務費単価が登録されていません。先に単価を設定してください。', 'danger')
+        return redirect(url_for('main.labor_index'))
+    ym_suffix = yr_mo.replace('-', '') if yr_mo else 'unknown'
+    filename = f'labor_SAP_{ym_suffix}.txt'
+    tsv_bytes = build_labor_tsv(unit_price_record.unit_price)
+    return Response(
+        tsv_bytes,
+        mimetype='text/plain; charset=cp932',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+    )
 
 
 @main_bp.route('/labor/delete/<int:batch_id>', methods=['DELETE', 'POST'])
@@ -71,3 +113,67 @@ def labor_delete(batch_id: int):
         pagination=pagination,
         file_type=_FILE_TYPE,
     )
+
+
+# ---- Labor Unit Price CRUD ----
+
+@main_bp.route('/labor/unit-price/create', methods=['POST'])
+@login_required
+def labor_unit_price_create():
+    record = LaborUnitPrice(
+        year_month=request.form['year_month'].strip(),
+        unit_price=float(request.form['unit_price']),
+    )
+    db.session.add(record)
+    try:
+        db.session.commit()
+        flash('労務費単価を追加しました。', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('同じ年月の単価がすでに存在します。', 'danger')
+    return redirect(url_for('main.labor_index'))
+
+
+@main_bp.route('/labor/unit-price/update/<int:record_id>', methods=['POST'])
+@login_required
+def labor_unit_price_update(record_id: int):
+    record = LaborUnitPrice.query.get_or_404(record_id)
+    record.unit_price = float(request.form['unit_price'])
+    db.session.commit()
+    flash('労務費単価を更新しました。', 'success')
+    return redirect(url_for('main.labor_index'))
+
+
+@main_bp.route('/labor/unit-price/delete/<int:record_id>', methods=['POST'])
+@login_required
+def labor_unit_price_delete(record_id: int):
+    record = LaborUnitPrice.query.get_or_404(record_id)
+    db.session.delete(record)
+    db.session.commit()
+    flash('労務費単価を削除しました。', 'success')
+    return redirect(url_for('main.labor_index'))
+
+
+@main_bp.route('/labor/unit-price/set', methods=['POST'])
+@login_required
+def labor_unit_price_set():
+    """現在の処理年月の労務費単価を upsert する。"""
+    year_month = request.form.get('year_month', '').strip()
+    unit_price_str = request.form.get('unit_price', '').strip()
+    if not year_month or not unit_price_str:
+        flash('年月または単価が不正です。', 'danger')
+        return redirect(url_for('main.labor_index'))
+    try:
+        unit_price = float(unit_price_str)
+    except ValueError:
+        flash('単価は数値で入力してください。', 'danger')
+        return redirect(url_for('main.labor_index'))
+    record = LaborUnitPrice.query.filter_by(year_month=year_month).first()
+    if record:
+        record.unit_price = unit_price
+    else:
+        record = LaborUnitPrice(year_month=year_month, unit_price=unit_price)
+        db.session.add(record)
+    db.session.commit()
+    flash(f'{year_month} の労務費単価を保存しました。', 'success')
+    return redirect(url_for('main.labor_index'))

@@ -27,12 +27,11 @@ def _make_salary_xlsx() -> str:
 def _make_allocation_xlsx() -> str:
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = '配賦データ'
-    # header_row=2 means header is at row 2; row 1 is ignored
-    ws.append(['(ignored row 1)'])
-    ws.append(['地区コード', '課コード', '按分人員数'])
-    ws.append(['10', '1111', 0.1])
-    ws.append(['10', '2222', 0.2])
+    ws.title = '工程配賦'
+    # header_row=1
+    ws.append(['事業部', '地区', '課コード', '原価区分', '工程', '日数', '工程名', '編成', '固定'])
+    ws.append(['50', '10', '5020', 'A', '200', 20.0, '工程A', 0.2, 0.0])
+    ws.append(['50', '10', '5020', 'A', '260', 20.0, None, 0.1, 0.0])
 
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx')
     wb.save(tmp.name)
@@ -62,13 +61,13 @@ class TestReadExcel:
         finally:
             os.unlink(path)
 
-    def test_read_allocation_with_header_row2(self):
+    def test_read_allocation(self):
         path = _make_allocation_xlsx()
         try:
             rows = read_excel(path, 'allocation')
             assert len(rows) == 2
-            assert rows[0]['地区コード'] == '10'
-            assert rows[0]['按分人員数'] == pytest.approx(0.1)
+            assert rows[0]['課コード'] == '5020'
+            assert rows[0]['編成'] == pytest.approx(0.2)
         finally:
             os.unlink(path)
 

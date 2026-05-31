@@ -8,6 +8,67 @@
   <p>労務費管理システムへようこそ</p>
 </div>
 
+{# ── 月次処理パネル ── #}
+<div class="card mb-4 {% if current_year_month %}border-primary{% else %}border-warning{% endif %}">
+  <div class="card-header {% if current_year_month %}bg-primary text-white{% else %}bg-warning{% endif %}">
+    <i class="bi bi-calendar3-week me-1"></i>月次処理
+  </div>
+  <div class="card-body d-flex align-items-center gap-3 flex-wrap">
+    {% if current_year_month %}
+      <span class="fs-5">現在の処理年月：<strong>{{ current_year_month }}</strong></span>
+      <button type="button" class="btn btn-outline-danger btn-sm"
+              data-bs-toggle="modal" data-bs-target="#clearDataModal">
+        <i class="bi bi-arrow-counterclockwise me-1"></i>月次処理開始（年月変更）
+      </button>
+    {% else %}
+      <span class="text-muted">処理年月が設定されていません。</span>
+      <button type="button" class="btn btn-primary btn-sm"
+              data-bs-toggle="modal" data-bs-target="#clearDataModal">
+        <i class="bi bi-play-circle me-1"></i>月次処理開始
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+{# ── 月次処理開始 確認モーダル ── #}
+<div class="modal fade" id="clearDataModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('main.clear_all_data') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>月次処理開始 — データクリア
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">処理年月 <span class="text-danger">*</span></label>
+            <input type="month" name="year_month" class="form-control"
+                   value="{{ current_year_month or '' }}" required>
+          </div>
+          <p class="fw-semibold text-danger">以下のすべてのデータが削除されます。この操作は取り消せません。</p>
+          <ul class="mb-2">
+            <li>給与データ</li>
+            <li>配賦データ</li>
+            <li>労務費振替データ</li>
+            <li>応援連絡データ</li>
+            <li>アップロードバッチ履歴</li>
+          </ul>
+          <p class="text-muted small mb-0">マスタデータ・労務費単価は削除されません。</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash-fill me-1"></i>クリアして月次処理開始
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="row g-3">
   <div class="col-md-6 col-lg-4">
     <div class="card h-100">

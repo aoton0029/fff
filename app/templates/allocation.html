@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'components/macros.html' import upload_form %}
+{% from 'components/macros.html' import upload_form, format_info_modal %}
 {% block title %}配賦データ取り込み{% endblock %}
 
 {% block content %}
@@ -24,11 +24,23 @@
 {{ upload_form(url_for('main.allocation_upload'), result_target='#upload-result', form=form) }}
 
 <div class="card mt-3">
-  <div class="card-header"><i class="bi bi-list me-1"></i>取込済みバッチ</div>
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-list me-1"></i>取込済みバッチ</span>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('main.allocation_sap_output') }}" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-download me-1"></i>SAP出力
+      </a>
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#formatInfo">
+        <i class="bi bi-info-circle me-1"></i>ファイル形式について
+      </button>
+    </div>
+  </div>
   <div class="card-body p-0" id="upload-result">
     {% include 'partials/batch_table.html' %}
   </div>
 </div>
+
+{{ format_info_modal(excel_format) }}
 
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">

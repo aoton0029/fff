@@ -6,6 +6,7 @@ from ..extensions import htmx, db
 from ..forms.upload import UploadForm
 from ..models.upload_batch import UploadBatch
 from ..models.salary import SalaryData
+from ..models.processing_month import ProcessingMonth
 from ..services.data_importer import import_excel_file
 
 _FILE_TYPE = 'salary'
@@ -22,7 +23,7 @@ def salary_upload():
                 'partials/salary_upload_result.html',
                 batch=existing,
                 already_exists=True,
-            ), 409
+            )
         flash('既存の給与データを削除してから再度取り込んでください。', 'warning')
         return redirect(url_for('main.salary_index'))
 
@@ -35,11 +36,13 @@ def salary_upload():
                 success=False,
                 errors=errors,
                 batch=None,
-            ), 422
+            )
         flash('アップロードフォームにエラーがあります。', 'danger')
         return redirect(url_for('main.salary_index'))
 
-    result = import_excel_file(form.file.data, _FILE_TYPE, current_user.id)
+    setting = ProcessingMonth.query.first()
+    year_month = setting.year_month if setting else None
+    result = import_excel_file(form.file.data, _FILE_TYPE, current_user.id, year_month=year_month)
 
     if htmx:
         batch = UploadBatch.query.get(result.batch_id) if result.success else None

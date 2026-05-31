@@ -7,19 +7,27 @@
   <table class="table table-sm table-striped">
     <thead class="table-light">
       <tr>
-        <th>勘定科目コード</th><th>from課コード</th><th>to課コード</th><th class="text-end">作業時間</th>
+        <th>勘定科目コード</th><th>原価センタ</th><th>負担課</th><th>担当課</th>
+        <th>工事名</th><th class="text-end">作業時間</th><th>WBS</th>
+        <th>資産集約番号</th><th>指図</th><th>備考</th>
       </tr>
     </thead>
     <tbody>
       {% for r in records %}
       <tr>
         <td>{{ r.account_code }}</td>
-        <td>{{ r.from_section_code }}</td>
-        <td>{{ r.to_section_code }}</td>
+        <td>{{ r.cost_center or '' }}</td>
+        <td>{{ r.burden_section or '' }}</td>
+        <td>{{ r.charge_section }}</td>
+        <td>{{ r.construction_name or '' }}</td>
         <td class="text-end">{{ r.work_hours }}</td>
+        <td>{{ r.wbs or '' }}</td>
+        <td>{{ r.asset_number or '' }}</td>
+        <td>{{ r.order_number or '' }}</td>
+        <td>{{ r.note or '' }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="4" class="text-center text-muted">データがありません</td></tr>
+      <tr><td colspan="10" class="text-center text-muted">データがありません</td></tr>
       {% endfor %}
     </tbody>
   </table>

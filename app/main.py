@@ -61,9 +61,26 @@ def create_app(config_name: str | None = None) -> Flask:
     def internal_error(e):
         return render_template('errors/500.html'), 500
 
-    # Create tables
+    # Create tables + SQLite migration
     with app.app_context():
         db.create_all()
+        # Add year_month column to upload_batches if it doesn't exist yet (SQLite has no IF NOT EXISTS for ADD COLUMN)
+        with db.engine.connect() as conn:
+            try:
+                conn.execute(db.text("ALTER TABLE upload_batches ADD COLUMN year_month VARCHAR(7)"))
+                conn.commit()
+            except Exception:
+                pass  # Column already exists
+
+    # Context processor: inject current processing year_month into all templates
+    @app.context_processor
+    def inject_processing_month():
+        try:
+            from .models.processing_month import ProcessingMonth
+            setting = ProcessingMonth.query.first()
+            return {'current_year_month': setting.year_month if setting else None}
+        except Exception:
+            return {'current_year_month': None}
 
     from .utils.logger import setup_logging
     setup_logging(app)
