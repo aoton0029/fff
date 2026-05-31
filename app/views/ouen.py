@@ -3,28 +3,26 @@ from flask_login import login_required
 
 from . import main_bp
 from ..extensions import htmx
-from ..view_models.allocation import AllocationIndexViewModel
+from ..view_models.ouen import OuenIndexViewModel
 
-FILE_TYPE = 'allocation'
+_PER_PAGE = 20
 
 
-@main_bp.route('/allocation/')
+@main_bp.route('/ouen/')
 @login_required
-def allocation_index():
+def ouen_index():
     page = request.args.get('page', 1, type=int)
-    vm = AllocationIndexViewModel(page)
+    vm = OuenIndexViewModel(page)
     if htmx:
         return render_template(
-            'partials/batch_table.html',
+            'partials/ouen_batch_table.html',
             batches=vm.batches,
             pagination=vm.pagination,
-            file_type=vm.file_type,
         )
     return render_template(
-        'allocation.html',
+        'ouen.html',
         form=vm.form,
         batches=vm.batches,
         pagination=vm.pagination,
-        file_type=vm.file_type,
         salary_count=vm.salary_count,
     )

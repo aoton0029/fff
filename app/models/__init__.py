@@ -5,6 +5,7 @@ from .allocation import AllocationData
 from .labor_transfer import LaborTransferData
 from .department import DepartmentMaster
 from .section import SectionMaster
+from .ouen import OuenData
 
 __all__ = [
     'User',
@@ -14,4 +15,5 @@ __all__ = [
     'LaborTransferData',
     'DepartmentMaster',
     'SectionMaster',
+    'OuenData',
 ]

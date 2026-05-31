@@ -20,18 +20,15 @@ body {
    Sidebar
    ========================================== */
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--sidebar-width);
-  height: 100vh;
-  background-color: var(--sidebar-bg);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-  z-index: 99;
-}
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 90px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    z-index: 99;
+  }
 
 .sidebar-brand {
   padding: 0 1.25rem;
@@ -71,7 +68,8 @@ body {
   align-items: center;
   gap: 0.55rem;
   padding: 0.48rem 1.25rem;
-  color: #9ab0c4;
+  color: #333;
+  /* color: #9ab0c4; */
   text-decoration: none;
   font-size: 0.875rem;
   transition: background 0.15s, color 0.15s;
@@ -81,20 +79,13 @@ body {
   background-color: var(--sidebar-hover);
 }
 .sidebar-link.active {
-  color: #fff;
-  font-weight: 600;
+  color: #0d6efd;
   background-color: var(--sidebar-active);
 }
 .sidebar-link.sub {
   padding-left: 2.25rem;
   font-size: 0.83rem;
-}
-
-.sidebar-footer {
-  padding: 0.75rem 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
-}
+} */
 
   
 

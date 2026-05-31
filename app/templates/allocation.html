@@ -3,12 +3,31 @@
 {% block title %}配賦データ取り込み{% endblock %}
 
 {% block content %}
-<h4 class="mb-3"><i class="bi bi-file-earmark-spreadsheet me-2"></i>配賦データ取り込み</h4>
+<div class="page-header">
+  <h4><i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>配賦データ取り込み</h4>
+  <p>配賦比率データのExcelファイルを取り込みます。</p>
+</div>
+
+{# Prerequisite status bar #}
+<div class="prereq-bar mb-3 d-flex align-items-center gap-3 flex-wrap">
+  <div class="prereq-item">
+    {% if salary_count and salary_count > 0 %}
+      <i class="bi bi-check-circle-fill check"></i>
+      <span class="small">給与データ取込済 ({{ '{:,}'.format(salary_count) }}件)</span>
+    {% else %}
+      <i class="bi bi-x-circle-fill cross"></i>
+      <span class="small">給与データが未取込です</span>
+    {% endif %}
+  </div>
+</div>
 
 {{ upload_form(url_for('main.allocation_upload'), result_target='#upload-result', form=form) }}
 
-<div id="upload-result">
-  {% include 'partials/batch_table.html' %}
+<div class="card mt-3">
+  <div class="card-header"><i class="bi bi-list me-1"></i>取込済みバッチ</div>
+  <div class="card-body p-0" id="upload-result">
+    {% include 'partials/batch_table.html' %}
+  </div>
 </div>
 
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">

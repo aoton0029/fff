@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>労務費システム</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="./css/custom.css" />
+</head>
+<body>
+    <!-- ===== Sidebar ===== -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div style="position: relative; left: 50px; top: -60px">
+            <img src="./NEG.png"/>
+            <br>
+            <!-- <a class="sidebar-link" style="position: relative; right: 20px;" href="./index.html"> -->
+            <h5>労務費システム</h5> 
+            </a>
+        </div>
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <div class="sidebar-section">工程配賦</div>
+                <a class="sidebar-link" href="./salary.html">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> 給与データ取込
+                    <span class="status-dot done"></span>
+                </a>
+                <a class="sidebar-link" aria-current="page" href="./ouen.html">
+                    <i class="bi bi-people"></i> 応援連絡
+                </a>
+                <a class="sidebar-link" href="./koutei.html">
+                    <i class="bi bi-diagram-3"></i> 工程配賦
+                </a>
+                <div class="sidebar-section">他勘定</div>
+                <a class="sidebar-link" href="./kanjou_furikae.html">
+                    <i class="bi bi-arrow-left-right"></i> 労務費振替
+                </a>
+                <div class="sidebar-section">メンテナンス</div>
+                <a class="sidebar-link" href="./mnt_code.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">課コード</span>
+                </a>
+                <a class="sidebar-link" href="./mnt_master.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">変換マスタ</span>
+                </a>                
+                <a class="sidebar-link" href="./mnt_data_output.html">
+                    <i class="bi bi-file-earmark-arrow-down"></i> <span class="ml-2">データ出力</span>
+                </a>
+            </ul>
+        </div>
+        <div class="dropdown" style="position: fixed; bottom: 70px; left: 30px;">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false" >
+                ユーザー：{{ session['user'] }}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- ===== Main Content ===== -->
+    <div class="main-content">
+    <div class="content-body">
+
+        <div class="page-header">
+            <h4><i class="bi bi-people me-2 text-primary"></i>マスタ変換</h4>
+            <p>人事所属コードを各コードに変換（給与データ、労務費トラン、工程配賦計算で使用）</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="card mb-2">
+        <div class="card-body py-2">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <!-- Category Filter -->
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label small mb-0 fw-semibold text-nowrap">項目:</label>
+                    <select class="form-select form-select-sm" id="categoryFilter">
+                    <option value="">全て</option>
+                    <option value="jinji_cd" selected>(明細)（人事）所属コード</option>
+                    <option value="jinji_name">(明細)（人事）所属略称名</option>
+                    <option value="chiku">地区</option>
+                    <option value="ka">課コード</option>
+                    <option value="chiku_ka">地区+課コード</option>
+                    <option value="shuyakuka">集約課コード</option>
+                    <option value="chiku_shuyakuka">地区+集約課コード</option>
+                    <option value="kbn">区分</option>
+                    <option value="kanjou">勘定科目</option>
+                    <option value="genka_center">原価センタ</option>
+                    <option value="rieki_center">利益センタ</option>
+                    <option value="bikou">備考</option>
+                    </select>
+                </div>
+                <!-- Search -->
+                <div class="input-group input-group-sm" style="max-width:260px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="コード・名称で検索..." id="searchInput" />
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-table me-1"></i>変換マスタ</span>
+                <button class="btn btn-sm btn-outline-primary">＋ 追加</button>
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">1 - 5 / 5件</small>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                <table class="table table-sm table-hover table-striped align-middle mb-0 text-nowrap table-sticky-end" id="conversionTable">
+                    <thead>
+                        <tr>
+                        <th>(明細)（人事）所属コード</th>
+                        <th>(明細)（人事）所属略称名</th>
+                        <th>地区</th>
+                        <th>課コード</th>
+                        <th>地区+課コード</th>
+                        <th>集約課コード</th>
+                        <th>地区+集約課コード</th>
+                        <th>区分</th>
+                        <th>勘定科目</th>
+                        <th>原価センタ</th>
+                        <th>利益センタ</th>
+                        <th>備考</th>
+                        <th style="width:120px">更新日時</th>
+                        <th style="width:50px" class="text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>00000000</td>
+                            <td>取締役・監査役</td>
+                            <td>90</td>
+                            <td>0010</td>
+                            <td>900010</td>
+                            <td>0010</td>
+                            <td>900010</td>
+                            <td>一般管理費</td>
+                            <td>5402010000</td>
+                            <td>909019990</td>
+                            <td>90</td>
+                            <td></td>
+                            <td>2026/05/01 00:00</td>
+                            <td class="text-center">
+                                <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                    data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                    title="編集">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>00005000</td>
+                            <td>顧問・相談役</td>
+                            <td>90</td>
+                            <td>0200</td>
+                            <td>900200</td>
+                            <td>0200</td>
+                            <td>900200</td>
+                            <td>一般管理費</td>
+                            <td>5402030000</td>
+                            <td>909019990</td>
+                            <td>90</td>
+                            <td></td>
+                            <td>2026/05/01 00:00</td>
+                            <td class="text-center">
+                                <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                    data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                    title="編集">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>00010000</td>
+                            <td>産業医・嘱託医・税理士</td>
+                            <td>90</td>
+                            <td>0200</td>
+                            <td>900200</td>
+                            <td>0200</td>
+                            <td>900200</td>
+                            <td>一般管理費</td>
+                            <td>5402030000</td>
+                            <td>909019990</td>
+                            <td>90</td>
+                            <td></td>
+                            <td>2026/05/01 00:00</td>
+                            <td class="text-center">
+                                <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                    data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                    title="編集">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>00010040</td>
+                            <td>産業医・嘱託医・税理士他 産業医（高月)</td>
+                            <td>30</td>
+                            <td>5621</td>
+                            <td>305621</td>
+                            <td>5621</td>
+                            <td>305621</td>
+                            <td>製造経費</td>
+                            <td>5402030000</td>
+                            <td>309929999</td>
+                            <td>99</td>
+                            <td></td>
+                            <td>2026/05/01 00:00</td>
+                            <td class="text-center">
+                                <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                    data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                    title="編集">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>00010050</td>
+                            <td>産業医・嘱託医・税理士他 産業医（能登川）</td>
+                            <td>40</td>
+                            <td>5421</td>
+                            <td>405421</td>
+                            <td>5421</td>
+                            <td>405421</td>
+                            <td>製造経費</td>
+                            <td>5402030000</td>
+                            <td>409929999</td>
+                            <td>99</td>
+                            <td></td>
+                            <td>2026/05/01 00:00</td>
+                            <td class="text-center">
+                                <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                    data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                    title="編集">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </td>
+                        </tr>
+                            <tr>
+                                <td>00020000</td>
+                                <td>非常勤嘱託</td>
+                                <td>90</td>
+                                <td>0200</td>
+                                <td>900200</td>
+                                <td>0200</td>
+                                <td>900200</td>
+                                <td>一般管理費</td>
+                                <td>5402030000</td>
+                                <td>909019990</td>
+                                <td>90</td>
+                                <td></td>
+                                <td>2026/05/01 00:00</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                        data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                        title="編集">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>00020001</td>
+                                <td>非常勤嘱託 スタッフ部門</td>
+                                <td>90</td>
+                                <td>0200</td>
+                                <td>900200</td>
+                                <td>0200</td>
+                                <td>900200</td>
+                                <td>一般管理費</td>
+                                <td>5402030000</td>
+                                <td>909019990</td>
+                                <td>90</td>
+                                <td></td>
+                                <td>2026/05/01 00:00</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                        data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                        title="編集">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>00020040</td>
+                                <td>非常勤嘱託 DP事業本部</td>
+                                <td>30</td>
+                                <td>6200</td>
+                                <td>906200</td>
+                                <td>6200</td>
+                                <td>306200</td>
+                                <td>一般管理費</td>
+                                <td>5402030000</td>
+                                <td>909019990</td>
+                                <td>90</td>
+                                <td></td>
+                                <td>2026/05/01 00:00</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                        data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                        title="編集">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>00020061</td>
+                                <td>非常勤嘱託 電子部品営業部</td>
+                                <td>91</td>
+                                <td>5210</td>
+                                <td>915210</td>
+                                <td>5210</td>
+                                <td>915210</td>
+                                <td>販売費</td>
+                                <td>5402030000</td>
+                                <td>915215210</td>
+                                <td>52</td>
+                                <td></td>
+                                <td>2026/05/01 00:00</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                        data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                        title="編集">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>00500200</td>
+                                <td>社長付（大津）</td>
+                                <td>90</td>
+                                <td>0200</td>
+                                <td>900200</td>
+                                <td>0200</td>
+                                <td>900200</td>
+                                <td>一般管理費</td>
+                                <td>5402030000</td>
+                                <td>909019990</td>
+                                <td>90</td>
+                                <td></td>
+                                <td>2026/05/01 00:00</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                        data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                        title="編集">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>01000000</td>
+                                <td>監査部</td>
+                                <td>90</td>
+                                <td>0100</td>
+                                <td>900100</td>
+                                <td>0100</td>
+                                <td>900100</td>
+                                <td>一般管理費</td>
+                                <td>5402030000</td>
+                                <td>909019990</td>
+                                <td>90</td>
+                                <td></td>
+                                <td>2026/05/01 00:00</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                        data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                        title="編集">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>01000100</td>
+                                <td>監査部 内部監査G</td>
+                                <td>90</td>
+                                <td>0111</td>
+                                <td>900111</td>
+                                <td>0100</td>
+                                <td>900100</td>
+                                <td>一般管理費</td>
+                                <td>5402030000</td>
+                                <td>909019990</td>
+                                <td>90</td>
+                                <td></td>
+                                <td>2026/05/01 00:00</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                        data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                        title="編集">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>01000150</td>
+                                <td>監査部 品質監査G</td>
+                                <td>90</td>
+                                <td>0112</td>
+                                <td>900112</td>
+                                <td>0100</td>
+                                <td>900100</td>
+                                <td>一般管理費</td>
+                                <td>5402030000</td>
+                                <td>909019990</td>
+                                <td>90</td>
+                                <td></td>
+                                <td>2026/05/01 00:00</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-primary py-0 px-2 me-1"
+                                        data-bs-toggle="modal" data-bs-target="#editModal" data-mode="edit"
+                                        title="編集">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                                    </tr>
+
+                    </tbody>
+                </table>
+                </div>
+            </div>
+
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                </div>
+                <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item disabled"><a class="page-link" href="#">›</a></li>
+                </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+
+
+    <!-- 編集 Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="editModalTitle">
+            <i class="bi bi-pencil me-2"></i>マスタ 編集
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <!-- 勘定項目コード-->
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">勘定項目コード <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-sm font-monospace" value="5402010000">
+            </div>
+            <!-- 原価センタ -->
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">原価センタ <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-sm font-monospace" value="909019990">
+            </div>
+            <!-- 備考 -->
+            <div class="mt-3">
+            <label class="form-label small fw-semibold">備考</label>
+            <textarea class="form-control form-control-sm" rows="2"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+            <i class="bi bi-check-lg me-1"></i>保存
+            </button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- 追加 Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="editModalTitle">
+            <i class="bi bi-pencil me-2"></i>マスタ 編集
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+            <div class="mt-3">
+            <label class="form-label small fw-semibold">備考</label>
+            <textarea class="form-control form-control-sm" rows="2"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+            <i class="bi bi-check-lg me-1"></i>保存
+            </button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+<script src="./js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

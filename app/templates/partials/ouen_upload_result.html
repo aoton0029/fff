@@ -1,0 +1,36 @@
+{# Partial: ouen_upload_result.html
+   Rendered by HTMX after ouen upload POST (target: #upload-result innerHTML).
+   Variables: success, saved_count, errors, batches, pagination
+#}
+{% include 'partials/ouen_batch_table.html' %}
+
+{% if success %}
+<div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+  <i class="bi bi-check-circle-fill me-1"></i>
+  {{ saved_count }} 件のデータを保存しました。
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% else %}
+<div class="alert alert-danger mt-2" role="alert">
+  <i class="bi bi-exclamation-triangle-fill me-1"></i>
+  <strong>アップロードに失敗しました。</strong>
+  {% if errors %}
+  <div class="mt-2">
+    <table class="table table-sm table-danger mb-0">
+      <thead>
+        <tr><th>行番号</th><th>フィールド</th><th>エラー内容</th></tr>
+      </thead>
+      <tbody>
+        {% for err in errors %}
+        <tr>
+          <td>{{ err.row }}</td>
+          <td>{{ err.field }}</td>
+          <td>{{ err.message }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endif %}

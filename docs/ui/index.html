@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>労務費システム - ホーム</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="./css/custom.css" />
+</head>
+<body>
+        <!-- ===== Sidebar ===== -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div style="position: relative; left: 50px; top: -60px">
+                <img src="./NEG.png"/>
+                <br>
+                <!-- <a class="sidebar-link" style="position: relative; right: 20px;" href="./index.html"> -->
+                <h5>労務費システム</h5> 
+                </a>
+            </div>
+            <div class="sidebar-nav">
+                <ul class="nav flex-column">
+                    <div class="sidebar-section">工程配賦</div>
+                    <a class="sidebar-link" href="./salary.html">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> 給与データ取込
+                        <span class="status-dot done"></span>
+                    </a>
+                    <a class="sidebar-link" aria-current="page" href="./ouen.html">
+                        <i class="bi bi-people"></i> 応援連絡
+                    </a>
+                    <a class="sidebar-link" href="./koutei.html">
+                        <i class="bi bi-diagram-3"></i> 工程配賦
+                    </a>
+                    <div class="sidebar-section">他勘定</div>
+                    <a class="sidebar-link" href="./kanjou_furikae.html">
+                        <i class="bi bi-arrow-left-right"></i> 労務費振替
+                    </a>
+                    <div class="sidebar-section">メンテナンス</div>
+                    <a class="sidebar-link" href="./mnt_code.html">
+                        <i class="bi bi-person-badge-fill"></i> <span class="ml-2">課コード</span>
+                    </a>
+                    <a class="sidebar-link" href="./mnt_master.html">
+                        <i class="bi bi-person-badge-fill"></i> <span class="ml-2">変換マスタ</span>
+                    </a>                
+                    <a class="sidebar-link" href="./mnt_data_output.html">
+                        <i class="bi bi-file-earmark-arrow-down"></i> <span class="ml-2">データ出力</span>
+                    </a>
+                </ul>
+            </div>
+            <div class="dropdown" style="position: fixed; bottom: 70px; left: 30px;">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false" >
+                    ユーザー：{{ session['user'] }}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+    <div class="main-content">
+    <div class="content-body">
+        <div class="top-bar">
+            <div class="d-flex align-items-center gap-2">
+                <h6 class="mb-0 fw-semibold">TOPページ</h6>
+            </div>
+        </div>
+    </div>
+    </div>
+
+<script src="./js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

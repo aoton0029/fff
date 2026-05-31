@@ -1,54 +1,51 @@
-{# Partial: batch_table.html
-   Shared by salary / allocation / labor views.
-   Variables: batches, pagination, file_type
+{# Partial: ouen_batch_table.html
+   Used by ouen_delete and ouen_index (htmx pagination).
+   Variables: batches, pagination
 #}
 {% from 'components/macros.html' import render_pagination %}
-
-{% set detail_url_map = {
-  'salary': 'main.salary_detail',
-  'allocation': 'main.allocation_detail',
-  'labor_transfer': 'main.labor_detail',
-} %}
-{% set delete_url_map = {
-  'salary': 'main.salary_delete',
-  'allocation': 'main.allocation_delete',
-  'labor_transfer': 'main.labor_delete',
-} %}
 
 <div id="table-area">
   {% if batches %}
   <div class="table-scroll-wrapper">
-  <table class="table table-hover table-sm align-middle mb-0">
-    <thead class="table-light">
+  <table class="table table-sm table-hover align-middle mb-0 table-striped">
+    <thead class="sticky-top">
       <tr>
+        <th>地区</th>
+        <th>課コード</th>
         <th>ファイル名</th>
-        <th>アップロード日時</th>
-        <th>アップロード者</th>
-        <th class="text-end">操作</th>
+        <th class="text-end">件数</th>
+        <th class="text-center" style="width:160px">追加日時</th>
+        <th class="text-center" style="width:90px">追加者</th>
+        <th class="text-center" style="width:130px">操作</th>
       </tr>
     </thead>
     <tbody>
       {% for batch in batches %}
+      {% set first_rec = batch.ouen_records[0] if batch.ouen_records else None %}
       <tr>
+        <td>{{ first_rec.from_district if first_rec else '-' }}</td>
+        <td>{{ first_rec.from_section_code if first_rec else '-' }}</td>
         <td>{{ batch.file_name }}</td>
-        <td>{{ batch.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-        <td>{{ batch.creator.username }}</td>
-        <td class="text-end">
-          <button class="btn btn-sm btn-outline-primary"
-                  hx-get="{{ url_for(detail_url_map[file_type], batch_id=batch.id) }}"
+        <td class="text-end">{{ batch.ouen_records | length }}</td>
+        <td class="text-center">{{ batch.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td class="text-center">{{ batch.creator.username }}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2"
+                  hx-get="{{ url_for('main.ouen_detail', batch_id=batch.id) }}"
                   hx-target="#detail-modal-body"
                   hx-swap="innerHTML"
                   data-bs-toggle="modal"
-                  data-bs-target="#detailModal">
+                  data-bs-target="#detailModal"
+                  title="データ確認">
             <i class="bi bi-eye"></i> 確認
           </button>
-          <button class="btn btn-sm btn-outline-danger"
+          <button class="btn btn-sm btn-outline-danger py-0 px-2"
                   data-bs-toggle="modal"
-                  data-bs-target="#deleteModal{{ batch.id }}">
+                  data-bs-target="#deleteModal{{ batch.id }}"
+                  title="データ削除">
             <i class="bi bi-trash"></i> 削除
           </button>
 
-          {# Delete confirmation modal for each row #}
           <div class="modal fade" id="deleteModal{{ batch.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content">
@@ -62,7 +59,7 @@
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
                   <button type="button" class="btn btn-danger"
-                          hx-post="{{ url_for(delete_url_map[file_type], batch_id=batch.id) }}"
+                          hx-post="{{ url_for('main.ouen_delete', batch_id=batch.id) }}"
                           hx-target="#table-area"
                           hx-swap="outerHTML"
                           data-bs-dismiss="modal">削除</button>

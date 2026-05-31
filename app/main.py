@@ -32,15 +32,17 @@ def create_app(config_name: str | None = None) -> Flask:
 
     # Register blueprints
     from .views import main_bp
-    from .views import main as _  # noqa: F401
-    from .views import salary as _  # noqa: F401
-    from .views import allocation as _  # noqa: F401
-    from .views import labor as _  # noqa: F401
-    from .views import maintenance as _  # noqa: F401
-    from .api import salary as _  # noqa: F401
-    from .api import allocation as _  # noqa: F401
-    from .api import labor as _  # noqa: F401
-    from .api import maintenance as _  # noqa: F401
+    from .views import main
+    from .views import salary
+    from .views import allocation
+    from .views import labor
+    from .views import maintenance
+    from .views import ouen
+    from .api import salary
+    from .api import allocation
+    from .api import labor
+    from .api import maintenance
+    from .api import ouen
     from .views.auth import auth_bp
 
     app.register_blueprint(main_bp)

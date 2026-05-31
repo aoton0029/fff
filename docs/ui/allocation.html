@@ -1,0 +1,1006 @@
+    <!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>労務費システム</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="./css/custom.css" />
+</head>
+<body>
+    <!-- ===== Sidebar ===== -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div style="position: relative; left: 50px; top: -60px">
+            <img src="./NEG.png"/>
+            <br>
+            <!-- <a class="sidebar-link" style="position: relative; right: 20px;" href="./index.html"> -->
+            <h5>労務費システム</h5> 
+            </a>
+        </div>
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <div class="sidebar-section">工程配賦</div>
+                <a class="sidebar-link" href="./salary.html">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> 給与データ取込
+                    <span class="status-dot done"></span>
+                </a>
+                <a class="sidebar-link" aria-current="page" href="./ouen.html">
+                    <i class="bi bi-people"></i> 応援連絡
+                </a>
+                <a class="sidebar-link" href="./koutei.html">
+                    <i class="bi bi-diagram-3"></i> 工程配賦
+                </a>
+                <div class="sidebar-section">他勘定</div>
+                <a class="sidebar-link" href="./kanjou_furikae.html">
+                    <i class="bi bi-arrow-left-right"></i> 労務費振替
+                </a>
+                <div class="sidebar-section">メンテナンス</div>
+                <a class="sidebar-link" href="./mnt_code.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">課コード</span>
+                </a>
+                <a class="sidebar-link" href="./mnt_master.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">変換マスタ</span>
+                </a>                
+                <a class="sidebar-link" href="./mnt_data_output.html">
+                    <i class="bi bi-file-earmark-arrow-down"></i> <span class="ml-2">データ出力</span>
+                </a>
+            </ul>
+        </div>
+        <div class="dropdown" style="position: fixed; bottom: 70px; left: 30px;">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false" >
+                ユーザー：{{ session['user'] }}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ===== Main Content ===== -->
+    <div class="main-content">
+    <div class="content-body">
+
+        <div class="page-header">
+            <h4><i class="bi bi-diagram-3 me-2 text-primary"></i>工程配賦</h4>
+            <p>工程別人員配置データをアップロードします。</p>
+        </div>
+
+        <!-- Prerequisite Status -->
+        <div class="prereq-bar mb-2 d-flex align-items-center gap-3 flex-wrap">
+            <div class="prereq-item">
+                <i class="bi bi-check-circle-fill check"></i>
+                <span class="small">給与データ取込済 (1,245件)</span>
+            </div>
+        </div>
+
+                <!-- File Upload Area -->
+        <div class="row g-3 mb-2">
+        <div class="col">
+            <!-- Upload Accordion -->
+            <div class="accordion" id="uploadAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#item1"
+                            aria-expanded="true"
+                            aria-controls="item1">
+                            <i class="bi bi-cloud-upload me-1"></i>
+                            工程別人員配置データアップロード
+                        </button>
+                    </h2>
+                    <div id="item1" class="accordion-collapse collapse" data-bs-parent="#uploadAccordion">
+                        <div class="accordion-body">
+                            <div class="upload-area mb-2" id="uploadArea">
+                                <input type="file" accept=".xlsx" id="fileInput" />
+                                <div class="upload-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                                <p class="mb-1 fw-semibold">工程別人員配置データファイルをここにドラッグ＆ドロップ</p>
+                                <p class="text-muted small mb-2">または クリックして選択</p>
+                                <!-- <span class="badge bg-secondary">エクセル形式のみ対応</span> -->
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" id="uploadBtn" type="button" data-bs-toggle="modal" data-bs-target="#fileLoaderModal">
+                                    <i class="bi bi-upload me-1"></i>アップロード
+                                </button>
+                                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#formatInfo">
+                                    <i class="bi bi-info-circle me-1"></i>ファイル形式について
+                                </button>
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+            </div>
+        </div> <!-- /col -->
+        </div> <!-- /row -->
+
+        <!-- Uploaded Data Table Area -->
+        <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-geo-alt me-1"></i> 取込済課</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <small class="text-muted">1 - 12 / 12件</small>
+                    </div>
+                </div>
+                <div class="card-body p-0" id="districtListBody">
+                    <div class="table-scroll-wrapper">
+                        <table class="table table-sm table-hover align-middle mb-0" id="districtTable">
+                            <thead class="sticky-top">
+                                <tr>
+                                <th>地区</th>
+                                <th>ファイル名</th>
+                                <th>人員計判定</th>
+                                <th style="width:150px" class="text-center">追加日時</th>
+                                <th style="width:80px" class="text-center">追加者</th>
+                                <th style="width:150px" class="text-center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                <td>10</td>
+                                <td>工程配賦(大津).xlsx</td>
+                                <td><span class="badge badge-error ms-1">NG</span></td>
+                                <td class="text-center">2026-05-15 21:10:06</td>
+                                <td class="text-center">田中 太郎</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                
+                                </tr>
+                                <tr>
+                                <td>11</td>
+                                <td>工程配賦(草津).xlsx</td>
+                                <td><span class="badge badge-done ms-1">OK</span></td>
+                                <td class="text-center">2026-05-15 21:10:06</td>
+                                <td class="text-center">田中 太郎</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                
+                                </tr>
+                                <tr>
+                                <td>40</td>
+                                <td>工程配賦(能登川).xlsx</td>
+                                <td><span class="badge badge-done ms-1">OK</span></td>
+                                <td class="text-center">2026-05-15 21:10:06</td>
+                                <td class="text-center">田中 太郎</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                
+                                </tr>
+                            </tbody>
+                            </table>
+
+                    </div>
+                </div>
+                <div class="card-footer py-2 d-flex justify-content-between align-items-center">
+                    <div>
+                        <button class="btn btn-xs btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#ouenCalcModal" data-district="10" title="労務費トランDL">
+                            <i class="bi bi-folder-symlink me-1"></i>工程配賦計算データDL
+                        </button>
+                    </div>
+                    <!-- <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item disabled"><a class="page-link" href="#">›</a></li>
+                    </ul>
+                    </nav> -->
+                </div>
+            </div>
+        </div> <!-- /col -->
+        </div> <!-- /row -->
+
+    </div> <!-- /content-body -->
+    </div> <!-- /main-content -->
+
+    <!-- ファイル形式 モーダル -->
+    <div class="modal fade" id="formatInfo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>ファイル形式について
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <p class="small text-muted mb-2">以下の列順でエクセルファイルを作成してください（1行目はヘッダー行）。</p>
+                <table class="table table-sm table-bordered small mb-2">
+                    <thead class="table-light">
+                    <tr>
+                        <th>列番号</th>
+                        <th>列名</th>
+                        <th>型</th>
+                        <th>必須</th>
+                        <th>説明</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr><td>1</td><td>事業部</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>2</td><td>地区</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>3</td><td>課コード</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>4</td><td>原価区分</td><td>文字列</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>5</td><td>工程</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>6</td><td>日数</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>8</td><td>編成</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>9</td><td>固定</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+    <!-- データ確認 Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>データ詳細
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <th></th>
+                            <th>事業部</th>
+                            <th>地区</th>
+                            <th>課コード</th>
+                            <th>原価区分</th>
+                            <th>工程</th>
+                            <th>工程名</th>
+                            <th>日数</th>
+                            <th>編成</th>
+                            <th>固定</th>
+                            <th>人員計</th>
+                            <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-bs-toggle="collapse" data-bs-target="#group-1" aria-expanded="false" aria-controls="group-1">
+                            <td class="text-center">＋</td>
+                            <td>50</td>
+                            <td>10</td>
+                            <td>5020</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-end">1.00</td>
+                            <td><span class="badge badge-done ms-1">OK</span></td>
+                            </tr>
+                        </tbody>
+                        <tbody class="collapse" id="group-1">
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">200</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.20</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.20</td>
+                            <td></td>
+                            </tr>
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">260</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.10</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.10</td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">500</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">700</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.10</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.10</td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">1330</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">800</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.10</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.10</td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">835</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.10</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.10</td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">836</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">838</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">839</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">1910</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">8015</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.10</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.10</td>
+                            <td></td>
+                            </tr>                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">1940</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.10</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.10</td>
+                            <td></td>
+                            </tr>
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">8061</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">9950</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.10</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.10</td>
+                            <td></td>
+                            </tr>
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">9999</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.10</td>
+                            <td class="text-end">0.00</td>
+                            <td class="text-end">0.10</td>
+                            <td></td>
+                            </tr>
+                        </tbody>
+                        <tbody>
+                            <tr data-bs-toggle="collapse" data-bs-target="#group-2" aria-expanded="false" aria-controls="group-2">
+                            <td class="text-center">＋</td>
+                            <td>50</td>
+                            <td>10</td>
+                            <td>5026</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-end">4.00</td>
+                            <td><span class="badge badge-done ms-1">OK</span></td>
+                            </tr>
+                        </tbody>
+                        <tbody class="collapse" id="group-2">
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">200</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.20</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>
+                        </tbody>
+                        <tbody>
+                            <tr data-bs-toggle="collapse" data-bs-target="#group-3" aria-expanded="false" aria-controls="group-3">
+                            <td class="text-center">＋</td>
+                            <td>50</td>
+                            <td>10</td>
+                            <td>5030</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-end">80.30</td>
+                            <td><span class="badge badge-error ms-1">NG</span></td>
+                            </tr>
+                        </tbody>
+                        <tbody class="collapse" id="group-3">
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">200</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.20</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>
+                        </tbody>
+                        <tbody>
+                            <tr data-bs-toggle="collapse" data-bs-target="#group-4" aria-expanded="false" aria-controls="group-4">
+                            <td class="text-center">＋</td>
+                            <td>50</td>
+                            <td>10</td>
+                            <td>5041</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-end">23.00</td>
+                            <td><span class="badge badge-done ms-1">OK</span></td>
+                            </tr>
+                        </tbody>
+                        <tbody class="collapse" id="group-4">
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">200</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.20</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>
+                        </tbody>
+                        <tbody>
+                            <tr data-bs-toggle="collapse" data-bs-target="#group-5" aria-expanded="false" aria-controls="group-5">
+                            <td class="text-center">＋</td>
+                            <td>50</td>
+                            <td>10</td>
+                            <td>5090</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-end">19.00</td>
+                            <td><span class="badge badge-done ms-1">OK</span></td>
+                            </tr>
+                        </tbody>
+                        <tbody class="collapse" id="group-5">
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">200</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.20</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>
+                        </tbody>
+                        <tbody>
+                            <tr data-bs-toggle="collapse" data-bs-target="#group-6" aria-expanded="false" aria-controls="group-6">
+                            <td class="text-center">＋</td>
+                            <td>50</td>
+                            <td>10</td>
+                            <td>5240</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-center text-muted">-</td>
+                            <td class="text-end">1.8</td>
+                            <td><span class="badge badge-done ms-1">OK</span></td>
+                            </tr>
+                        </tbody>
+                        <tbody class="collapse" id="group-6">
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">200</td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end">0.20</td>
+                            <td class="text-end">0.00</td>
+                            <td></td>
+                            <td></td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+    <!-- ファイルアップロード進捗 モーダル-->
+    <div class="modal fade" id="fileLoaderModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+
+            <!-- ヘッダー -->
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <span id="headerIcon"><i class="bi bi-check-circle-fill text-success"></i></span>
+                    <span id="headerTitle">読み込み完了 (成功 2 / エラー 1)</span>
+                </h5>
+                <!-- × ボタンは非表示（キャンセルボタンで代替） -->
+            </div>
+
+            <!-- ボディ -->
+            <div class="modal-body px-4">
+                <!-- ─── フェーズ①：進捗表示 ─── -->
+                <div id="phaseProgress" class="phase-hidden">
+
+                    <!-- 全体プログレスバー -->
+                    <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">全体の進捗</small>
+                        <small id="progressText" class="text-muted fw-semibold">3 / 3</small>
+                    </div>
+                    <div class="progress" style="height:10px">
+                        <div id="progressBar" class="progress-bar bg-primary" role="progressbar" style="width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                <!-- ─── フェーズ②：結果表示 ─── -->
+                <div id="phaseResult" class="">
+                    <!-- 詳細リスト -->
+                    <div class="border rounded px-3 py-1" style="max-height:260px; overflow-y:auto">
+                        <div id="resultList">
+                            <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-check-circle-fill status-ok"></i></span>
+                            <span class="file-name" title="工程配賦(大津).xlsx">工程配賦(大津).xlsx</span>
+                            <small class="text-success">読み込み</small>
+                        </div>
+                        <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-check-circle-fill status-ok"></i></span>
+                            <span class="file-name" title="工程配賦(草津).xlsx">工程配賦(草津).xlsx</span>
+                            <small class="text-success">読み込み</small>
+                        </div>
+                        <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-x-circle-fill status-error"></i></span>
+                            <span class="file-name" title="工程配賦(能登川).xlsx">工程配賦(能登川).xlsx</span>
+                            <small class="text-danger">必須列が存在しません (列: 課コード)</small>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div><!-- /modal-body -->
+
+            <!-- フッター -->
+            <div class="modal-footer">
+                <!-- キャンセル（処理中のみ表示） -->
+                <!-- <button id="btnCancel" type="button" class="btn btn-outline-secondary d-none" onclick="cancelLoading()">
+                    <i class="bi bi-x-circle me-1"></i>キャンセル
+                </button> -->
+
+                <!-- 確定（完了後のみ表示） -->
+                <button id="btnConfirm" type="button" class="btn btn-success" data-bs-dismiss="modal">
+                    <i class="bi bi-check-circle me-1"></i>確定
+                </button>
+            </div>
+        </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal -->
+
+    <!-- 工程配賦計算データ モーダル -->
+    <div class="modal fade" id="ouenCalcModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>工程配賦計算データ ダウンロード
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+                <div class="table-scroll-wrapper-modal">
+                        <table class="table table-sm table-hover align-middle mb-0 table-striped" id="districtTable">
+                            <thead class="sticky-top">
+                                <tr>
+                                <th>地区</th>
+                                <th>課コード</th>
+                                <th>工程</th>
+                                <th>原価センタ</th>
+                                <th class="text-end">編成</th>
+                                <th class="text-end">固定</th>
+                                <th class="text-end">人員計</th>
+                                <th class="text-end">人員比(%)</th>
+                                <th class="text-end">工程配賦</th>
+                                <th class="text-end">端数調整</th>
+                                <th class="text-end">工程配賦計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>200</td>
+                                <td>105020200</td>
+                                <td class="text-end">0.2</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.2</td>
+                                <td class="text-end">0.2</td>
+                                <td class="text-end">270,800</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">270,800</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>260</td>
+                                <td>105020260</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">135,400</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">135,400</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>500</td>
+                                <td>105020500</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>700</td>
+                                <td>105020700</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">135,400</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">135,400</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>1330</td>
+                                <td>105021330</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>800</td>
+                                <td>105020800</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">135,400</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">135,400</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>835</td>
+                                <td>105020835</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">135,400</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">135,400</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>836</td>
+                                <td>105020836</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>838</td>
+                                <td>105020838</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>839</td>
+                                <td>105020839</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>1910</td>
+                                <td>105021910</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>8015</td>
+                                <td>105028015</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">135,400</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">135,400</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>1940</td>
+                                <td>105021940</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">135,400</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">135,400</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>8061</td>
+                                <td>105028061</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0</td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5020</td>
+                                <td>9950</td>
+                                <td>105029950</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">0.1</td>
+                                <td class="text-end">135,400</td>
+                                <td class="text-end">0</td>
+                                <td class="text-end">135,400</td>
+                                </tr>
+                            </tbody>
+                            </table>
+
+           </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">ダウンロードする</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->    
+
+    <script src="./js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{# Partial: ouen_detail_modal.html
+   Loaded via HTMX into #detail-modal-body.
+   Variables: batch, records
+#}
+<div class="mb-3">
+  <span class="badge bg-secondary me-1">{{ batch.district_code }}</span>
+  <span class="badge bg-secondary me-1">{{ batch.section_code }}</span>
+  <span class="text-muted small">{{ batch.file_name }}</span>
+</div>
+
+{% if records %}
+<div class="table-scroll-wrapper">
+<table class="table table-sm table-bordered table-hover align-middle mb-0">
+  <thead class="table-light sticky-top">
+    <tr>
+      <th colspan="2" class="text-center">送り出し</th>
+      <th colspan="2" class="text-center">受け入れ</th>
+      <th class="text-center">出課日</th>
+      <th class="text-center">帰課日</th>
+      <th class="text-end">日数</th>
+      <th class="text-end">延日数</th>
+      <th>備考</th>
+    </tr>
+    <tr>
+      <th>地区</th>
+      <th>課コード</th>
+      <th>地区</th>
+      <th>課コード</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in records %}
+    <tr>
+      <td>{{ r.from_district }}</td>
+      <td>{{ r.from_section_code }}</td>
+      <td>{{ r.to_district }}</td>
+      <td>{{ r.to_section_code }}</td>
+      <td class="text-center">{{ r.departure_date.strftime('%Y-%m-%d') if r.departure_date else '-' }}</td>
+      <td class="text-center">{{ r.return_date.strftime('%Y-%m-%d') if r.return_date else '-' }}</td>
+      <td class="text-end">{{ r.days }}</td>
+      <td class="text-end">{{ r.extended_days }}</td>
+      <td>{{ r.note or '' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted text-center py-3">データがありません。</p>
+{% endif %}

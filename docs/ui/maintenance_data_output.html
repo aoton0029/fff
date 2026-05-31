@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>労務費システム</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="./css/custom.css" />
+</head>
+<body>
+    <!-- ===== Sidebar ===== -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div style="position: relative; left: 50px; top: -60px">
+            <img src="./NEG.png"/>
+            <br>
+            <!-- <a class="sidebar-link" style="position: relative; right: 20px;" href="./index.html"> -->
+            <h5>労務費システム</h5> 
+            </a>
+        </div>
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <div class="sidebar-section">工程配賦</div>
+                <a class="sidebar-link" href="./salary.html">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> 給与データ取込
+                    <span class="status-dot done"></span>
+                </a>
+                <a class="sidebar-link" aria-current="page" href="./ouen.html">
+                    <i class="bi bi-people"></i> 応援連絡
+                </a>
+                <a class="sidebar-link" href="./koutei.html">
+                    <i class="bi bi-diagram-3"></i> 工程配賦
+                </a>
+                <div class="sidebar-section">他勘定</div>
+                <a class="sidebar-link" href="./kanjou_furikae.html">
+                    <i class="bi bi-arrow-left-right"></i> 労務費振替
+                </a>
+                <div class="sidebar-section">メンテナンス</div>
+                <a class="sidebar-link" href="./mnt_code.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">課コード</span>
+                </a>
+                <a class="sidebar-link" href="./mnt_master.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">変換マスタ</span>
+                </a>                
+                <a class="sidebar-link" href="./mnt_data_output.html">
+                    <i class="bi bi-file-earmark-arrow-down"></i> <span class="ml-2">データ出力</span>
+                </a>
+            </ul>
+        </div>
+        <div class="dropdown" style="position: fixed; bottom: 70px; left: 30px;">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false" >
+                ユーザー：{{ session['user'] }}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ===== Main Content ===== -->
+    <div class="main-content">
+    <div class="content-body">
+
+        <div class="page-header">
+            <h4><i class="bi bi-people me-2 text-primary"></i>データ出力</h4>
+            <p>テーブルデータの出力</p>
+        </div>
+
+      <div class="row g-3 mb-4">
+        <!-- 一括出力 -->
+        <div class="col-md-4 col-xl-4">
+          <div class="card h-100 border-primary border-2">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-4">
+              <i class="bi bi-folder-symlink fs-1 text-primary opacity-75 mb-2"></i>
+              <h6 class="mb-2">全データ一括出力</h6>
+              <p class="text-muted small mb-3">全データをエクセル1ファイルにまとめてダウンロードします。</p>
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#outputModal">
+                <i class="bi bi-folder-symlink me-1"></i>一括出力
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-2">
+
+      <!-- 応援連絡票 -->
+      <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start gap-3 mb-3">
+              <div class="rounded p-2 bg-primary bg-opacity-10 text-primary flex-shrink-0">
+                <i class="bi bi-people fs-3"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">応援連絡票</h6>
+                <p class="text-muted small mb-0">等</p>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between text-muted small mb-3">
+              <span><i class="bi bi-list-check me-1"></i>1,245件</span>
+              <span><i class="bi bi-clock me-1"></i>更新: 2026/05/01</span>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#outputModal" data-master="社員マスタ">
+                <i class="bi bi-download me-1"></i>Excel出力
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#previewModal">
+                <i class="bi bi-eye me-1"></i>プレビュー
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 工程別人員配置データ -->
+      <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start gap-3 mb-3">
+              <div class="rounded p-2 bg-success bg-opacity-10 text-success flex-shrink-0">
+                <i class="bi bi-diagram-3 fs-3"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">工程別人員配置データ</h6>
+                <p class="text-muted small mb-0">人員配分</p>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between text-muted small mb-3">
+              <span><i class="bi bi-list-check me-1"></i>6件</span>
+              <span><i class="bi bi-clock me-1"></i>更新: 2025/04/01</span>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#outputModal">
+                <i class="bi bi-download me-1"></i>Excel出力
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#previewModal">
+                <i class="bi bi-eye me-1"></i>プレビュー
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 労務費振替依頼書 -->
+      <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start gap-3 mb-3">
+              <div class="rounded p-2 bg-info bg-opacity-10 text-info flex-shrink-0">
+                <i class="bi bi-arrow-left-right fs-3"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">労務費振替依頼書</h6>
+                <p class="text-muted small mb-0">労務費振替依頼書</p>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between text-muted small mb-3">
+              <span><i class="bi bi-list-check me-1"></i>87件</span>
+              <span><i class="bi bi-clock me-1"></i>更新: 2026/01/10</span>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#outputModal">
+                <i class="bi bi-download me-1"></i>Excel出力
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#previewModal">
+                <i class="bi bi-eye me-1"></i>プレビュー
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 課コードマスタ -->
+      <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start gap-3 mb-3">
+              <div class="rounded p-2 bg-secondary bg-opacity-10 text-secondary flex-shrink-0">
+                <i class="bi bi-person-badge-fill fs-3"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">課コードマスタ</h6>
+                <p class="text-muted small mb-0">課コード、原価センタ等</p>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between text-muted small mb-3">
+              <span><i class="bi bi-list-check me-1"></i>309件</span>
+              <span><i class="bi bi-clock me-1"></i>更新: 2026/04/01</span>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#outputModal">
+                <i class="bi bi-download me-1"></i>Excel出力
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#previewModal">
+                <i class="bi bi-eye me-1"></i>プレビュー
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 変換マスタ -->
+      <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-start gap-3 mb-3">
+              <div class="rounded p-2 bg-secondary bg-opacity-10 text-secondary flex-shrink-0">
+                <i class="bi bi-person-badge-fill fs-3"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">変換マスタ</h6>
+                <p class="text-muted small mb-0">人事所属コード</p>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between text-muted small mb-3">
+              <span><i class="bi bi-list-check me-1"></i>8件</span>
+              <span><i class="bi bi-clock me-1"></i>更新: 2025/04/01</span>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#outputModal">
+                <i class="bi bi-download me-1"></i>Excel出力
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#previewModal">
+                <i class="bi bi-eye me-1"></i>プレビュー
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+    </div>
+
+<script src="./js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

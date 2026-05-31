@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>労務費システム</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="css/custom.css" />
+</head>
+<body>
+    <!-- ===== Sidebar ===== -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div style="position: relative; left: 50px; top: -60px">
+            <img src="./NEG.png"/>
+            <br>
+            <!-- <a class="sidebar-link" style="position: relative; right: 20px;" href="./index.html"> -->
+            <h5>労務費システム</h5> 
+            </a>
+        </div>
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <div class="sidebar-section">工程配賦</div>
+                <a class="sidebar-link" href="./salary.html">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> 給与データ取込
+                    <span class="status-dot done"></span>
+                </a>
+                <a class="sidebar-link" aria-current="page" href="./ouen.html">
+                    <i class="bi bi-people"></i> 応援連絡
+                </a>
+                <a class="sidebar-link" href="./koutei.html">
+                    <i class="bi bi-diagram-3"></i> 工程配賦
+                </a>
+                <div class="sidebar-section">他勘定</div>
+                <a class="sidebar-link" href="./kanjou_furikae.html">
+                    <i class="bi bi-arrow-left-right"></i> 労務費振替
+                </a>
+                <div class="sidebar-section">メンテナンス</div>
+                <a class="sidebar-link" href="./mnt_code.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">課コード</span>
+                </a>
+                <a class="sidebar-link" href="./mnt_master.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">変換マスタ</span>
+                </a>                
+                <a class="sidebar-link" href="./mnt_data_output.html">
+                    <i class="bi bi-file-earmark-arrow-down"></i> <span class="ml-2">データ出力</span>
+                </a>
+            </ul>
+        </div>
+        <div class="dropdown" style="position: fixed; bottom: 70px; left: 30px;">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false" >
+                ユーザー：{{ session['user'] }}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ===== Main Content ===== -->
+    <div class="main-content">
+    <div class="content-body">
+        <div class="page-header">
+        <h4><i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>給与データ</h4>
+        <p>給与データを取り込みます。</p>
+        </div>
+
+        <div class="row g-4">
+
+        <!-- File Upload Area -->
+        <div class="col-lg-7">
+
+            <!-- File Uploda Card -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="bi bi-cloud-upload me-1"></i> ファイルアップロード
+                </div>
+                <div class="card-body">
+                    <div class="upload-area mb-3" id="uploadArea">
+                    <input type="file" accept=".xlsx" id="fileInput" />
+                    <div class="upload-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                    <p class="mb-1 fw-semibold">給与データエクセルファイルをここにドラッグ＆ドロップ</p>
+                    <p class="text-muted small mb-2">または クリックして選択</p>
+                    <!-- <span class="badge bg-secondary">エクセル形式のみ対応</span> -->
+                    </div>
+                    <div class="d-flex gap-2">
+                    <button class="btn btn-primary" id="uploadBtn">
+                        <i class="bi bi-upload me-1"></i>アップロード
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#formatInfo">
+                        <i class="bi bi-info-circle me-1"></i>ファイル形式について
+                    </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload Result Card (取込完了したら表示する？) -->
+            <div class="card result-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                        <div>
+                            <h6 class="mb-0">取込完了</h6>
+                            <small class="text-muted">2026/05/12 09:20 — 給与データ_202605.xlsx</small>
+                        </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                        <div class="col-4 text-center">
+                            <div class="fs-3 fw-bold text-success">1,245</div>
+                            <small class="text-muted">取込件数</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="fs-3 fw-bold text-danger">0</div>
+                            <small class="text-muted">エラー件数</small>
+                        </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#detailModal">
+                            <i class="bi bi-eye me-1"></i>取込データ確認
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"  data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                            <i class="bi bi-trash me-1"></i>データ削除・再取込
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /col -->
+        </div><!-- /row -->
+
+        <!-- File Upload Error Card -->
+        <div class="card result-card-error mt-4 d-none" id="errorCard">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+                    <div>
+                        <h6 class="mb-0 text-danger">取込エラー</h6>
+                        <small class="text-muted">給与データ_202602.csv</small>
+                    </div>
+                    </div>
+                    <p class="small mb-2">以下のエラーを修正してから再アップロードしてください。</p>
+                    <table class="table table-sm table-bordered small">
+                    <thead class="table-light">
+                        <tr><th>行番号</th><th>列名</th><th>エラー内容</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-danger">
+                        <td>5</td><td>基本給</td><td>数値以外の値が入力されています: "250,000円"</td>
+                        </tr>
+                        <tr class="table-danger">
+                        <td>12</td><td>所属地区コード</td><td>マスタに存在しないコードです: "ZZ"</td>
+                        </tr>
+                    </tbody>
+                    </table>
+            </div>
+        </div>
+
+    </div><!-- /content-body -->
+    </div><!-- /main-content -->
+
+    <!-- Excel Format Modal -->
+    <div class="modal fade" id="formatInfo" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>ファイル形式について
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <p class="small text-muted mb-2">以下の列順でエクセルファイルを作成してください（1行目はヘッダー行）。</p>
+                <table class="table table-sm table-bordered small mb-2">
+                    <thead class="table-light">
+                    <tr>
+                        <th>列番号</th>
+                        <th>列名</th>
+                        <th>型</th>
+                        <th>必須</th>
+                        <th>説明</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr><td>1</td><td>人事所属コード</td><td>文字列</td><td><span class="badge bg-danger">必須</span></td><td>数字8桁</td></tr>
+                    <tr><td>2</td><td>原価センタ</td><td>数値</td><td><span class="badge bg-secondary">任意</span></td><td></td></tr>
+                    <tr><td>3</td><td>合計 / (明細1)本給</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>4</td><td>合計 / (明細1)能力給</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>5</td><td>合計 / (明細1)職務・役割給</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>6</td><td>合計 / (明細1)役割業績給</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>7</td><td>合計</td><td>数値</td><td><span class="badge bg-secondary">任意</span></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+    
+    <!-- Excel Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>データ詳細
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered small mb-2 ">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-nowrap">地区</th>
+                            <th class="text-nowrap">課コード</th>
+                            <th class="text-nowrap">地区+課コード</th>
+                            <th class="text-nowrap">集約課コード</th>
+                            <th class="text-nowrap">地区+集約課コード</th>
+                            <th class="text-nowrap">原価センタ</th>
+                            <th class="text-nowrap">区分</th>
+                            <th class="text-nowrap">勘定科目</th>
+                            <th class="text-nowrap">行ラベル</th>
+                            <th class="text-nowrap">所属名</th>
+                            <th class="text-nowrap">合計/(明細1)本給</th>
+                            <th class="text-nowrap">合計/(明細1)能力給</th>
+                            <th class="text-nowrap">合計/(明細1)職務・役割給</th>
+                            <th class="text-nowrap">合計/(明細1)役割業績給</th>
+                            <th class="text-nowrap">合計/(明細1)報酬</th>
+                            <th class="text-nowrap">合計/(明細1)本俸</th>
+                            <th class="text-nowrap">合計/(明細1)基本賃金</th>
+                            <th class="text-nowrap">合計/(明細1)国内給与</th>
+                            <th class="text-nowrap">合計/(明細1)駐在員給与調整</th>
+                            <th class="text-nowrap">合計/(明細1)家族手当</th>
+                            <th class="text-nowrap">合計/(明細1)資格手当</th>
+                            <th class="text-nowrap">合計/(明細1)交替勤務加算給</th>
+                            <th class="text-nowrap">合計/(明細1)振替勤務就業手当</th>
+                            <th class="text-nowrap">合計/(明細1)早出残業手当</th>
+                            <th class="text-nowrap">合計/(明細1)休日出勤手当</th>
+                            <th class="text-nowrap">合計/(明細1)特定休日出勤手当</th>
+                            <th class="text-nowrap">合計/(明細1)交替勤務手当</th>
+                            <th class="text-nowrap">合計/(明細1)守衛手当</th>
+                            <th class="text-nowrap">合計/(明細1)深夜業手当</th>
+                            <th class="text-nowrap">合計/(明細1)単身赴任手当</th>
+                            <th class="text-nowrap">合計/(明細1)一時帰省旅費</th>
+                            <th class="text-nowrap">合計/(明細1)夜間呼出手当</th>
+                            <th class="text-nowrap">合計/(明細1)出向補償時間</th>
+                            <th class="text-nowrap">合計/(明細1)その他手当</th>
+                            <th class="text-nowrap">合計/(明細1)前月育介金額</th>
+                            <th class="text-nowrap">合計/(明細1)公的資格手当</th>
+                            <th class="text-nowrap">合計/(明細1)賃金控除</th>
+                            <th class="text-nowrap">合計/(明細2)職場離脱(会計)</th>
+                            <th class="text-nowrap">合計/(明細2)人件費人数(会計)</th>
+                            <th class="text-nowrap">合計</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>A</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>AAA</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                        <th>0</th>
+                    </tbody>
+                </table>
+            </div> <!-- /table-responsive-->
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+    <!-- Delete Data Confirm Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>給与データ削除確認
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+                <p class="middle text-muted mb-2">給与データを削除してもよろしいですか？</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">削除する</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">いいえ</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+<script src="./js/bootstrap.bundle.min.js"></script>
+<script>
+// Drag & drop visual feedback
+const uploadArea = document.getElementById('uploadArea');
+uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); });
+</script>
+</body>
+</html>

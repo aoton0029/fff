@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>労務費システム</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="./css/custom.css" />
+</head>
+<body>
+    <!-- ===== Sidebar ===== -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div style="position: relative; left: 50px; top: -60px">
+            <img src="./NEG.png"/>
+            <br>
+            <!-- <a class="sidebar-link" style="position: relative; right: 20px;" href="./index.html"> -->
+            <h5>労務費システム</h5> 
+            </a>
+        </div>
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <div class="sidebar-section">工程配賦</div>
+                <a class="sidebar-link" href="./salary.html">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> 給与データ取込
+                    <span class="status-dot done"></span>
+                </a>
+                <a class="sidebar-link" aria-current="page" href="./ouen.html">
+                    <i class="bi bi-people"></i> 応援連絡
+                </a>
+                <a class="sidebar-link" href="./koutei.html">
+                    <i class="bi bi-diagram-3"></i> 工程配賦
+                </a>
+                <div class="sidebar-section">他勘定</div>
+                <a class="sidebar-link" href="./kanjou_furikae.html">
+                    <i class="bi bi-arrow-left-right"></i> 労務費振替
+                </a>
+                <div class="sidebar-section">メンテナンス</div>
+                <a class="sidebar-link" href="./mnt_code.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">課コード</span>
+                </a>
+                <a class="sidebar-link" href="./mnt_master.html">
+                    <i class="bi bi-person-badge-fill"></i> <span class="ml-2">変換マスタ</span>
+                </a>                
+                <a class="sidebar-link" href="./mnt_data_output.html">
+                    <i class="bi bi-file-earmark-arrow-down"></i> <span class="ml-2">データ出力</span>
+                </a>
+            </ul>
+        </div>
+        <div class="dropdown" style="position: fixed; bottom: 70px; left: 30px;">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false" >
+                ユーザー：{{ session['user'] }}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ===== Main Content ===== -->
+    <div class="main-content">
+    <div class="content-body">
+
+        <div class="page-header">
+            <h4><i class="bi bi-people me-2 text-primary"></i>応援連絡</h4>
+            <p>応援連絡票をアップロードします。</p>
+        </div>
+
+        <div class="prereq-bar mb-2 d-flex align-items-center gap-3 flex-wrap">
+            <div class="prereq-item">
+                <i class="bi bi-check-circle-fill check"></i>
+                <span class="small">給与データ取込済 (1,245件)</span>
+            </div>
+        </div>
+
+        <!-- File Upload Area -->
+        <div class="row g-3 mb-2">
+        <div class="col">
+            <!-- Upload Accordion -->
+            <div class="accordion" id="uploadAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#item1"
+                            aria-expanded="true"
+                            aria-controls="item1">
+                            <i class="bi bi-cloud-upload me-1"></i>
+                            応援連絡票アップロード
+                        </button>
+                    </h2>
+                    <div id="item1" class="accordion-collapse collapse" data-bs-parent="#uploadAccordion">
+                        <div class="accordion-body">
+                            <div class="upload-area mb-2" id="uploadArea">
+                                <input type="file" accept=".xlsx" id="fileInput" />
+                                <div class="upload-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                                <p class="mb-1 fw-semibold">応援連絡票ファイルをここにドラッグ＆ドロップ</p>
+                                <p class="text-muted small mb-2">または クリックして選択</p>
+                                <!-- <span class="badge bg-secondary">エクセル形式のみ対応</span> -->
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" id="uploadBtn" type="button" data-bs-toggle="modal" data-bs-target="#fileLoaderModal">
+                                    <i class="bi bi-upload me-1"></i>アップロード
+                                </button>
+                                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#formatInfo">
+                                    <i class="bi bi-info-circle me-1"></i>ファイル形式について
+                                </button>
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+            </div>
+        </div> <!-- /col -->
+        </div> <!-- /row -->
+        
+        <!-- Uploaded Data Table Area -->
+        <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-geo-alt me-1"></i> 取込済課</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <small class="text-muted">1 - 12 / 12件</small>
+                    </div>
+                </div>
+                <div class="card-body p-0" id="districtListBody">
+                    <div class="table-scroll-wrapper">
+                        <table class="table table-sm align-middle mb-0 table-striped" id="districtTable">
+                            <thead class="sticky-top">
+                                <tr>
+                                <th>地区</th>
+                                <th>課コード</th>
+                                <th>ファイル名</th>
+                                <th class="text-end">件数</th>
+                                <th style="width:150px" class="text-center">追加日時</th>
+                                <th style="width:80px" class="text-center">追加者</th>
+                                <th style="width:150px" class="text-center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                <td>10</td>
+                                <td>5242</td>
+                                <td>応援連絡票sample_5242.xlsx</td>
+                                <td class="text-end">29</td>
+                                <td>2026-05-12 11:54:17</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>10</td>
+                                <td>5249</td>
+                                <td>応援連絡票sample_5249.xlsx</td>
+                                <td class="text-end">3</td>
+                                <td>2026-05-13 03:21:35</td>
+                                <td>ユーザー2</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>11</td>
+                                <td>5020</td>
+                                <td>応援連絡票sample_5020.xlsx</td>
+                                <td class="text-end">24</td>
+                                <td>2026-05-13 09:16:47</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>11</td>
+                                <td>5450</td>
+                                <td>応援連絡票sample_5450.xlsx</td>
+                                <td class="text-end">75</td>
+                                <td>2026-05-10 16:26:29</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>11</td>
+                                <td>5471</td>
+                                <td>応援連絡票sample_5471.xlsx</td>
+                                <td class="text-end">24</td>
+                                <td>2026-05-19 04:21:53</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>11</td>
+                                <td>5660</td>
+                                <td>応援連絡票sample_5660.xlsx</td>
+                                <td class="text-end">40</td>
+                                <td>2026-05-17 10:43:20</td>
+                                <td>ユーザー2</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>18</td>
+                                <td>5274</td>
+                                <td>応援連絡票sample_5274.xlsx</td>
+                                <td class="text-end">31</td>
+                                <td>2026-05-18 14:14:17</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>30</td>
+                                <td>5020</td>
+                                <td>応援連絡票sample_5020.xlsx</td>
+                                <td class="text-end">82</td>
+                                <td>2026-05-12 04:05:14</td>
+                                <td>ユーザー3</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>40</td>
+                                <td>3319</td>
+                                <td>応援連絡票sample_3319.xlsx</td>
+                                <td class="text-end">75</td>
+                                <td>2026-05-13 14:16:20</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>40</td>
+                                <td>4131</td>
+                                <td>応援連絡票sample_4131.xlsx</td>
+                                <td class="text-end">66</td>
+                                <td>2026-05-19 08:18:23</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>40</td>
+                                <td>5728</td>
+                                <td>応援連絡票sample_5728.xlsx</td>
+                                <td class="text-end">44</td>
+                                <td>2026-05-15 14:43:06</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>40</td>
+                                <td>6220</td>
+                                <td>応援連絡票sample_6220.xlsx</td>
+                                <td class="text-end">9</td>
+                                <td>2026-05-15 16:28:01</td>
+                                <td>ユーザー2</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>40</td>
+                                <td>6284</td>
+                                <td>応援連絡票sample_6284.xlsx</td>
+                                <td class="text-end">23</td>
+                                <td>2026-05-11 09:03:58</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>40</td>
+                                <td>6285</td>
+                                <td>応援連絡票sample_6285.xlsx</td>
+                                <td class="text-end">45</td>
+                                <td>2026-05-13 17:58:08</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>90</td>
+                                <td>1200</td>
+                                <td>応援連絡票sample_1200.xlsx</td>
+                                <td class="text-end">80</td>
+                                <td>2026-05-16 16:17:17</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>90</td>
+                                <td>4123</td>
+                                <td>応援連絡票sample_4123.xlsx</td>
+                                <td class="text-end">20</td>
+                                <td>2026-05-18 23:06:37</td>
+                                <td>ユーザー2</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>90</td>
+                                <td>5094</td>
+                                <td>応援連絡票sample_5094.xlsx</td>
+                                <td class="text-end">60</td>
+                                <td>2026-05-12 18:04:37</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>90</td>
+                                <td>5298</td>
+                                <td>応援連絡票sample_5298.xlsx</td>
+                                <td class="text-end">82</td>
+                                <td>2026-05-15 07:02:29</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>91</td>
+                                <td>3312</td>
+                                <td>応援連絡票sample_3312.xlsx</td>
+                                <td class="text-end">81</td>
+                                <td>2026-05-15 21:10:06</td>
+                                <td>ユーザー1</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                                <tr>
+                                <td>91</td>
+                                <td>6278</td>
+                                <td>応援連絡票sample_6278.xlsx</td>
+                                <td class="text-end">40</td>
+                                <td>2026-05-13 10:14:47</td>
+                                <td>ユーザー2</td>
+                                <td class="text-center">
+                                    <button class="btn btn-xs btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#detailModal" data-district="10" title="データ確認">
+                                    <i class="bi bi-eye"></i>確認
+                                    </button>
+                                    <button class="btn btn-xs btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-district="10" title="データ削除">
+                                    <i class="bi bi-trash"></i>削除
+                                    </button>
+                                </td>                                </tr>
+                            </tbody>
+                            </table>
+
+                    </div>
+                </div>
+                <div class="card-footer py-2 d-flex justify-content-between align-items-center">
+                    <div>
+                        <button class="btn btn-xs btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#ouenCalcModal" data-district="10" title="労務費トランDL">
+                            <i class="bi bi-folder-symlink me-1"></i>応援計算データ
+                        </button>
+                        <button class="btn btn-xs btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#laborCostTranModal" data-district="10" title="労務費トランDL">
+                            <i class="bi bi-folder-symlink me-1"></i>労務費トラン
+                        </button>
+                    </div>
+                    <!-- <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item disabled"><a class="page-link" href="#">›</a></li>
+                    </ul>
+                    </nav> -->
+                </div>
+            </div>
+        </div> <!-- /col -->
+        </div> <!-- /row -->
+
+    </div> <!-- /content-body -->
+    </div> <!-- /main-content -->
+
+    <!-- ファイル形式 モーダル -->
+    <div class="modal fade" id="formatInfo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>ファイル形式について
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <p class="small text-muted mb-2">以下の列順でエクセルファイルを作成してください（1行目はヘッダー行）。</p>
+                <table class="table table-sm table-bordered small mb-2">
+                    <thead class="table-light">
+                    <tr>
+                        <th>列番号</th>
+                        <th>列名</th>
+                        <th>型</th>
+                        <th>必須</th>
+                        <th>説明</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr><td>1</td><td>地区</td><td>文字列</td><td><span class="badge bg-danger">必須</span></td><td>送り出し</td></tr>
+                    <tr><td>2</td><td>課コード</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td>送り出し</td></tr>
+                    <tr><td>3</td><td>地区</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td>受け入れ</td></tr>
+                    <tr><td>4</td><td>課コード</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td>受け入れ</td></tr>
+                    <tr><td>5</td><td>出課日</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>6</td><td>帰課日</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>7</td><td>日数</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>8</td><td>延日数</td><td>数値</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    <tr><td>9</td><td>備考</td><td>文字列</td><td><span class="badge bg-danger">必須</span></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+    <!-- データ確認 Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>データ詳細
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered ">
+                        <col>
+                        <colgroup span="2"></colgroup>
+                        <thead>
+                            <tr>
+                            <th colspan="3" scope="colgroup">送り出し</th>
+                            <th colspan="3" scope="colgroup">受け入れ</th>
+                            <th colspan="3" scope="colgroup">日数</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <th>地区</th>
+                            <th>課コード</th>
+                            <th>課名称</th>
+                            <th>地区</th>
+                            <th>課コード</th>
+                            <th>課名称</th>
+                            <th>送課日</th>
+                            <th>帰課日</th>
+                            <th>日数</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td>10</td>
+                            <td>5249</td>
+                            <td>精密溶融部（電子部品）</td>
+                            <td>10</td>
+                            <td>5240</td>
+                            <td>電子部品事業部</td>
+                            <td>05/01</td>
+                            <td>05/08</td>
+                            <td>8</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5249</td>
+                            <td>精密溶融部（電子部品）</td>
+                            <td>11</td>
+                            <td>5240</td>
+                            <td>電子部品事業部</td>
+                            <td>05/01</td>
+                            <td>05/09</td>
+                            <td>10</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5249</td>
+                            <td>精密溶融部（電子部品）</td>
+                            <td>40</td>
+                            <td>5240</td>
+                            <td>電子部品事業部</td>
+                            <td>05/01</td>
+                            <td>05/13</td>
+                            <td>14</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+    <!-- データ削除 Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>給与データ削除確認
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+                <p class="middle text-muted mb-2">給与データを削除してもよろしいですか？</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">削除する</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">いいえ</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+    <!-- 応援計算データ -->
+    <div class="modal fade" id="ouenCalcModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>応援計算データ ダウンロード
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+                <div class="table-scroll-wrapper-modal">
+                    <table class="table table-sm align-middle mb-0 table-striped" id="districtTable">
+                        <thead class="sticky-top">
+                            <tr>
+                            <th>地区</th>
+                            <th>課コード</th>
+                            <th>区分</th>
+                            <th>課コード名</th>
+                            <th>応援単価</th>
+                            <th>集約課コード</th>
+                            <th>送出金額</th>
+                            <th>送出人員数</th>
+                            <th>受入金額</th>
+                            <th>受入人員数</th>
+                            <th>応援後人件費</th>
+                            <th>応援後人員数</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td>10</td>
+                            <td>5020</td>
+                            <td>製造経費</td>
+                            <td>コンシューマーガラス事業部</td>
+                            <td class="text-end">43,677</td>
+                            <td>5020</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">1,354,000</td>
+                            <td class="text-end">1.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5026</td>
+                            <td>製造経費</td>
+                            <td>管理Ｇ（ＣＧ）</td>
+                            <td class="text-end">14,751</td>
+                            <td>5026</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">1,829,161</td>
+                            <td class="text-end">4.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5030</td>
+                            <td>製造経費</td>
+                            <td>製造部（ＣＧ）</td>
+                            <td class="text-end">15,385</td>
+                            <td>5030</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">101,322</td>
+                            <td class="text-end">0.1</td>
+                            <td class="text-end">26,333,829</td>
+                            <td class="text-end">55.1</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5037</td>
+                            <td>製造経費</td>
+                            <td>耐熱建材Ｇ（ＣＧ製造部）</td>
+                            <td class="text-end">16,367</td>
+                            <td>5030</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">3,044,309</td>
+                            <td class="text-end">6.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5041</td>
+                            <td>製造経費</td>
+                            <td>環境工務部（ＣＧ）</td>
+                            <td class="text-end">23,161</td>
+                            <td>5041</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">718,000</td>
+                            <td class="text-end">1.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5042</td>
+                            <td>製造経費</td>
+                            <td>環境動力Ｇ（ＣＧ環境工務部）</td>
+                            <td class="text-end">13,280</td>
+                            <td>5041</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">4,116,877</td>
+                            <td class="text-end">10.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5045</td>
+                            <td>製造経費</td>
+                            <td>溶融Ｇ（ＣＧ製造部）</td>
+                            <td class="text-end">16,620</td>
+                            <td>5030</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">6,698,224</td>
+                            <td class="text-end">13.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5049</td>
+                            <td>製造経費</td>
+                            <td>工務Ｇ（ＣＧ環境工務部）</td>
+                            <td class="text-end">15,669</td>
+                            <td>5041</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">5,343,395</td>
+                            <td class="text-end">11.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5075</td>
+                            <td>製造経費</td>
+                            <td>管硝子Ｇ（ＣＧ製造部）</td>
+                            <td class="text-end">16,083</td>
+                            <td>5030</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">3,490,115</td>
+                            <td class="text-end">7.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5090</td>
+                            <td>製造経費</td>
+                            <td>品質保証部（ＣＧ）</td>
+                            <td class="text-end">23,161</td>
+                            <td>5090</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">718,000</td>
+                            <td class="text-end">1.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5091</td>
+                            <td>製造経費</td>
+                            <td>耐熱硝子Ｇ（ＣＧ品質保証部）</td>
+                            <td class="text-end">14,532</td>
+                            <td>5090</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">3,603,967</td>
+                            <td class="text-end">8.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5092</td>
+                            <td>製造経費</td>
+                            <td>建材硝子Ｇ（ＣＧ品質保証部）</td>
+                            <td class="text-end">16,004</td>
+                            <td>5090</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">496,138</td>
+                            <td class="text-end">1.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5094</td>
+                            <td>製造経費</td>
+                            <td>管硝子Ｇ（ＣＧ品質保証部）</td>
+                            <td class="text-end">14,462</td>
+                            <td>5090</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">3,138,465</td>
+                            <td class="text-end">7.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5095</td>
+                            <td>製造経費</td>
+                            <td>基盤Ｇ（ＣＧ品質保証部）</td>
+                            <td class="text-end">15,745</td>
+                            <td>5090</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">976,242</td>
+                            <td class="text-end">2.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5240</td>
+                            <td>製造経費</td>
+                            <td>電子部品事業部</td>
+                            <td class="text-end">28,129</td>
+                            <td>5240</td>
+                            <td class="text-end text-danger">-675,096</td>
+                            <td class="text-end text-danger">-0.8</td>
+                            <td class="text-end">344,283</td>
+                            <td class="text-end">0.6</td>
+                            <td class="text-end">1,413,187</td>
+                            <td class="text-end">1.8</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5249</td>
+                            <td>製造経費</td>
+                            <td>精密溶融部（電子部品）</td>
+                            <td class="text-end">14,100</td>
+                            <td>5249</td>
+                            <td class="text-end text-danger">-451,200</td>
+                            <td class="text-end text-danger">-1.1</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">6,979,847</td>
+                            <td class="text-end">15.9</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5265</td>
+                            <td>製造経費</td>
+                            <td>第三製造部（電子部品）</td>
+                            <td class="text-end">17,987</td>
+                            <td>5265</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">2,788,012</td>
+                            <td class="text-end">5.0</td>
+                            </tr>
+                            <tr>
+                            <td>10</td>
+                            <td>5293</td>
+                            <td>製造経費</td>
+                            <td>プロセス開発部</td>
+                            <td class="text-end">14,975</td>
+                            <td>5293</td>
+                            <td class="text-end text-danger">-3,189,675</td>
+                            <td class="text-end text-danger">-6.9</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">2,845,256</td>
+                            <td class="text-end">6.1</td>
+                            </tr>
+                            <tr>
+                            <td>11</td>
+                            <td>5240</td>
+                            <td>製造経費</td>
+                            <td>電子部品事業部</td>
+                            <td class="text-end">15,605</td>
+                            <td>5240</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">0</td>
+                            <td class="text-end">1,076,094</td>
+                            <td class="text-end">1.5</td>
+                            <td class="text-end">3,978,705</td>
+                            <td class="text-end">7.5</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="sticky-bottom table-secondary fw-bold">
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-end"></td>
+                            <td></td>
+                            <td class="text-end text-danger">-10,883,963</td>
+                            <td class="text-end text-danger">-19.0</td>
+                            <td class="text-end">10,883,963</td>
+                            <td class="text-end">19.0</td>
+                            <td class="text-end">865,726,102</td>
+                            <td class="text-end">1,813</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div> 
+           </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">ダウンロードする</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->    
+
+    <!-- 労務費トラン モーダル -->
+    <div class="modal fade" id="laborCostTranModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <i class="bi bi-calendar3 me-2"></i>労務費トラン ダウンロード
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body">
+                <p class="middle text-muted mb-4">労務費トランに含める地区と集計区分を選択してください</p>
+                <div class="row">
+                    <!-- 地区リスト -->
+                    <div class="col">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover table-bordered">
+                                <thead class="sticky-top">
+                                    <tr>
+                                        <th style="width:40px">
+                                            <input type="checkbox" class="form-check-input" id="chkAll">
+                                        </th>
+                                        <th>地区</th>
+                                        <th>名称</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input"></td>
+                                        <td>10</td>
+                                        <td>大津</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input"></td>
+                                        <td>11</td>
+                                        <td>草津</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input"></td>
+                                        <td>18</td>
+                                        <td>設備関連部門</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input"></td>
+                                        <td>30</td>
+                                        <td>高月</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input"></td>
+                                        <td>40</td>
+                                        <td>能登川</td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input"></td>
+                                        <td>90</td>
+                                        <td>本社</td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- グループ選択-->
+                    <div class="col">
+                        <div class="d-flex flex-column gap-2">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkAlloc" checked="">
+                            <label class="form-check-label small" for="chkAlloc">
+                                地区&区分
+                            </label>
+                            </div>
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkLabor" checked="">
+                            <label class="form-check-label small" for="chkLabor">
+                                地区+集約課コード
+                            </label>
+                            </div>
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkLabor" checked="">
+                            <label class="form-check-label small" for="chkLabor">
+                                地区+課コード
+                            </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">ダウンロードする</button>
+            </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal-->
+
+    <!-- ファイルアップロード進捗 モーダル-->
+    <div class="modal fade" id="fileLoaderModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+
+            <!-- ヘッダー -->
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <span id="headerIcon"><i class="bi bi-check-circle-fill text-success"></i></span>
+                    <span id="headerTitle">読み込み完了 (成功 5 / エラー 1)</span>
+                </h5>
+                <!-- × ボタンは非表示（キャンセルボタンで代替） -->
+            </div>
+
+            <!-- ボディ -->
+            <div class="modal-body px-4">
+                <!-- ─── フェーズ①：進捗表示 ─── -->
+                <div id="phaseProgress" class="phase-hidden">
+
+                    <!-- 全体プログレスバー -->
+                    <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">全体の進捗</small>
+                        <small id="progressText" class="text-muted fw-semibold">6 / 6</small>
+                    </div>
+                    <div class="progress" style="height:10px">
+                        <div id="progressBar" class="progress-bar bg-primary" role="progressbar" style="width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                <!-- ─── フェーズ②：結果表示 ─── -->
+                <div id="phaseResult" class="">
+                    <!-- 詳細リスト -->
+                    <div class="border rounded px-3 py-1" style="max-height:260px; overflow-y:auto">
+                        <div id="resultList">
+                            <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-check-circle-fill status-ok"></i></span>
+                            <span class="file-name" title="応援連絡票sample_5242.xlsx">応援連絡票sample_5242.xlsx</span>
+                            <small class="text-success">29 件読み込み</small>
+                        </div>
+                        <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-check-circle-fill status-ok"></i></span>
+                            <span class="file-name" title="応援連絡票sample_5249.xlsx">応援連絡票sample_5249.xlsx</span>
+                            <small class="text-success">3 件読み込み</small>
+                        </div>
+                        <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-x-circle-fill status-error"></i></span>
+                            <span class="file-name" title="応援連絡票sample_5020.xlsx">応援連絡票sample_5020.xlsx</span>
+                            <small class="text-danger">必須列が存在しません (列: 課コード)</small>
+                        </div>
+                        <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-check-circle-fill status-ok"></i></span>
+                            <span class="file-name" title="応援連絡票sample_5450.xlsx">応援連絡票sample_5450.xlsx</span>
+                            <small class="text-success">75 件読み込み</small>
+                        </div>
+                        <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-check-circle-fill status-ok"></i></span>
+                            <span class="file-name" title="応援連絡票sample_5471.xlsx">応援連絡票sample_5471.xlsx</span>
+                            <small class="text-success">24 件読み込み</small>
+                        </div>
+                        <div class="file-row">
+                            <span class="file-icon"><i class="bi bi-check-circle-fill status-ok"></i></span>
+                            <span class="file-name" title="応援連絡票sample_5660.xlsx">応援連絡票sample_5660.xlsx</span>
+                            <small class="text-success">40 件読み込み</small>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div><!-- /modal-body -->
+
+            <!-- フッター -->
+            <div class="modal-footer">
+                <!-- キャンセル（処理中のみ表示） -->
+                <!-- <button id="btnCancel" type="button" class="btn btn-outline-secondary d-none" onclick="cancelLoading()">
+                    <i class="bi bi-x-circle me-1"></i>キャンセル
+                </button> -->
+
+                <!-- 確定（完了後のみ表示） -->
+                <button id="btnConfirm" type="button" class="btn btn-success" data-bs-dismiss="modal">
+                    <i class="bi bi-check-circle me-1"></i>確定
+                </button>
+            </div>
+        </div>
+        </div> <!-- /modal-content -->
+    </div> <!-- /modal-dialog -->
+    </div> <!-- /modal -->
+
+    <script src="./js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

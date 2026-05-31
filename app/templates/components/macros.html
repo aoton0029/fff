@@ -4,14 +4,14 @@
    upload_url: the hx-post target URL
    result_target: CSS selector for htmx swap target (e.g. '#upload-result')
    ================================================================ #}
-{% macro upload_form(upload_url, result_target='#upload-result', form=None) %}
+{% macro upload_form(upload_url, result_target='#upload-result', form=None, title='ファイルアップロード') %}
 <div class="accordion mb-3" id="uploadAccordion">
   <div class="accordion-item">
     <h2 class="accordion-header" id="uploadHeading">
       <button class="accordion-button collapsed" type="button"
               data-bs-toggle="collapse" data-bs-target="#uploadCollapse"
               aria-expanded="false" aria-controls="uploadCollapse">
-        <i class="bi bi-upload me-2"></i>ファイルアップロード
+        <i class="bi bi-upload me-2"></i>{{ title }}
       </button>
     </h2>
     <div id="uploadCollapse" class="accordion-collapse collapse" aria-labelledby="uploadHeading">

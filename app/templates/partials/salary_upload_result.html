@@ -1,0 +1,116 @@
+{# Partial: salary_upload_result.html
+   Rendered on initial page load and after upload / delete via HTMX.
+   Variables:
+     batch        : UploadBatch or None
+     success      : bool (only set immediately after an upload attempt)
+     saved_count  : int
+     errors       : list[dict]  (row, field, message)
+     already_exists : bool (only set when upload is blocked)
+#}
+
+{% if success is defined and not success %}
+{# ── Upload failed ── #}
+<div class="card result-card-error mt-0">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+      <div>
+        <h6 class="mb-0 text-danger">取込エラー</h6>
+        <small class="text-muted">ファイルを確認して再アップロードしてください。</small>
+      </div>
+    </div>
+    {% if errors %}
+    <p class="small mb-2">以下のエラーを修正してから再アップロードしてください。</p>
+    <table class="table table-sm table-bordered small">
+      <thead class="table-light">
+        <tr><th>行番号</th><th>列名</th><th>エラー内容</th></tr>
+      </thead>
+      <tbody>
+        {% for err in errors %}
+        <tr class="table-danger">
+          <td>{{ err.row }}</td>
+          <td>{{ err.field }}</td>
+          <td>{{ err.message }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+</div>
+
+{% elif already_exists is defined and already_exists %}
+{# ── Upload blocked: batch already exists ── #}
+<div class="alert alert-warning mt-0" role="alert">
+  <i class="bi bi-exclamation-triangle-fill me-1"></i>
+  <strong>既存のデータがあります。</strong>
+  取込済みのデータを削除してから再度アップロードしてください。
+</div>
+
+{% elif batch %}
+{# ── Batch exists: show result card ── #}
+<div class="card result-card">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-check-circle-fill text-success fs-4"></i>
+      <div>
+        <h6 class="mb-0">取込完了</h6>
+        <small class="text-muted">
+          {{ batch.created_at.strftime('%Y/%m/%d %H:%M') }} — {{ batch.file_name }}
+        </small>
+      </div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-4 text-center">
+        <div class="fs-3 fw-bold text-success">{{ '{:,}'.format(batch.record_count) }}</div>
+        <small class="text-muted">取込件数</small>
+      </div>
+      <div class="col-4 text-center">
+        <div class="fs-3 fw-bold text-danger">0</div>
+        <small class="text-muted">エラー件数</small>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-secondary"
+              hx-get="{{ url_for('main.salary_detail', batch_id=batch.id) }}"
+              hx-target="#detail-modal-body"
+              hx-swap="innerHTML"
+              data-bs-toggle="modal"
+              data-bs-target="#detailModal">
+        <i class="bi bi-eye me-1"></i>取込データ確認
+      </button>
+      <button class="btn btn-sm btn-outline-danger"
+              data-bs-toggle="modal"
+              data-bs-target="#confirmDeleteModal">
+        <i class="bi bi-trash me-1"></i>データ削除・再取込
+      </button>
+    </div>
+  </div>
+</div>
+
+{# Confirm Delete Modal — lives here so batch.id is always current #}
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle me-2"></i>給与データ削除確認
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-0">給与データを削除してもよろしいですか？</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger"
+                hx-post="{{ url_for('main.salary_delete', batch_id=batch.id) }}"
+                hx-target="#upload-result"
+                hx-swap="innerHTML"
+                data-bs-dismiss="modal">削除する</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">いいえ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}

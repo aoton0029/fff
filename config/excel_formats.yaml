@@ -2,21 +2,87 @@ salary:
   display_name: 給与データ
   sheet_name: 給与データ
   header_row: 1
-  use_cols: A:G
+  use_cols: A:AN
   columns:
-    - name: 部署コード
+    - name: 地区
       type: str
-    - name: 本給
+    - name: 課コード
+      type: str
+    - name: 地区+課コード
+      type: str
+    - name: 集約課コード
+      type: str
+    - name: 地区+集約課コード
+      type: str
+    - name: 原価センタ
+      type: str
+    - name: 区分
+      type: str
+    - name: 勘定科目
+      type: str
+    - name: 行ラベル
+      type: str
+    - name: 所属名
+      type: str
+    - name: 合計/(明細1)本給
       type: int
-    - name: 能力給
+    - name: 合計/(明細1)能力給
       type: int
-    - name: 報酬
+    - name: 合計/(明細1)職務・役割給
       type: int
-    - name: 手当
+    - name: 合計/(明細1)役割業績給
       type: int
-    - name: 人員数
+    - name: 合計/(明細1)報酬
       type: int
-    - name: 給与額
+    - name: 合計/(明細1)本俸
+      type: int
+    - name: 合計/(明細1)基本賃金
+      type: int
+    - name: 合計/(明細1)国内給与
+      type: int
+    - name: 合計/(明細1)駐在員給与調整
+      type: int
+    - name: 合計/(明細1)家族手当
+      type: int
+    - name: 合計/(明細1)資格手当
+      type: int
+    - name: 合計/(明細1)交替勤務加算給
+      type: int
+    - name: 合計/(明細1)振替勤務就業手当
+      type: int
+    - name: 合計/(明細1)早出残業手当
+      type: int
+    - name: 合計/(明細1)休日出勤手当
+      type: int
+    - name: 合計/(明細1)特定休日出勤手当
+      type: int
+    - name: 合計/(明細1)交替勤務手当
+      type: int
+    - name: 合計/(明細1)守衛手当
+      type: int
+    - name: 合計/(明細1)深夜業手当
+      type: int
+    - name: 合計/(明細1)単身赴任手当
+      type: int
+    - name: 合計/(明細1)一時帰省旅費
+      type: int
+    - name: 合計/(明細1)夜間呼出手当
+      type: int
+    - name: 合計/(明細1)出向補償時間
+      type: int
+    - name: 合計/(明細1)その他手当
+      type: int
+    - name: 合計/(明細1)前月育介金額
+      type: int
+    - name: 合計/(明細1)公的資格手当
+      type: int
+    - name: 合計/(明細1)賃金控除
+      type: int
+    - name: 合計/(明細2)職場離脱(会計)
+      type: int
+    - name: 合計/(明細2)人件費人数(会計)
+      type: int
+    - name: 合計
       type: int
 
 allocation:
@@ -46,3 +112,28 @@ labor_transfer:
       type: str
     - name: 作業時間
       type: float
+
+ouen:
+  display_name: 応援連絡票
+  sheet_name: 応援連絡票
+  header_row: 1
+  use_cols: A:I
+  columns:
+    - name: 送り出し地区
+      type: str
+    - name: 送り出し課コード
+      type: str
+    - name: 受け入れ地区
+      type: str
+    - name: 受け入れ課コード
+      type: str
+    - name: 出課日
+      type: date
+    - name: 帰課日
+      type: date
+    - name: 日数
+      type: int
+    - name: 延日数
+      type: int
+    - name: 備考
+      type: str
