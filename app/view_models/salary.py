@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+from sqlalchemy import select
 
+from ..extensions import db
 from ..forms.upload import UploadForm
 from ..models.upload_batch import UploadBatch
 
@@ -15,9 +17,8 @@ class SalaryIndexViewModel:
     def __post_init__(self):
         self.form = UploadForm()
         self.file_type = _FILE_TYPE
-        self.batch = (
-            UploadBatch.query
+        self.batch = db.session.scalar(
+            select(UploadBatch)
             .filter_by(file_type=_FILE_TYPE)
             .order_by(UploadBatch.created_at.desc())
-            .first()
         )

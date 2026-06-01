@@ -2,6 +2,7 @@ import os
 
 from flask import render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
+from sqlalchemy import delete, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
@@ -40,8 +41,8 @@ def ouen_upload():
 
     if htmx:
         page = request.args.get('page', 1, type=int)
-        query = UploadBatch.query.filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-        pagination = query.paginate(page=page, per_page=_PER_PAGE, error_out=False)
+        query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
+        pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
         return render_template(
             'partials/ouen_upload_result.html',
             file_results=file_results,
@@ -67,22 +68,22 @@ def ouen_upload():
 @main_bp.route('/ouen/detail/<int:batch_id>')
 @login_required
 def ouen_detail(batch_id: int):
-    batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
-    records = OuenData.query.filter_by(batch_id=batch_id).all()
+    batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
+    records = db.session.scalars(select(OuenData).filter_by(batch_id=batch_id)).all()
     return render_template('partials/ouen_detail_modal.html', batch=batch, records=records)
 
 
 @main_bp.route('/ouen/delete/<int:batch_id>', methods=['DELETE', 'POST'])
 @login_required
 def ouen_delete(batch_id: int):
-    batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
-    OuenData.query.filter_by(batch_id=batch_id).delete()
+    batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
+    db.session.execute(delete(OuenData).where(OuenData.batch_id == batch_id))
     db.session.delete(batch)
     db.session.commit()
 
     page = request.args.get('page', 1, type=int)
-    query = UploadBatch.query.filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-    pagination = query.paginate(page=page, per_page=_PER_PAGE, error_out=False)
+    query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
+    pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
     return render_template(
         'partials/ouen_batch_table.html',
         batches=pagination.items,

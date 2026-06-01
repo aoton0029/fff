@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy import select
 
 from ..forms.auth import LoginForm
+from ..extensions import db
 from ..models.user import User
 
 auth_bp = Blueprint('auth', __name__)
@@ -14,7 +16,7 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = db.session.scalar(select(User).filter_by(username=form.username.data))
         if user and user.check_password(form.password.data):
             login_user(user)
             next_page = request.args.get('next')

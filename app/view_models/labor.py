@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+from sqlalchemy import select
 
+from ..extensions import db
 from ..forms.upload import UploadForm
 from ..models.upload_batch import UploadBatch
 
@@ -19,9 +21,9 @@ class LaborIndexViewModel:
         self.form = UploadForm()
         self.file_type = _FILE_TYPE
         query = (
-            UploadBatch.query
+            select(UploadBatch)
             .filter_by(file_type=_FILE_TYPE)
             .order_by(UploadBatch.created_at.desc())
         )
-        self.pagination = query.paginate(page=self.page, per_page=_PER_PAGE, error_out=False)
+        self.pagination = db.paginate(query, page=self.page, per_page=_PER_PAGE, error_out=False)
         self.batches = self.pagination.items

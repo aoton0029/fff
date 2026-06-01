@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+from sqlalchemy import func, select
 
+from ..extensions import db
 from ..forms.upload import UploadForm
 from ..models.salary import SalaryData
 from ..models.upload_batch import UploadBatch
@@ -18,7 +20,7 @@ class OuenIndexViewModel:
 
     def __post_init__(self):
         self.form = UploadForm()
-        query = UploadBatch.query.filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-        self.pagination = query.paginate(page=self.page, per_page=_PER_PAGE, error_out=False)
+        query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
+        self.pagination = db.paginate(query, page=self.page, per_page=_PER_PAGE, error_out=False)
         self.batches = self.pagination.items
-        self.salary_count = SalaryData.query.count()
+        self.salary_count = db.session.scalar(select(func.count()).select_from(SalaryData))

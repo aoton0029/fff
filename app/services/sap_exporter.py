@@ -4,6 +4,9 @@ from __future__ import annotations
 import io
 from collections import defaultdict
 
+from sqlalchemy import select
+
+from ..extensions import db
 from ..models.allocation import AllocationData
 from ..models.labor_transfer import LaborTransferData
 from ..models.ouen import OuenData
@@ -22,7 +25,7 @@ def build_allocation_tsv() -> bytes:
     """
     # ── Step 1: V_人事データ ──────────────────────────────────────
     jinjidata: dict[tuple[str, str], dict] = {}
-    for r in SalaryData.query.all():
+    for r in db.session.scalars(select(SalaryData)).all():
         chiku = r.chiku or ''
         ka = r.ka_code or ''
         if not chiku or not ka:
@@ -59,7 +62,7 @@ def build_allocation_tsv() -> bytes:
         oen_go[(chiku, shuuyaku)] += e['total']
 
     # 応援の送出 (マイナス) / 受入 (プラス) を反映
-    for o in OuenData.query.all():
+    for o in db.session.scalars(select(OuenData)).all():
         from_key = (o.from_district, o.from_section_code)
         tanka = jinjidata.get(from_key, {}).get('oen_tanka', 0.0)
         kinko = tanka * (o.extended_days or 0)
@@ -74,13 +77,13 @@ def build_allocation_tsv() -> bytes:
     # ── Step 4: V_工程配賦 ───────────────────────────────────────
     # 課コード → 原価センタ マップ (SectionMaster で代用)
     section_cc: dict[str, str] = {
-        s.section_code: s.cost_center_code for s in SectionMaster.query.all()
+        s.section_code: s.cost_center_code for s in db.session.scalars(select(SectionMaster)).all()
     }
 
     # 人員計を計算し、(地区, 集約課コード) 単位で合計
     items = []
     jinko_sum: dict[tuple[str, str], float] = defaultdict(float)
-    for r in AllocationData.query.all():
+    for r in db.session.scalars(select(AllocationData)).all():
         jinko = (r.formation or 0.0) + (r.fixed_count or 0.0)
         shuuyaku = ka_to_shuuyaku.get((r.district_code, r.section_code), r.section_code)
         items.append({'r': r, 'jinko': jinko, 'shuuyaku': shuuyaku})
@@ -123,7 +126,7 @@ def build_labor_tsv(unit_price: float) -> bytes:
                '作業時間', '振替金額', 'WBS', '資産集約番号', '指図', '備考']
     rows: list[list] = [headers]
 
-    for r in LaborTransferData.query.all():
+    for r in db.session.scalars(select(LaborTransferData)).all():
         furikae = round((r.work_hours or 0.0) * unit_price, 0)
         rows.append([
             r.account_code,

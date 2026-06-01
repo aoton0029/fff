@@ -2,9 +2,11 @@ import os
 
 from flask import Response, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
+from sqlalchemy import delete, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
+from ..models.processing_month import ProcessingMonth
 from ..models.upload_batch import UploadBatch
 from ..models.allocation import AllocationData
 from ..services.data_importer import import_excel_file
@@ -41,8 +43,8 @@ def allocation_upload():
 
     if htmx:
         page = request.args.get('page', 1, type=int)
-        query = UploadBatch.query.filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-        pagination = query.paginate(page=page, per_page=_PER_PAGE, error_out=False)
+        query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
+        pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
         return render_template(
             'partials/upload_result.html',
             file_results=file_results,
@@ -69,18 +71,16 @@ def allocation_upload():
 @main_bp.route('/allocation/detail/<int:batch_id>')
 @login_required
 def allocation_detail(batch_id: int):
-    batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
-    records = AllocationData.query.filter_by(batch_id=batch_id).all()
+    batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
+    records = db.session.scalars(select(AllocationData).filter_by(batch_id=batch_id)).all()
     return render_template('partials/allocation_detail_modal.html', batch=batch, records=records)
 
 
 @main_bp.route('/allocation/sap-output')
 @login_required
 def allocation_sap_output():
-    salary_batch = UploadBatch.query.filter_by(file_type='salary').order_by(
-        UploadBatch.created_at.desc()
-    ).first()
-    yr_mo = salary_batch.year_month if salary_batch and salary_batch.year_month else None
+    setting = db.session.scalar(select(ProcessingMonth))
+    yr_mo = setting.year_month if setting else None
     ym_suffix = yr_mo.replace('-', '') if yr_mo else 'unknown'
     filename = f'allocation_SAP_{ym_suffix}.txt'
     tsv_bytes = build_allocation_tsv()
@@ -94,14 +94,14 @@ def allocation_sap_output():
 @main_bp.route('/allocation/delete/<int:batch_id>', methods=['DELETE', 'POST'])
 @login_required
 def allocation_delete(batch_id: int):
-    batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
-    AllocationData.query.filter_by(batch_id=batch_id).delete()
+    batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
+    db.session.execute(delete(AllocationData).where(AllocationData.batch_id == batch_id))
     db.session.delete(batch)
     db.session.commit()
 
     page = request.args.get('page', 1, type=int)
-    query = UploadBatch.query.filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-    pagination = query.paginate(page=page, per_page=_PER_PAGE, error_out=False)
+    query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
+    pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
     return render_template(
         'partials/batch_table.html',
         batches=pagination.items,

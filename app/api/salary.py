@@ -1,12 +1,12 @@
 from flask import render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
+from sqlalchemy import delete, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
 from ..forms.upload import UploadForm
 from ..models.upload_batch import UploadBatch
 from ..models.salary import SalaryData
-from ..models.processing_month import ProcessingMonth
 from ..services.data_importer import import_excel_file
 
 _FILE_TYPE = 'salary'
@@ -16,7 +16,7 @@ _FILE_TYPE = 'salary'
 @login_required
 def salary_upload():
     # Single-batch policy: block upload if batch already exists
-    existing = UploadBatch.query.filter_by(file_type=_FILE_TYPE).first()
+    existing = db.session.scalar(select(UploadBatch).filter_by(file_type=_FILE_TYPE))
     if existing:
         if htmx:
             return render_template(
@@ -40,12 +40,10 @@ def salary_upload():
         flash('アップロードフォームにエラーがあります。', 'danger')
         return redirect(url_for('main.salary_index'))
 
-    setting = ProcessingMonth.query.first()
-    year_month = setting.year_month if setting else None
-    result = import_excel_file(form.file.data, _FILE_TYPE, current_user.id, year_month=year_month)
+    result = import_excel_file(form.file.data, _FILE_TYPE, current_user.id)
 
     if htmx:
-        batch = UploadBatch.query.get(result.batch_id) if result.success else None
+        batch = db.session.get(UploadBatch, result.batch_id) if result.success else None
         return render_template(
             'partials/salary_upload_result.html',
             success=result.success,
@@ -64,16 +62,16 @@ def salary_upload():
 @main_bp.route('/salary/detail/<int:batch_id>')
 @login_required
 def salary_detail(batch_id: int):
-    batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
-    records = SalaryData.query.filter_by(batch_id=batch_id).all()
+    batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
+    records = db.session.scalars(select(SalaryData).filter_by(batch_id=batch_id)).all()
     return render_template('partials/salary_detail_modal.html', batch=batch, records=records)
 
 
 @main_bp.route('/salary/delete/<int:batch_id>', methods=['DELETE', 'POST'])
 @login_required
 def salary_delete(batch_id: int):
-    batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
-    SalaryData.query.filter_by(batch_id=batch_id).delete()
+    batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
+    db.session.execute(delete(SalaryData).where(SalaryData.batch_id == batch_id))
     db.session.delete(batch)
     db.session.commit()
     return render_template('partials/salary_upload_result.html', batch=None)

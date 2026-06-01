@@ -70,8 +70,9 @@ def create_app(config_name: str | None = None) -> Flask:
     @app.context_processor
     def inject_processing_month():
         try:
+            from sqlalchemy import select
             from .models.processing_month import ProcessingMonth
-            setting = ProcessingMonth.query.first()
+            setting = db.session.scalar(select(ProcessingMonth))
             return {'current_year_month': setting.year_month if setting else None}
         except Exception:
             return {'current_year_month': None}

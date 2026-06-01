@@ -1,13 +1,31 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from ..extensions import db
+
+if TYPE_CHECKING:
+    from .cost_center import CostCenterMaster
+    from .district import DistrictMaster
 
 
 class SectionMaster(db.Model):
     __tablename__ = 'section_master'
 
-    section_code = db.Column('課コード', db.String(20), primary_key=True)
-    section_name = db.Column('課名', db.String(100), nullable=False)
-    district_code = db.Column('地区コード', db.String(20), nullable=False)
-    cost_center_code = db.Column('原価センタコード', db.String(20), nullable=False)
+    section_code: Mapped[str] = mapped_column('課コード', String(20), primary_key=True)
+    section_name: Mapped[str] = mapped_column('課名', String(100), nullable=False)
+    district_code: Mapped[str] = mapped_column(
+        '地区コード', String(20), ForeignKey('district_master.地区コード'), nullable=False
+    )
+    cost_center_code: Mapped[str] = mapped_column(
+        '原価センタコード', String(20), ForeignKey('cost_center_master.原価センタコード'), nullable=False
+    )
+
+    district: Mapped[DistrictMaster] = relationship()
+    cost_center: Mapped[CostCenterMaster] = relationship()
 
     def __repr__(self) -> str:
         return f'<SectionMaster {self.section_code} {self.section_name}>'

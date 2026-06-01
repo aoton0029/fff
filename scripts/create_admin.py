@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.main import create_app
 from app.extensions import db
 from app.models.user import User
+from sqlalchemy import select
 
 
 def create_admin(username: str, password: str) -> None:
@@ -21,7 +22,7 @@ def create_admin(username: str, password: str) -> None:
     with app.app_context():
         db.create_all()
 
-        existing = User.query.filter_by(username=username).first()
+        existing = db.session.scalar(select(User).filter_by(username=username))
         if existing:
             print(f'[SKIP] ユーザー "{username}" は既に存在します。')
             return

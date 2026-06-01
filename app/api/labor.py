@@ -2,9 +2,11 @@ import os
 
 from flask import Response, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
+from sqlalchemy import delete, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
+from ..models.processing_month import ProcessingMonth
 from ..models.upload_batch import UploadBatch
 from ..models.labor_transfer import LaborTransferData
 from ..models.labor_unit_price import LaborUnitPrice
@@ -42,8 +44,8 @@ def labor_upload():
 
     if htmx:
         page = request.args.get('page', 1, type=int)
-        query = UploadBatch.query.filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-        pagination = query.paginate(page=page, per_page=_PER_PAGE, error_out=False)
+        query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
+        pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
         return render_template(
             'partials/upload_result.html',
             file_results=file_results,
@@ -70,19 +72,19 @@ def labor_upload():
 @main_bp.route('/labor/detail/<int:batch_id>')
 @login_required
 def labor_detail(batch_id: int):
-    batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
-    records = LaborTransferData.query.filter_by(batch_id=batch_id).all()
+    batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
+    records = db.session.scalars(select(LaborTransferData).filter_by(batch_id=batch_id)).all()
     return render_template('partials/labor_detail_modal.html', batch=batch, records=records)
 
 
 @main_bp.route('/labor/sap-output')
 @login_required
 def labor_sap_output():
-    salary_batch = UploadBatch.query.filter_by(file_type='salary').order_by(
-        UploadBatch.created_at.desc()
-    ).first()
-    yr_mo = salary_batch.year_month if salary_batch and salary_batch.year_month else None
-    unit_price_record = LaborUnitPrice.query.filter_by(year_month=yr_mo).first() if yr_mo else None
+    setting = db.session.scalar(select(ProcessingMonth))
+    yr_mo = setting.year_month if setting else None
+    unit_price_record = (
+        db.session.scalar(select(LaborUnitPrice).filter_by(year_month=yr_mo)) if yr_mo else None
+    )
     if not unit_price_record:
         flash('労務費単価が登録されていません。先に単価を設定してください。', 'danger')
         return redirect(url_for('main.labor_index'))
@@ -99,14 +101,14 @@ def labor_sap_output():
 @main_bp.route('/labor/delete/<int:batch_id>', methods=['DELETE', 'POST'])
 @login_required
 def labor_delete(batch_id: int):
-    batch = UploadBatch.query.filter_by(id=batch_id, file_type=_FILE_TYPE).first_or_404()
-    LaborTransferData.query.filter_by(batch_id=batch_id).delete()
+    batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
+    db.session.execute(delete(LaborTransferData).where(LaborTransferData.batch_id == batch_id))
     db.session.delete(batch)
     db.session.commit()
 
     page = request.args.get('page', 1, type=int)
-    query = UploadBatch.query.filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-    pagination = query.paginate(page=page, per_page=_PER_PAGE, error_out=False)
+    query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
+    pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
     return render_template(
         'partials/batch_table.html',
         batches=pagination.items,
@@ -137,7 +139,7 @@ def labor_unit_price_create():
 @main_bp.route('/labor/unit-price/update/<int:record_id>', methods=['POST'])
 @login_required
 def labor_unit_price_update(record_id: int):
-    record = LaborUnitPrice.query.get_or_404(record_id)
+    record = db.get_or_404(LaborUnitPrice, record_id)
     record.unit_price = float(request.form['unit_price'])
     db.session.commit()
     flash('労務費単価を更新しました。', 'success')
@@ -147,7 +149,7 @@ def labor_unit_price_update(record_id: int):
 @main_bp.route('/labor/unit-price/delete/<int:record_id>', methods=['POST'])
 @login_required
 def labor_unit_price_delete(record_id: int):
-    record = LaborUnitPrice.query.get_or_404(record_id)
+    record = db.get_or_404(LaborUnitPrice, record_id)
     db.session.delete(record)
     db.session.commit()
     flash('労務費単価を削除しました。', 'success')
@@ -168,7 +170,7 @@ def labor_unit_price_set():
     except ValueError:
         flash('単価は数値で入力してください。', 'danger')
         return redirect(url_for('main.labor_index'))
-    record = LaborUnitPrice.query.filter_by(year_month=year_month).first()
+    record = db.session.scalar(select(LaborUnitPrice).filter_by(year_month=year_month))
     if record:
         record.unit_price = unit_price
     else:

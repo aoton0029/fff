@@ -3,6 +3,7 @@ import csv
 
 from flask import render_template, request, flash, redirect, url_for, send_file
 from flask_login import login_required
+from sqlalchemy import select
 
 from ..views import main_bp
 from ..extensions import db
@@ -40,7 +41,7 @@ def section_create():
 @main_bp.route('/maintenance/section/update/<section_code>', methods=['POST'])
 @login_required
 def section_update(section_code: str):
-    section = SectionMaster.query.get_or_404(section_code)
+    section = db.get_or_404(SectionMaster, section_code)
     section.section_name = request.form['section_name'].strip()
     section.district_code = request.form['district_code'].strip()
     section.cost_center_code = request.form['cost_center_code'].strip()
@@ -52,7 +53,7 @@ def section_update(section_code: str):
 @main_bp.route('/maintenance/section/delete/<section_code>', methods=['POST'])
 @login_required
 def section_delete(section_code: str):
-    section = SectionMaster.query.get_or_404(section_code)
+    section = db.get_or_404(SectionMaster, section_code)
     db.session.delete(section)
     db.session.commit()
     flash('課マスタを削除しました。', 'success')
@@ -85,7 +86,7 @@ def department_create():
 @main_bp.route('/maintenance/department/update/<department_code>', methods=['POST'])
 @login_required
 def department_update(department_code: str):
-    dept = DepartmentMaster.query.get_or_404(department_code)
+    dept = db.get_or_404(DepartmentMaster, department_code)
     dept.department_name = request.form['department_name'].strip()
     dept.district_code = request.form['district_code'].strip()
     dept.section_code = request.form['section_code'].strip()
@@ -99,7 +100,7 @@ def department_update(department_code: str):
 @main_bp.route('/maintenance/department/delete/<department_code>', methods=['POST'])
 @login_required
 def department_delete(department_code: str):
-    dept = DepartmentMaster.query.get_or_404(department_code)
+    dept = db.get_or_404(DepartmentMaster, department_code)
     db.session.delete(dept)
     db.session.commit()
     flash('部署マスタを削除しました。', 'success')
@@ -127,7 +128,7 @@ def data_output_download(table_name: str):
         return redirect(url_for('main.data_output'))
 
     model_cls, columns = allowed[table_name]
-    records = model_cls.query.all()
+    records = db.session.scalars(select(model_cls)).all()
 
     output = io.StringIO()
     writer = csv.writer(output)

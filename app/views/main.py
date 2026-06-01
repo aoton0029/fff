@@ -1,6 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from datetime import datetime, timezone
+from sqlalchemy import delete, select
 
 from . import main_bp
 from ..extensions import db
@@ -27,13 +28,13 @@ def clear_all_data():
         flash('処理年月を選択してください。', 'danger')
         return redirect(url_for('main.index'))
 
-    SalaryData.query.delete()
-    AllocationData.query.delete()
-    LaborTransferData.query.delete()
-    OuenData.query.delete()
-    UploadBatch.query.delete()
+    db.session.execute(delete(SalaryData))
+    db.session.execute(delete(AllocationData))
+    db.session.execute(delete(LaborTransferData))
+    db.session.execute(delete(OuenData))
+    db.session.execute(delete(UploadBatch))
 
-    setting = ProcessingMonth.query.first()
+    setting = db.session.scalar(select(ProcessingMonth))
     if setting:
         setting.year_month = year_month
         setting.updated_at = datetime.now(timezone.utc)

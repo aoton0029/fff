@@ -1,10 +1,11 @@
 from flask import render_template, request
 from flask_login import login_required
+from sqlalchemy import select
 
 from . import main_bp
-from ..extensions import htmx
+from ..extensions import db, htmx
 from ..models.labor_unit_price import LaborUnitPrice
-from ..models.upload_batch import UploadBatch
+from ..models.processing_month import ProcessingMonth
 from ..services.excel_reader import get_format_config
 from ..view_models.labor import LaborIndexViewModel
 
@@ -23,11 +24,11 @@ def labor_index():
             pagination=vm.pagination,
             file_type=vm.file_type,
         )
-    salary_batch = UploadBatch.query.filter_by(file_type='salary').order_by(
-        UploadBatch.created_at.desc()
-    ).first()
-    yr_mo = salary_batch.year_month if salary_batch and salary_batch.year_month else None
-    current_unit_price = LaborUnitPrice.query.filter_by(year_month=yr_mo).first() if yr_mo else None
+    setting = db.session.scalar(select(ProcessingMonth))
+    yr_mo = setting.year_month if setting else None
+    current_unit_price = (
+        db.session.scalar(select(LaborUnitPrice).filter_by(year_month=yr_mo)) if yr_mo else None
+    )
     return render_template(
         'labor.html',
         form=vm.form,

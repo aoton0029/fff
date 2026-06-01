@@ -1,25 +1,39 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import DateTime, Float, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from ..extensions import db
+
+if TYPE_CHECKING:
+    from .upload_batch import UploadBatch
+    from .user import User
 
 
 class AllocationData(db.Model):
     __tablename__ = 'allocation_data'
 
-    id = db.Column(db.Integer, primary_key=True)
-    batch_id = db.Column(db.Integer, db.ForeignKey('upload_batches.id'), nullable=False)
-    division_code = db.Column('事業部', db.String(20), nullable=False)
-    district_code = db.Column('地区', db.String(20), nullable=False)
-    section_code = db.Column('課コード', db.String(20), nullable=False)
-    cost_category = db.Column('原価区分', db.String(20), nullable=False)
-    process_code = db.Column('工程', db.String(20), nullable=False)
-    days = db.Column('日数', db.Float, nullable=False)
-    process_name = db.Column('工程名', db.String(100), nullable=True)
-    formation = db.Column('編成', db.Float, nullable=False)
-    fixed_count = db.Column('固定', db.Float, nullable=False)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    batch_id: Mapped[int] = mapped_column(ForeignKey('upload_batches.id'), nullable=False)
+    division_code: Mapped[str] = mapped_column('事業部', String(20), nullable=False)
+    district_code: Mapped[str] = mapped_column('地区', String(20), nullable=False)
+    section_code: Mapped[str] = mapped_column('課コード', String(20), nullable=False)
+    cost_category: Mapped[str] = mapped_column('原価区分', String(20), nullable=False)
+    process_code: Mapped[str] = mapped_column('工程', String(20), nullable=False)
+    days: Mapped[float] = mapped_column('日数', Float, nullable=False)
+    process_name: Mapped[Optional[str]] = mapped_column('工程名', String(100))
+    formation: Mapped[float] = mapped_column('編成', Float, nullable=False)
+    fixed_count: Mapped[float] = mapped_column('固定', Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+    created_by: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
 
-    batch = db.relationship('UploadBatch', backref='allocation_records', lazy=True)
+    batch: Mapped[UploadBatch] = relationship(back_populates='allocation_records')
+    creator: Mapped[User] = relationship(foreign_keys=[created_by])
 
     def __repr__(self) -> str:
         return f'<AllocationData district={self.district_code} section={self.section_code} process={self.process_code}>'
