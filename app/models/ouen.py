@@ -14,10 +14,10 @@ if TYPE_CHECKING:
 
 
 class OuenData(db.Model):
-    __tablename__ = 'ouen_data'
+    __tablename__ = 'dat_応援連絡票'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    batch_id: Mapped[int] = mapped_column(ForeignKey('upload_batches.id'), nullable=False)
+    batch_id: Mapped[int] = mapped_column(ForeignKey('dat_ファイル.id'), nullable=False)
     from_district: Mapped[str] = mapped_column(String(20), nullable=False)
     from_section_code: Mapped[str] = mapped_column(String(20), nullable=False)
     to_district: Mapped[str] = mapped_column(String(20), nullable=False)

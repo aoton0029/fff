@@ -9,28 +9,19 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..extensions import db
 
 if TYPE_CHECKING:
+    from .department import DepartmentMaster
     from .upload_batch import UploadBatch
     from .user import User
 
 
 class SalaryData(db.Model):
-    __tablename__ = 'salary_data'
+    __tablename__ = 'dat_人事給与データ'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    batch_id: Mapped[int] = mapped_column(ForeignKey('upload_batches.id'), nullable=False)
+    batch_id: Mapped[int] = mapped_column(ForeignKey('dat_ファイル.id'), nullable=False)
 
-    row_label: Mapped[str] = mapped_column('行ラベル', String(20), nullable=False)
+    row_label: Mapped[str] = mapped_column('行ラベル', String(20), comment="", nullable=False)
     section_name: Mapped[Optional[str]] = mapped_column('所属名', String(100))
-
-    # Extended identifier columns (populated from Excel)
-    chiku: Mapped[Optional[str]] = mapped_column('地区', String(20))
-    ka_code: Mapped[Optional[str]] = mapped_column('課コード', String(20))
-    chiku_ka_code: Mapped[Optional[str]] = mapped_column('地区課コード', String(50))
-    shuuyaku_ka_code: Mapped[Optional[str]] = mapped_column('集約課コード', String(20))
-    chiku_shuuyaku_ka_code: Mapped[Optional[str]] = mapped_column('地区集約課コード', String(50))
-    cost_center: Mapped[Optional[str]] = mapped_column('原価センタ', String(20))
-    kubun: Mapped[Optional[str]] = mapped_column('区分', String(20))
-    account_subject: Mapped[Optional[str]] = mapped_column('勘定科目', String(20))
 
     # Required salary columns
     honkyu: Mapped[int] = mapped_column('合計_明細1_本給', Integer, nullable=False)
@@ -73,6 +64,23 @@ class SalaryData(db.Model):
 
     batch: Mapped[UploadBatch] = relationship(back_populates='salary_records')
     creator: Mapped[User] = relationship(foreign_keys=[created_by])
+    department: Mapped[Optional[DepartmentMaster]] = relationship(
+        'DepartmentMaster',
+        primaryjoin='foreign(SalaryData.row_label) == DepartmentMaster.department_code',
+        viewonly=True,
+    )
+
+    @property
+    def chiku_ka_code(self) -> Optional[str]:
+        if self.department is None:
+            return None
+        return f'{self.department.district_code}+{self.department.section_code}'
+
+    @property
+    def chiku_shuuyaku_ka_code(self) -> Optional[str]:
+        if self.department is None:
+            return None
+        return f'{self.department.district_code}+{self.department.agg_section_code}'
 
     def __repr__(self) -> str:
         return f'<SalaryData row_label={self.row_label}>'

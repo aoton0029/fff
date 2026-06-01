@@ -1,26 +1,32 @@
 {% extends 'base.html' %}
 {% from 'components/macros.html' import render_pagination %}
-{% block title %}部署マスタ管理{% endblock %}
+{% block title %}変換マスタ管理{% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <h4><i class="bi bi-building me-2 text-primary"></i>部署マスタ管理</h4>
-  <p>部署（デパートメント）マスタの登録・編集・削除を行います。</p>
+  <h4><i class="bi bi-person-badge me-2 text-primary"></i>変換マスタ管理</h4>
+  <p>変換マスタの登録・編集・削除を行います。</p>
 </div>
 
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="bi bi-building me-1"></i>部署マスタ</span>
-    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
-      <i class="bi bi-plus-circle me-1"></i>新規追加
-    </button>
+    <span><i class="bi bi-person-badge me-1"></i>変換マスタ</span>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('main.data_output_download', table_name='department') }}"
+         class="btn btn-outline-success btn-sm">
+        <i class="bi bi-file-earmark-excel me-1"></i>エクセル出力
+      </a>
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-circle me-1"></i>新規追加
+      </button>
+    </div>
   </div>
   <div class="card-body p-0">
   <div class="table-scroll-wrapper">
   <table class="table table-hover table-sm align-middle mb-0">
     <thead class="table-light">
       <tr>
-        <th>部署コーチE/th><th>部署吁E/th><th>地区コーチE/th><th>課コーチE/th><th>勘定科目コーチE/th><th>原価センタコーチE/th><th class="text-end">操佁E/th>
+        <th>人事所属コード<th>部署名<th>地区コード<th>課コード<th>勘定科目コード<th>原価センタコード<th class="text-end">操作
       </tr>
     </thead>
     <tbody>
@@ -36,7 +42,7 @@
           <button class="btn btn-sm btn-outline-secondary"
                   data-bs-toggle="modal"
                   data-bs-target="#editModal{{ loop.index }}"
-                  title="編雁E><i class="bi bi-pencil"></i></button>
+                  title="編集"><i class="bi bi-pencil"></i></button>
           <button class="btn btn-sm btn-outline-danger"
                   data-bs-toggle="modal"
                   data-bs-target="#delModal{{ loop.index }}"
@@ -49,16 +55,18 @@
                 <form method="POST" action="{{ url_for('main.department_update', department_code=d.department_code) }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <div class="modal-header">
-                    <h5 class="modal-title">部署マスタ編雁E/h5>
+                    <h5 class="modal-title">編集
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
-                    <div class="mb-2"><label class="form-label">部署コーチE/label><input type="text" class="form-control" value="{{ d.department_code }}" disabled></div>
-                    <div class="mb-2"><label class="form-label">部署吁E<span class="text-danger">*</span></label><input type="text" name="department_name" class="form-control" value="{{ d.department_name }}" required></div>
-                    <div class="mb-2"><label class="form-label">地区コーチE<span class="text-danger">*</span></label><input type="text" name="district_code" class="form-control" value="{{ d.district_code }}" required></div>
-                    <div class="mb-2"><label class="form-label">課コーチE<span class="text-danger">*</span></label><input type="text" name="section_code" class="form-control" value="{{ d.section_code }}" required></div>
-                    <div class="mb-2"><label class="form-label">勘定科目コーチE<span class="text-danger">*</span></label><input type="text" name="account_code" class="form-control" value="{{ d.account_code }}" required></div>
-                    <div class="mb-2"><label class="form-label">原価センタコーチE<span class="text-danger">*</span></label><input type="text" name="cost_center_code" class="form-control" value="{{ d.cost_center_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">人事所属コード<input type="text" class="form-control" value="{{ d.department_code }}" disabled></div>
+                    <div class="mb-2"><label class="form-label">部署名<span class="text-danger">*</span></label><input type="text" name="department_name" class="form-control" value="{{ d.department_name }}" required></div>
+                    <div class="mb-2"><label class="form-label">地区コード<span class="text-danger">*</span></label><input type="text" name="district_code" class="form-control" value="{{ d.district_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">課コード<span class="text-danger">*</span></label><input type="text" name="section_code" class="form-control" value="{{ d.section_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">集約課コード<span class="text-danger">*</span></label><input type="text" name="agg_section_code" class="form-control" value="{{ d.agg_section_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">区分コード<span class="text-danger">*</span></label><input type="text" name="kbn_code" class="form-control" value="{{ d.kbn_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">勘定科目コード<span class="text-danger">*</span></label><input type="text" name="account_code" class="form-control" value="{{ d.account_code }}" required></div>
+                    <div class="mb-2"><label class="form-label">原価センタコード<span class="text-danger">*</span></label><input type="text" name="cost_center_code" class="form-control" value="{{ d.cost_center_code }}" required></div>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
@@ -75,8 +83,8 @@
               <div class="modal-content">
                 <form method="POST" action="{{ url_for('main.department_delete', department_code=d.department_code) }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <div class="modal-header"><h5 class="modal-title">削除の確誁E/h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                  <div class="modal-body"><strong>{{ d.department_code }} / {{ d.department_name }}</strong> を削除します。よろしぁE��すか?</div>
+                  <div class="modal-header"><h5 class="modal-title">削除の確認<button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                  <div class="modal-body"><strong>{{ d.department_code }} / {{ d.department_name }}</strong> を削除します。よろしいですか?</div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
                     <button type="submit" class="btn btn-danger">削除</button>
@@ -88,7 +96,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="7" class="text-center text-muted py-4">チE�Eタがありません</td></tr>
+      <tr><td colspan="7" class="text-center text-muted py-4">がありません</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -97,20 +105,72 @@
 </div>
 {{ render_pagination(pagination, 'main.department_list') }}
 
+{# Import card #}
+<div class="card mt-3">
+  <div class="card-header">
+    <i class="bi bi-upload me-1"></i>エクセル取り込み（全件置き換え）
+  </div>
+  <div class="card-body">
+    <p class="text-muted small mb-2">
+      エクスポートしたファイルを編集後、こちらから取り込んでください。<br>
+      取り込むと現在のデータは<strong>すべて置き換え</strong>られます。
+    </p>
+    <form method="POST" action="{{ url_for('main.department_import') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="d-flex gap-2 align-items-center">
+        <input type="file" name="import_file" accept=".xlsx" class="form-control form-control-sm" required>
+        <button type="submit" class="btn btn-warning btn-sm text-nowrap">
+          <i class="bi bi-arrow-repeat me-1"></i>取り込む
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# Confirmation modal (shown when ?confirm=department is in URL) #}
+<div class="modal fade" id="importConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('main.department_import_confirm') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="import_uuid" id="importConfirmUuid">
+        <div class="modal-header bg-warning-subtle">
+          <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-1 text-warning"></i>取り込みの確認</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages if category == 'warning' %}
+              <p class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>{{ message }}</p>
+            {% endfor %}
+          {% endwith %}
+          <p>上記の内容を確認の上、取り込みを実行してください。</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+          <button type="submit" class="btn btn-danger">確認して取り込む</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 {# Create modal #}
 <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <form method="POST" action="{{ url_for('main.department_create') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="modal-header"><h5 class="modal-title">部署マスタ新規追加</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header"><h5 class="modal-title">新規追加</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
-          <div class="mb-2"><label class="form-label">部署コーチE<span class="text-danger">*</span></label><input type="text" name="department_code" class="form-control" required></div>
-          <div class="mb-2"><label class="form-label">部署吁E<span class="text-danger">*</span></label><input type="text" name="department_name" class="form-control" required></div>
-          <div class="mb-2"><label class="form-label">地区コーチE<span class="text-danger">*</span></label><input type="text" name="district_code" class="form-control" required></div>
-          <div class="mb-2"><label class="form-label">課コーチE<span class="text-danger">*</span></label><input type="text" name="section_code" class="form-control" required></div>
-          <div class="mb-2"><label class="form-label">勘定科目コーチE<span class="text-danger">*</span></label><input type="text" name="account_code" class="form-control" required></div>
-          <div class="mb-2"><label class="form-label">原価センタコーチE<span class="text-danger">*</span></label><input type="text" name="cost_center_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">人事所属コード<span class="text-danger">*</span></label><input type="text" name="department_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">部署名<span class="text-danger">*</span></label><input type="text" name="department_name" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">地区コード<span class="text-danger">*</span></label><input type="text" name="district_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">課コード<span class="text-danger">*</span></label><input type="text" name="section_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">集約課コード<span class="text-danger">*</span></label><input type="text" name="agg_section_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">区分コード<span class="text-danger">*</span></label><input type="text" name="kbn_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">勘定科目コード<span class="text-danger">*</span></label><input type="text" name="account_code" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">原価センタコード<span class="text-danger">*</span></label><input type="text" name="cost_center_code" class="form-control" required></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
@@ -120,4 +180,17 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('confirm') === 'department') {
+    document.getElementById('importConfirmUuid').value = '{{ department_import_uuid }}';
+    const modal = new bootstrap.Modal(document.getElementById('importConfirmModal'));
+    modal.show();
+  }
+})();
+</script>
 {% endblock %}

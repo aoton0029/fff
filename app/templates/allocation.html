@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% from 'components/macros.html' import upload_form, format_info_modal %}
-{% block title %}配賦データ取り込み{% endblock %}
+{% block title %}工程配賦 - 労務費管理システム{% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <h4><i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>配賦データ取り込み</h4>
-  <p>配賦比率データのExcelファイルを取り込みます。</p>
+  <h4><i class="bi bi-diagram-3 me-2 text-primary"></i>工程配賦</h4>
+  <p>工程別人員配置Excelファイルを取り込み、SAP用テキストファイルを生成します。</p>
 </div>
 
 {# Prerequisite status bar #}
@@ -25,7 +25,7 @@
 
 <div class="card mt-3">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="bi bi-list me-1"></i>取込済みバッチ</span>
+    <span><i class="bi bi-list me-1"></i>取込済みファイル</span>
     <div class="d-flex gap-2">
       <a href="{{ url_for('main.allocation_sap_output') }}" class="btn btn-sm btn-outline-success">
         <i class="bi bi-download me-1"></i>SAP出力

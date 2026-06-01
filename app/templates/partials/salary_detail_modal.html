@@ -53,14 +53,14 @@
       <tbody>
         {% for r in records %}
         <tr>
-          <td>{{ r.chiku or '' }}</td>
-          <td>{{ r.ka_code or '' }}</td>
+          <td>{{ r.department.district_code if r.department else '' }}</td>
+          <td>{{ r.department.section_code if r.department else '' }}</td>
           <td>{{ r.chiku_ka_code or '' }}</td>
-          <td>{{ r.shuuyaku_ka_code or '' }}</td>
+          <td>{{ r.department.agg_section_code if r.department else '' }}</td>
           <td>{{ r.chiku_shuuyaku_ka_code or '' }}</td>
-          <td>{{ r.cost_center or '' }}</td>
-          <td>{{ r.kubun or '' }}</td>
-          <td>{{ r.account_subject or '' }}</td>
+          <td>{{ r.department.cost_center_code if r.department else '' }}</td>
+          <td>{{ r.department.kbn_code if r.department else '' }}</td>
+          <td>{{ r.department.account_code if r.department else '' }}</td>
           <td>{{ r.row_label }}</td>
           <td>{{ r.section_name or '' }}</td>
           <td class="text-end">{{ '{:,}'.format(r.honkyu) }}</td>

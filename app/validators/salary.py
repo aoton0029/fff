@@ -5,19 +5,8 @@ from pydantic import BaseModel, Field, ConfigDict, field_validator
 class SalaryRow(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    # String columns (valid Python identifiers — no alias needed)
-    地区: Optional[str] = None
-    課コード: Optional[str] = None
-    集約課コード: Optional[str] = None
-    原価センタ: Optional[str] = None
-    区分: Optional[str] = None
-    勘定科目: Optional[str] = None
     行ラベル: str
     所属名: Optional[str] = None
-
-    # String columns with special chars in YAML name
-    地区課コード: Optional[str] = Field(None, validation_alias='地区+課コード')
-    地区集約課コード: Optional[str] = Field(None, validation_alias='地区+集約課コード')
 
     # Required salary columns
     本給: int = Field(validation_alias='合計/(明細1)本給')

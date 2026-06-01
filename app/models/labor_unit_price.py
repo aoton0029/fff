@@ -9,7 +9,7 @@ from ..extensions import db
 
 
 class LaborUnitPrice(db.Model):
-    __tablename__ = 'labor_unit_prices'
+    __tablename__ = 'dat_労務費単価'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     year_month: Mapped[str] = mapped_column('年月', String(7), nullable=False, unique=True)

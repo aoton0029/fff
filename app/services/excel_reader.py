@@ -23,7 +23,17 @@ def _load_formats() -> dict:
 
 
 def get_format_config(file_type: str) -> dict:
-    """Return the format config for the given file_type key."""
+    """excel_formats
+
+    Args:
+        file_type (str): 'salary' | 'ouen' | 'allocation' | 'labor'
+
+    Raises:
+        ValueError: 
+
+    Returns:
+        dict: 
+    """
     formats = _load_formats()
     if file_type not in formats:
         raise ValueError(f'未定義のファイル種別です: {file_type}')
@@ -31,17 +41,17 @@ def get_format_config(file_type: str) -> dict:
 
 
 def read_excel(file_path: str | os.PathLike, file_type: str) -> list[dict[str, Any]]:
-    """Read an Excel file and return rows as a list of dicts.
+    """エクセル読み込み
 
     Args:
-        file_path: Path to the Excel file (temporary file).
-        file_type: Key in excel_formats.yaml (e.g. 'salary').
+        file_path: パス (tmpファイル).
+        file_type: excel_formats.yamlのキー ('salary' | 'ouen' | 'allocation' | 'labor').
 
     Returns:
-        List of row dicts with column names as keys.
+        カラムのリスト
 
     Raises:
-        ValueError: If the sheet is not found or has no data.
+        ValueError: シートなし / データなし
     """
     fmt = get_format_config(file_type)
     sheet_name: str = fmt['sheet_name']

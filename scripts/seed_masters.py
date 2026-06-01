@@ -146,7 +146,7 @@ def seed(clear: bool) -> None:
         print(f'[OK] 勘定科目マスタ    : {added["account"]} 件追加')
         print(f'[OK] 原価センタマスタ  : {added["cost_center"]} 件追加')
         print(f'[OK] 課マスタ          : {added["section"]} 件追加')
-        print(f'[OK] 部署マスタ        : {added["department"]} 件追加')
+        print(f'[OK] 変換マスタ        : {added["department"]} 件追加')
 
 
 if __name__ == '__main__':

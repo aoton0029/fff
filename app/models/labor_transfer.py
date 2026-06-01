@@ -14,10 +14,10 @@ if TYPE_CHECKING:
 
 
 class LaborTransferData(db.Model):
-    __tablename__ = 'labor_transfer_data'
+    __tablename__ = 'dat_労務費振替依頼書'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    batch_id: Mapped[int] = mapped_column(ForeignKey('upload_batches.id'), nullable=False)
+    batch_id: Mapped[int] = mapped_column(ForeignKey('dat_ファイル.id'), nullable=False)
     account_code: Mapped[str] = mapped_column('勘定科目コード', String(30), nullable=False)
     cost_center: Mapped[Optional[str]] = mapped_column('原価センタ', String(30))
     burden_section: Mapped[Optional[str]] = mapped_column('負担課', String(30))

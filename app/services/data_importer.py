@@ -66,14 +66,6 @@ def _build_db_record(model: Any, file_type: str, batch_id: int, user_id: int) ->
     if file_type == 'salary':
         return SalaryData(
             row_label=model.行ラベル,
-            chiku=model.地区,
-            ka_code=model.課コード,
-            chiku_ka_code=model.地区課コード,
-            shuuyaku_ka_code=model.集約課コード,
-            chiku_shuuyaku_ka_code=model.地区集約課コード,
-            cost_center=model.原価センタ,
-            kubun=model.区分,
-            account_subject=model.勘定科目,
             section_name=model.所属名,
             honkyu=model.本給,
             nouryoku_kyu=model.能力給,

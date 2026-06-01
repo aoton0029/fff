@@ -10,40 +10,36 @@ from app.validators.labor_transfer import LaborTransferRow
 class TestSalaryRow:
     def test_valid_row(self):
         row = SalaryRow(
-            部署コード='00000100',
+            行ラベル='00000100',
             本給=300000,
             能力給=50000,
-            報酬=20000,
-            手当=30000,
-            人員数=10,
-            給与額=4000000,
+            職務役割給=20000,
+            役割業績給=30000,
         )
-        assert row.部署コード == '00000100'
+        assert row.行ラベル == '00000100'
         assert row.本給 == 300000
 
     def test_comma_numbers_coerced(self):
         row = SalaryRow(
-            部署コード='A01',
+            行ラベル='A01',
             本給='300,000',
             能力給='50,000',
-            報酬='20,000',
-            手当='30,000',
-            人員数='10',
-            給与額='4,000,000',
+            職務役割給='20,000',
+            役割業績給='30,000',
         )
         assert row.本給 == 300000
 
-    def test_empty_department_code_raises(self):
+    def test_empty_row_label_raises(self):
         with pytest.raises(ValidationError):
-            SalaryRow(部署コード='', 本給=0, 能力給=0, 報酬=0, 手当=0, 人員数=0, 給与額=0)
+            SalaryRow(行ラベル='', 本給=0, 能力給=0, 職務役割給=0, 役割業績給=0)
 
     def test_invalid_numeric_raises(self):
         with pytest.raises(ValidationError):
-            SalaryRow(部署コード='X', 本給='abc', 能力給=0, 報酬=0, 手当=0, 人員数=0, 給与額=0)
+            SalaryRow(行ラベル='X', 本給='abc', 能力給=0, 職務役割給=0, 役割業績給=0)
 
-    def test_negative_value_raises(self):
+    def test_missing_row_label_raises(self):
         with pytest.raises(ValidationError):
-            SalaryRow(部署コード='X', 本給=-1, 能力給=0, 報酬=0, 手当=0, 人員数=0, 給与額=0)
+            SalaryRow(本給=0, 能力給=0, 職務役割給=0, 役割業績給=0)
 
 
 class TestAllocationRow:

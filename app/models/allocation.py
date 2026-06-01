@@ -14,10 +14,10 @@ if TYPE_CHECKING:
 
 
 class AllocationData(db.Model):
-    __tablename__ = 'allocation_data'
+    __tablename__ = 'dat_工程配賦'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    batch_id: Mapped[int] = mapped_column(ForeignKey('upload_batches.id'), nullable=False)
+    batch_id: Mapped[int] = mapped_column(ForeignKey('dat_ファイル.id'), nullable=False)
     division_code: Mapped[str] = mapped_column('事業部', String(20), nullable=False)
     district_code: Mapped[str] = mapped_column('地区', String(20), nullable=False)
     section_code: Mapped[str] = mapped_column('課コード', String(20), nullable=False)

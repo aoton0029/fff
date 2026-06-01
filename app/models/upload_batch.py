@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class UploadBatch(db.Model):
-    __tablename__ = 'upload_batches'
+    __tablename__ = 'dat_ファイル'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     file_name: Mapped[str] = mapped_column(String(255), nullable=False)

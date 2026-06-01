@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class ProcessingMonth(db.Model):
     """月次処理の処理年月を保持するシングルレコードテーブル。"""
-    __tablename__ = 'processing_month'
+    __tablename__ = 'dat_月次処理年月'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     year_month: Mapped[str] = mapped_column(String(7), nullable=False)  # YYYY-MM

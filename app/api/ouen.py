@@ -1,14 +1,17 @@
+import io
 import os
 
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, send_file, url_for
 from flask_login import login_required, current_user
-from sqlalchemy import delete, select
+from sqlalchemy import delete, distinct, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
+from ..models.district import DistrictMaster
 from ..models.upload_batch import UploadBatch
 from ..models.ouen import OuenData
 from ..services.data_importer import import_excel_file
+from ..services.sap_exporter import build_labor_tran_mock_excel
 
 _PER_PAGE = 20
 _FILE_TYPE = 'ouen'
@@ -88,4 +91,45 @@ def ouen_delete(batch_id: int):
         'partials/ouen_batch_table.html',
         batches=pagination.items,
         pagination=pagination,
+    )
+
+
+@main_bp.route('/ouen/labor-tran')
+@login_required
+def ouen_labor_tran_modal():
+    """HTMX: 労務費トランモーダルのボディを返す。"""
+    district_codes = db.session.scalars(
+        select(distinct(OuenData.from_district)).order_by(OuenData.from_district)
+    ).all()
+
+    # DistrictMaster から地区名を取得（存在しない場合は None）
+    district_map: dict[str, str | None] = {code: None for code in district_codes}
+    masters = db.session.scalars(
+        select(DistrictMaster).where(DistrictMaster.district_code.in_(district_codes))
+    ).all()
+    for m in masters:
+        district_map[m.district_code] = m.district_name
+
+    districts = [
+        {'code': code, 'name': district_map.get(code)}
+        for code in district_codes
+    ]
+    return render_template('partials/ouen_labor_tran_modal.html', districts=districts)
+
+
+@main_bp.route('/ouen/labor-tran/generate', methods=['POST'])
+@login_required
+def ouen_labor_tran_generate():
+    """選択された地区のモック労務費トランExcelをダウンロードする。"""
+    district_codes = request.form.getlist('district_codes')
+    if not district_codes:
+        flash('地区を1件以上選択してください。', 'warning')
+        return redirect(url_for('main.ouen_index'))
+
+    excel_bytes = build_labor_tran_mock_excel(district_codes)
+    return send_file(
+        io.BytesIO(excel_bytes),
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='labor_tran_mock.xlsx',
     )
