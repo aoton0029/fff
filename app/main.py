@@ -5,7 +5,7 @@ from .config.base import TestingConfig
 from .config.dev import DevelopmentConfig
 from .config.stg import StagingConfig
 from .config.prd import ProductionConfig
-
+from flasgger import Swagger 
 
 config_map = {
     'testing': TestingConfig,
@@ -32,6 +32,40 @@ def create_app(config_name: str | None = None) -> Flask:
     htmx.init_app(app)
     csrf.init_app(app)
 
+    # Swagger設定
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": 'apispec',
+                "route": '/apispec.json',
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/api/docs/"  # Swagger UIのURL
+    }
+    
+    swagger_template = {
+        "info": {
+            "title": "労務管理システム API",
+            "description": "労務管理システムのAPI仕様書",
+            "version": "1.0.0"
+        },
+        "securityDefinitions": {
+            "Bearer": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "認証トークン"
+            }
+        }
+    }
+    
+    Swagger(app, config=swagger_config, template=swagger_template)
+    
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'ログインが必要です。'
     login_manager.login_message_category = 'warning'

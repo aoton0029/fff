@@ -15,7 +15,36 @@ _FILE_TYPE = 'salary'
 @main_bp.route('/salary/upload', methods=['POST'])
 @login_required
 def salary_upload():
-    # Single-batch policy: block upload if batch already exists
+    """
+    給与データアップロード
+    ---
+    tags:
+      - 給与管理
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: file
+        in: formData
+        type: file
+        required: true
+        description: 給与データExcelファイル
+    responses:
+      200:
+        description: アップロード成功
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+            saved_count:
+              type: integer
+            batch_id:
+              type: integer
+      400:
+        description: バリデーションエラー
+    security:
+      - Bearer: []
+    """
     existing = db.session.scalar(select(UploadBatch).filter_by(file_type=_FILE_TYPE))
     if existing:
         if htmx:
