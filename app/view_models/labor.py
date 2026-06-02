@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from ..extensions import db
 from ..forms.upload import UploadForm
-from ..models.upload_batch import UploadBatch
+from ..models.dat_upload_batch import UploadBatch
 
 _PER_PAGE = 20
 _FILE_TYPE = 'labor_transfer'

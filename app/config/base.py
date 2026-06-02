@@ -12,11 +12,13 @@ class Config:
 	SQLALCHEMY_TRACK_MODIFICATIONS = False
 	LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 	PERMISSION_SESSION_LIFETIME: timedelta = timedelta(hours=1)
+	MASTER_DB_READONLY: bool = False
 
 
 class TestingConfig(Config):
 	TESTING: bool = True
 	DEBUG: bool = True
 	SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+	SQLALCHEMY_BINDS = {'master_db': 'sqlite:///app.db'}
 	WTF_CSRF_ENABLED = False
 	SECRET_KEY = 'test-secret'

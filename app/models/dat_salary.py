@@ -9,9 +9,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..extensions import db
 
 if TYPE_CHECKING:
-    from .department import DepartmentMaster
-    from .upload_batch import UploadBatch
-    from .user import User
+    from .mst_department import DepartmentMaster
+    from .dat_upload_batch import UploadBatch
 
 
 class SalaryData(db.Model):
@@ -60,27 +59,17 @@ class SalaryData(db.Model):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    created_by: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    created_by: Mapped[int] = mapped_column(Integer, nullable=False)
 
     batch: Mapped[UploadBatch] = relationship(back_populates='salary_records')
-    creator: Mapped[User] = relationship(foreign_keys=[created_by])
-    department: Mapped[Optional[DepartmentMaster]] = relationship(
-        'DepartmentMaster',
-        primaryjoin='foreign(SalaryData.row_label) == DepartmentMaster.department_code',
-        viewonly=True,
-    )
 
     @property
     def chiku_ka_code(self) -> Optional[str]:
-        if self.department is None:
-            return None
-        return f'{self.department.district_code}+{self.department.section_code}'
+        return f'{self.district_code}+{self.section_code}'
 
     @property
     def chiku_shuuyaku_ka_code(self) -> Optional[str]:
-        if self.department is None:
-            return None
-        return f'{self.department.district_code}+{self.department.agg_section_code}'
+        return f'{self.district_code}+{self.agg_section_code}'
 
     def __repr__(self) -> str:
         return f'<SalaryData row_label={self.row_label}>'

@@ -11,11 +11,10 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <span><i class="bi bi-person-badge me-1"></i>変換マスタ</span>
-    <div class="d-flex gap-2">
-      <a href="{{ url_for('main.data_output_download', table_name='department') }}"
-         class="btn btn-outline-success btn-sm">
-        <i class="bi bi-file-earmark-excel me-1"></i>エクセル出力
-      </a>
+    <div>
+      <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#excelModal">
+        <i class="bi bi-file-earmark-excel me-1"></i>Excel操作
+      </button>
       <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
         <i class="bi bi-plus-circle me-1"></i>新規追加
       </button>
@@ -105,25 +104,46 @@
 </div>
 {{ render_pagination(pagination, 'main.department_list') }}
 
-{# Import card #}
-<div class="card mt-3">
-  <div class="card-header">
-    <i class="bi bi-upload me-1"></i>エクセル取り込み（全件置き換え）
-  </div>
-  <div class="card-body">
-    <p class="text-muted small mb-2">
-      エクスポートしたファイルを編集後、こちらから取り込んでください。<br>
-      取り込むと現在のデータは<strong>すべて置き換え</strong>られます。
-    </p>
-    <form method="POST" action="{{ url_for('main.department_import') }}" enctype="multipart/form-data">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="d-flex gap-2 align-items-center">
-        <input type="file" name="import_file" accept=".xlsx" class="form-control form-control-sm" required>
-        <button type="submit" class="btn btn-warning btn-sm text-nowrap">
-          <i class="bi bi-arrow-repeat me-1"></i>取り込む
-        </button>
+{# Excel operations modal #}
+<div class="modal fade" id="excelModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-file-earmark-excel me-1"></i>Excelファイル操作</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-    </form>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h6 class="text-muted small mb-2">エクスポート</h6>
+            <p class="text-muted small mb-2">現在のデータをExcelファイルとしてダウンロードします。</p>
+            <a href="{{ url_for('main.data_output_download', table_name='department') }}"
+               class="btn btn-outline-success btn-sm">
+              <i class="bi bi-file-earmark-arrow-down me-1"></i>エクセル出力
+            </a>
+          </div>
+          <div class="col-md-6 border-start">
+            <h6 class="text-muted small mb-2">インポート（全件置き換え）</h6>
+            <p class="text-muted small mb-2">
+              エクスポートしたファイルを編集後、こちらから取り込んでください。<br>
+              取り込むと現在のデータは<strong>すべて置き換え</strong>られます。
+            </p>
+            <form method="POST" action="{{ url_for('main.department_import') }}" enctype="multipart/form-data">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div class="d-flex gap-2 align-items-center">
+                <input type="file" name="import_file" accept=".xlsx" class="form-control form-control-sm" required>
+                <button type="submit" class="btn btn-warning btn-sm text-nowrap">
+                  <i class="bi bi-arrow-repeat me-1"></i>取り込む
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+      </div>
+    </div>
   </div>
 </div>
 

@@ -3,14 +3,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import DateTime, Float, ForeignKey, String
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..extensions import db
 
 if TYPE_CHECKING:
-    from .upload_batch import UploadBatch
-    from .user import User
+    from .dat_upload_batch import UploadBatch
+    from .mst_user import User
 
 
 class LaborTransferData(db.Model):
@@ -31,10 +31,9 @@ class LaborTransferData(db.Model):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    created_by: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    created_by: Mapped[int] = mapped_column(Integer, nullable=False)
 
     batch: Mapped[UploadBatch] = relationship(back_populates='labor_transfer_records')
-    creator: Mapped[User] = relationship(foreign_keys=[created_by])
 
     def __repr__(self) -> str:
         return f'<LaborTransferData account={self.account_code} charge={self.charge_section}>'

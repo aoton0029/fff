@@ -4,8 +4,8 @@ from sqlalchemy import select
 
 from . import main_bp
 from ..extensions import db
-from ..models.section import SectionMaster
-from ..models.department import DepartmentMaster
+from ..models.mst_section import SectionMaster
+from ..models.mst_department import DepartmentMaster
 
 PER_PAGE = 30
 

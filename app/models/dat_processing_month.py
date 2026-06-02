@@ -3,13 +3,13 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..extensions import db
 
 if TYPE_CHECKING:
-    from .user import User
+    from .mst_user import User
 
 
 class ProcessingMonth(db.Model):
@@ -24,9 +24,8 @@ class ProcessingMonth(db.Model):
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    updated_by: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    updated_by: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    updater: Mapped[User] = relationship(foreign_keys=[updated_by])
 
     def __repr__(self) -> str:
         return f'<ProcessingMonth {self.year_month}>'

@@ -11,11 +11,12 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from ..extensions import db, login_manager
 
 if TYPE_CHECKING:
-    from .upload_batch import UploadBatch
+    from .dat_upload_batch import UploadBatch
 
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
+    __bind_key__ = 'master_db'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
@@ -30,7 +31,11 @@ class User(UserMixin, db.Model):
         nullable=False,
     )
 
-    upload_batches: Mapped[list[UploadBatch]] = relationship(back_populates='creator')
+    upload_batches: Mapped[list[UploadBatch]] = relationship(
+        'UploadBatch',
+        primaryjoin='User.id == foreign(UploadBatch.created_by)',
+        viewonly=True,
+    )
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)

@@ -1,15 +1,16 @@
 import io
 import os
 
+import openpyxl
 from flask import render_template, request, flash, redirect, send_file, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import delete, distinct, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
-from ..models.district import DistrictMaster
-from ..models.upload_batch import UploadBatch
-from ..models.ouen import OuenData
+from ..models.mst_district import DistrictMaster
+from ..models.dat_upload_batch import UploadBatch
+from ..models.dat_ouen import OuenData
 from ..services.data_importer import import_excel_file
 from ..services.sap_exporter import build_labor_tran_mock_excel
 
@@ -91,6 +92,49 @@ def ouen_delete(batch_id: int):
         'partials/ouen_batch_table.html',
         batches=pagination.items,
         pagination=pagination,
+    )
+
+
+_MOCK_OUEN_CALC_ROWS = [
+    {"district_code": "D01", "section_code": "A01", "process_code": "P001", "from_section": "B02", "to_section": "A01", "days": 5.0, "amount": 300_000},
+    {"district_code": "D01", "section_code": "A01", "process_code": "P002", "from_section": "C03", "to_section": "A01", "days": 3.0, "amount": 180_000},
+    {"district_code": "D02", "section_code": "B02", "process_code": "P001", "from_section": "A01", "to_section": "B02", "days": 8.0, "amount": 480_000},
+    {"district_code": "D02", "section_code": "C03", "process_code": "P003", "from_section": "B02", "to_section": "C03", "days": 2.0, "amount": 120_000},
+]
+
+
+@main_bp.route('/ouen/calc-preview')
+@login_required
+def ouen_calc_preview():
+    # TODO: SQLビュー（v_応援計算）実装後、rows をDBクエリに置換
+    rows = _MOCK_OUEN_CALC_ROWS
+    return render_template('partials/ouen_calc_modal.html', rows=rows)
+
+
+@main_bp.route('/ouen/calc-download')
+@login_required
+def ouen_calc_download():
+    # TODO: SQLビュー実装後、rows をDBクエリに置換
+    rows = _MOCK_OUEN_CALC_ROWS
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '応援計算データ'
+    ws.append(['地区', '課コード', '工程コード', '応援元', '応援先', '日数', '按分額'])
+    for row in rows:
+        ws.append([
+            row['district_code'], row['section_code'], row['process_code'],
+            row['from_section'], row['to_section'], row['days'], row['amount'],
+        ])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name='応援計算データ.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
 
 

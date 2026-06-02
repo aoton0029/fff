@@ -4,8 +4,8 @@ from sqlalchemy import select
 
 from . import main_bp
 from ..extensions import db, htmx
-from ..models.labor_unit_price import LaborUnitPrice
-from ..models.processing_month import ProcessingMonth
+from ..models.dat_labor_unit_price import LaborUnitPrice
+from ..models.dat_processing_month import ProcessingMonth
 from ..services.excel_reader import get_format_config
 from ..view_models.labor import LaborIndexViewModel
 

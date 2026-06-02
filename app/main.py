@@ -6,6 +6,7 @@ from .config.dev import DevelopmentConfig
 from .config.stg import StagingConfig
 from .config.prd import ProductionConfig
 
+
 config_map = {
     'testing': TestingConfig,
     'development': DevelopmentConfig,
@@ -71,7 +72,7 @@ def create_app(config_name: str | None = None) -> Flask:
     def inject_processing_month():
         try:
             from sqlalchemy import select
-            from .models.processing_month import ProcessingMonth
+            from .models.dat_processing_month import ProcessingMonth
             setting = db.session.scalar(select(ProcessingMonth))
             return {'current_year_month': setting.year_month if setting else None}
         except Exception:

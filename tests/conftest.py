@@ -1,7 +1,7 @@
 import pytest
 from app.main import create_app
 from app.extensions import db as _db
-from app.models.user import User
+from app.models.mst_user import User
 
 
 @pytest.fixture(scope='session')

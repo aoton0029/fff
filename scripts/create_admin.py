@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.main import create_app
 from app.extensions import db
-from app.models.user import User
+from app.models.mst_user import User
 from sqlalchemy import select
 
 

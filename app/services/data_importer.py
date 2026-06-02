@@ -18,11 +18,11 @@ from ..validators.salary import SalaryRow
 from ..validators.allocation import AllocationRow
 from ..validators.labor_transfer import LaborTransferRow
 from ..validators.ouen import OuenRow
-from ..models.upload_batch import UploadBatch
-from ..models.salary import SalaryData
-from ..models.allocation import AllocationData
-from ..models.labor_transfer import LaborTransferData
-from ..models.ouen import OuenData
+from ..models.dat_upload_batch import UploadBatch
+from ..models.dat_salary import SalaryData
+from ..models.dat_allocation import AllocationData
+from ..models.dat_labor_transfer import LaborTransferData
+from ..models.dat_ouen import OuenData
 
 
 @dataclass

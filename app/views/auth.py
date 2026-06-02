@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from ..forms.auth import LoginForm
 from ..extensions import db
-from ..models.user import User
+from ..models.mst_user import User
 
 auth_bp = Blueprint('auth', __name__)
 

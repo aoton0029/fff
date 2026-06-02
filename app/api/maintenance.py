@@ -7,8 +7,8 @@ from sqlalchemy import select
 
 from ..views import main_bp
 from ..extensions import db
-from ..models.section import SectionMaster
-from ..models.department import DepartmentMaster
+from ..models.mst_section import SectionMaster
+from ..models.mst_department import DepartmentMaster
 from ..services.master_importer import (
     read_and_validate_section,
     read_and_validate_department,
@@ -16,13 +16,13 @@ from ..services.master_importer import (
     load_pending,
     delete_pending,
 )
-from ..models.district import DistrictMaster
-from ..models.account import AccountMaster
-from ..models.cost_center import CostCenterMaster
-from ..models.salary import SalaryData
-from ..models.allocation import AllocationData
-from ..models.labor_transfer import LaborTransferData
-from ..models.ouen import OuenData
+from ..models.mst_district import DistrictMaster
+from ..models.mst_account import AccountMaster
+from ..models.mst_cost_center import CostCenterMaster
+from ..models.dat_salary import SalaryData
+from ..models.dat_allocation import AllocationData
+from ..models.dat_labor_transfer import LaborTransferData
+from ..models.dat_ouen import OuenData
 
 
 # ---- Section Master ----

@@ -5,8 +5,8 @@ from sqlalchemy import delete, select
 from ..views import main_bp
 from ..extensions import htmx, db
 from ..forms.upload import UploadForm
-from ..models.upload_batch import UploadBatch
-from ..models.salary import SalaryData
+from ..models.dat_upload_batch import UploadBatch
+from ..models.dat_salary import SalaryData
 from ..services.data_importer import import_excel_file
 
 _FILE_TYPE = 'salary'

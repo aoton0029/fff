@@ -1,15 +1,17 @@
+import io
 import os
 
-from flask import Response, render_template, request, flash, redirect, url_for
+import openpyxl
+from flask import Response, render_template, request, flash, redirect, send_file, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import delete, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
-from ..models.processing_month import ProcessingMonth
-from ..models.upload_batch import UploadBatch
-from ..models.labor_transfer import LaborTransferData
-from ..models.labor_unit_price import LaborUnitPrice
+from ..models.dat_processing_month import ProcessingMonth
+from ..models.dat_upload_batch import UploadBatch
+from ..models.dat_labor_transfer import LaborTransferData
+from ..models.dat_labor_unit_price import LaborUnitPrice
 from ..services.data_importer import import_excel_file
 from ..services.sap_exporter import build_labor_tsv
 
@@ -114,6 +116,49 @@ def labor_delete(batch_id: int):
         batches=pagination.items,
         pagination=pagination,
         file_type=_FILE_TYPE,
+    )
+
+
+_MOCK_LABOR_CALC_ROWS = [
+    {"section_code": "A01", "transfer_code": "T001", "transfer_kbn": "振替", "hours": 160.0, "unit_price": 2500.0, "amount": 400_000},
+    {"section_code": "A01", "transfer_code": "T002", "transfer_kbn": "振替", "hours": 80.0,  "unit_price": 2500.0, "amount": 200_000},
+    {"section_code": "B02", "transfer_code": "T003", "transfer_kbn": "振替", "hours": 200.0, "unit_price": 2800.0, "amount": 560_000},
+    {"section_code": "C03", "transfer_code": "T004", "transfer_kbn": "振替", "hours": 120.0, "unit_price": 3000.0, "amount": 360_000},
+]
+
+
+@main_bp.route('/labor/calc-preview')
+@login_required
+def labor_calc_preview():
+    # TODO: SQLビュー（v_労務費計算）実装後、rows をDBクエリに置換
+    rows = _MOCK_LABOR_CALC_ROWS
+    return render_template('partials/labor_calc_modal.html', rows=rows)
+
+
+@main_bp.route('/labor/calc-download')
+@login_required
+def labor_calc_download():
+    # TODO: SQLビュー実装後、rows をDBクエリに置換
+    rows = _MOCK_LABOR_CALC_ROWS
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '労務費計算データ'
+    ws.append(['課コード', '振替先コード', '振替区分', '時間', '単価', '金額'])
+    for row in rows:
+        ws.append([
+            row['section_code'], row['transfer_code'], row['transfer_kbn'],
+            row['hours'], row['unit_price'], row['amount'],
+        ])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name='労務費計算データ.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
 
 

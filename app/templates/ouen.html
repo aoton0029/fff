@@ -110,6 +110,9 @@
   </div>
   <div class="card-footer py-2 d-flex gap-2">
     <button class="btn btn-sm btn-outline-secondary"
+            hx-get="{{ url_for('main.ouen_calc_preview') }}"
+            hx-target="#ouen-calc-modal-body"
+            hx-swap="innerHTML"
             data-bs-toggle="modal" data-bs-target="#ouenCalcModal">
       <i class="bi bi-folder-symlink me-1"></i>応援計算データ
     </button>
@@ -162,6 +165,9 @@
         </div>
       </div>
       <div class="modal-footer">
+        <a href="{{ url_for('main.ouen_calc_download') }}" class="btn btn-success">
+          <i class="bi bi-file-earmark-excel me-1"></i>Excelダウンロード
+        </a>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
       </div>
     </div>

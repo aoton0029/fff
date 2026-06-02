@@ -1,0 +1,42 @@
+{# Partial: ouen_calc_modal.html
+   HTMX target for #ouen-calc-modal-body.
+   Variables: rows (list of dicts with keys: district_code, section_code, process_code,
+              from_section, to_section, days, amount)
+   TODO: rows will be populated from SQL view (v_応援計算) once implemented.
+#}
+<p class="text-muted small mb-2">
+  <i class="bi bi-info-circle me-1"></i>
+  ※ 計算ロジックは実装中です。以下はモックデータです。
+</p>
+{% if rows %}
+<div class="table-responsive">
+  <table class="table table-sm table-striped align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>地区</th>
+        <th>課コード</th>
+        <th>工程コード</th>
+        <th>応援元</th>
+        <th>応援先</th>
+        <th class="text-end">日数</th>
+        <th class="text-end">按分額</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.district_code }}</td>
+        <td>{{ row.section_code }}</td>
+        <td>{{ row.process_code }}</td>
+        <td>{{ row.from_section }}</td>
+        <td>{{ row.to_section }}</td>
+        <td class="text-end">{{ '{:,.1f}'.format(row.days) }}</td>
+        <td class="text-end">{{ '{:,.0f}'.format(row.amount) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-muted text-center py-4">計算対象データがありません。</p>
+{% endif %}

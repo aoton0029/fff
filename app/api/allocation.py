@@ -1,14 +1,16 @@
+import io
 import os
 
-from flask import Response, render_template, request, flash, redirect, url_for
+import openpyxl
+from flask import Response, render_template, request, flash, redirect, url_for, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import delete, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
-from ..models.processing_month import ProcessingMonth
-from ..models.upload_batch import UploadBatch
-from ..models.allocation import AllocationData
+from ..models.dat_processing_month import ProcessingMonth
+from ..models.dat_upload_batch import UploadBatch
+from ..models.dat_allocation import AllocationData
 from ..services.data_importer import import_excel_file
 from ..services.sap_exporter import build_allocation_tsv
 
@@ -88,6 +90,50 @@ def allocation_sap_output():
         tsv_bytes,
         mimetype='text/plain; charset=cp932',
         headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+    )
+
+
+_MOCK_CALC_ROWS = [
+    {"section_code": "A01", "process_code": "P001", "process_name": "工程A", "formation": 10.0, "fixed_count": 2.0, "days": 20.0, "amount": 1_200_000},
+    {"section_code": "A01", "process_code": "P002", "process_name": "工程B", "formation": 8.0,  "fixed_count": 1.0, "days": 18.0, "amount":   980_000},
+    {"section_code": "B02", "process_code": "P003", "process_name": "工程C", "formation": 12.0, "fixed_count": 3.0, "days": 22.0, "amount": 1_450_000},
+    {"section_code": "B02", "process_code": "P004", "process_name": "工程D", "formation": 6.0,  "fixed_count": 0.0, "days": 15.0, "amount":   670_000},
+]
+
+
+@main_bp.route('/allocation/calc-preview')
+@login_required
+def allocation_calc_preview():
+    # TODO: SQLビュー（v_工程配賦計算）実装後、rows をDBクエリに置換
+    rows = _MOCK_CALC_ROWS
+    return render_template('partials/allocation_calc_modal.html', rows=rows)
+
+
+@main_bp.route('/allocation/calc-download')
+@login_required
+def allocation_calc_download():
+    # TODO: SQLビュー実装後、rows をDBクエリに置換
+    rows = _MOCK_CALC_ROWS
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '工程配賦計算データ'
+    headers = ['課コード', '工程コード', '工程名', '編成', '固定', '日数', '按分額']
+    ws.append(headers)
+    for row in rows:
+        ws.append([
+            row['section_code'], row['process_code'], row['process_name'],
+            row['formation'], row['fixed_count'], row['days'], row['amount'],
+        ])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name='工程配賦計算データ.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
 
 
