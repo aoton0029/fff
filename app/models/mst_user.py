@@ -30,11 +30,11 @@ class User(UserMixin, db.Model):
         nullable=False,
     )
 
-    upload_batches: Mapped[list[UploadBatch]] = relationship(
-        'UploadBatch',
-        primaryjoin='User.id == foreign(UploadBatch.created_by)',
-        viewonly=True,
-    )
+    # upload_batches: Mapped[list[UploadBatch]] = relationship(
+    #     'UploadBatch',
+    #     primaryjoin='User.id == foreign(UploadBatch.created_by)',
+    #     viewonly=True,
+    # )
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)

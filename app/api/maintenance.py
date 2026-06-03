@@ -12,11 +12,14 @@ from ..models.mst_department import DepartmentMaster
 from ..services.master_importer import (
     read_and_validate_section,
     read_and_validate_department,
+    read_and_validate_district,
+    read_and_validate_kbn,
     save_pending,
     load_pending,
     delete_pending,
 )
 from ..models.mst_district import DistrictMaster
+from ..models.mst_kbn import KbnMaster
 from ..models.mst_account import AccountMaster
 from ..models.mst_cost_center import CostCenterMaster
 from ..models.dat_salary import SalaryData
@@ -272,6 +275,224 @@ def _replace_department_master(rows: list[dict]) -> None:
     db.session.commit()
 
 
+# ---- District Master ----
+
+@main_bp.route('/maintenance/district/create', methods=['POST'])
+@login_required
+def district_create():
+    district = DistrictMaster(
+        district_code=request.form['district_code'].strip(),
+        district_name=request.form['district_name'].strip(),
+    )
+    db.session.add(district)
+    try:
+        db.session.commit()
+        flash('地区マスタを追加しました。', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('地区コードが重複しています。', 'danger')
+    return redirect(url_for('main.district_list'))
+
+
+@main_bp.route('/maintenance/district/update/<district_code>', methods=['POST'])
+@login_required
+def district_update(district_code: str):
+    district = db.get_or_404(DistrictMaster, district_code)
+    district.district_name = request.form['district_name'].strip()
+    db.session.commit()
+    flash('地区マスタを更新しました。', 'success')
+    return redirect(url_for('main.district_list'))
+
+
+@main_bp.route('/maintenance/district/delete/<district_code>', methods=['POST'])
+@login_required
+def district_delete(district_code: str):
+    district = db.get_or_404(DistrictMaster, district_code)
+    db.session.delete(district)
+    db.session.commit()
+    flash('地区マスタを削除しました。', 'success')
+    return redirect(url_for('main.district_list'))
+
+
+_DISTRICT_IMPORT_SESSION_KEY = 'district_import_uuid'
+
+
+@main_bp.route('/maintenance/district/import', methods=['POST'])
+@login_required
+def district_import():
+    file = request.files.get('import_file')
+    if not file or not file.filename:
+        flash('ファイルを選択してください。', 'danger')
+        return redirect(url_for('main.district_list'))
+    if not file.filename.lower().endswith('.xlsx'):
+        flash('xlsx ファイルを選択してください。', 'danger')
+        return redirect(url_for('main.district_list'))
+
+    current_count = db.session.scalar(select(db.func.count()).select_from(DistrictMaster)) or 0
+    result = read_and_validate_district(file, current_count)
+
+    if not result.ok:
+        for msg in result.errors:
+            flash(msg, 'danger')
+        return redirect(url_for('main.district_list'))
+
+    if result.has_warnings:
+        old_token = session.pop(_DISTRICT_IMPORT_SESSION_KEY, None)
+        if old_token:
+            delete_pending(old_token, 'district')
+        token = save_pending(result.rows, 'district')
+        session[_DISTRICT_IMPORT_SESSION_KEY] = token
+        for msg in result.warnings:
+            flash(msg, 'warning')
+        return redirect(url_for('main.district_list', confirm='district'))
+
+    _replace_district_master(result.rows)
+    flash(f'地区マスタを取り込みました（{len(result.rows)} 件）。', 'success')
+    return redirect(url_for('main.district_list'))
+
+
+@main_bp.route('/maintenance/district/import/confirm', methods=['POST'])
+@login_required
+def district_import_confirm():
+    token_form = request.form.get('import_uuid', '')
+    token_session = session.get(_DISTRICT_IMPORT_SESSION_KEY, '')
+    if not token_form or token_form != token_session:
+        flash('取り込みセッションが無効です。再度ファイルを選択してください。', 'danger')
+        return redirect(url_for('main.district_list'))
+
+    rows = load_pending(token_form, 'district')
+    if rows is None:
+        flash('取り込みデータが見つかりません。再度ファイルを選択してください。', 'danger')
+        return redirect(url_for('main.district_list'))
+
+    _replace_district_master(rows)
+    delete_pending(token_form, 'district')
+    session.pop(_DISTRICT_IMPORT_SESSION_KEY, None)
+    flash(f'地区マスタを取り込みました（{len(rows)} 件）。', 'success')
+    return redirect(url_for('main.district_list'))
+
+
+def _replace_district_master(rows: list[dict]) -> None:
+    db.session.execute(db.delete(DistrictMaster))
+    db.session.bulk_save_objects([
+        DistrictMaster(
+            district_code=r['district_code'],
+            district_name=r['district_name'],
+        )
+        for r in rows
+    ])
+    db.session.commit()
+
+
+# ---- Kbn Master ----
+
+@main_bp.route('/maintenance/kbn/create', methods=['POST'])
+@login_required
+def kbn_create():
+    kbn = KbnMaster(
+        kbn_code=request.form['kbn_code'].strip(),
+        kbn_name=request.form['kbn_name'].strip(),
+    )
+    db.session.add(kbn)
+    try:
+        db.session.commit()
+        flash('区分マスタを追加しました。', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('区分コードが重複しています。', 'danger')
+    return redirect(url_for('main.kbn_list'))
+
+
+@main_bp.route('/maintenance/kbn/update/<kbn_code>', methods=['POST'])
+@login_required
+def kbn_update(kbn_code: str):
+    kbn = db.get_or_404(KbnMaster, kbn_code)
+    kbn.kbn_name = request.form['kbn_name'].strip()
+    db.session.commit()
+    flash('区分マスタを更新しました。', 'success')
+    return redirect(url_for('main.kbn_list'))
+
+
+@main_bp.route('/maintenance/kbn/delete/<kbn_code>', methods=['POST'])
+@login_required
+def kbn_delete(kbn_code: str):
+    kbn = db.get_or_404(KbnMaster, kbn_code)
+    db.session.delete(kbn)
+    db.session.commit()
+    flash('区分マスタを削除しました。', 'success')
+    return redirect(url_for('main.kbn_list'))
+
+
+_KBN_IMPORT_SESSION_KEY = 'kbn_import_uuid'
+
+
+@main_bp.route('/maintenance/kbn/import', methods=['POST'])
+@login_required
+def kbn_import():
+    file = request.files.get('import_file')
+    if not file or not file.filename:
+        flash('ファイルを選択してください。', 'danger')
+        return redirect(url_for('main.kbn_list'))
+    if not file.filename.lower().endswith('.xlsx'):
+        flash('xlsx ファイルを選択してください。', 'danger')
+        return redirect(url_for('main.kbn_list'))
+
+    current_count = db.session.scalar(select(db.func.count()).select_from(KbnMaster)) or 0
+    result = read_and_validate_kbn(file, current_count)
+
+    if not result.ok:
+        for msg in result.errors:
+            flash(msg, 'danger')
+        return redirect(url_for('main.kbn_list'))
+
+    if result.has_warnings:
+        old_token = session.pop(_KBN_IMPORT_SESSION_KEY, None)
+        if old_token:
+            delete_pending(old_token, 'kbn')
+        token = save_pending(result.rows, 'kbn')
+        session[_KBN_IMPORT_SESSION_KEY] = token
+        for msg in result.warnings:
+            flash(msg, 'warning')
+        return redirect(url_for('main.kbn_list', confirm='kbn'))
+
+    _replace_kbn_master(result.rows)
+    flash(f'区分マスタを取り込みました（{len(result.rows)} 件）。', 'success')
+    return redirect(url_for('main.kbn_list'))
+
+
+@main_bp.route('/maintenance/kbn/import/confirm', methods=['POST'])
+@login_required
+def kbn_import_confirm():
+    token_form = request.form.get('import_uuid', '')
+    token_session = session.get(_KBN_IMPORT_SESSION_KEY, '')
+    if not token_form or token_form != token_session:
+        flash('取り込みセッションが無効です。再度ファイルを選択してください。', 'danger')
+        return redirect(url_for('main.kbn_list'))
+
+    rows = load_pending(token_form, 'kbn')
+    if rows is None:
+        flash('取り込みデータが見つかりません。再度ファイルを選択してください。', 'danger')
+        return redirect(url_for('main.kbn_list'))
+
+    _replace_kbn_master(rows)
+    delete_pending(token_form, 'kbn')
+    session.pop(_KBN_IMPORT_SESSION_KEY, None)
+    flash(f'区分マスタを取り込みました（{len(rows)} 件）。', 'success')
+    return redirect(url_for('main.kbn_list'))
+
+
+def _replace_kbn_master(rows: list[dict]) -> None:
+    db.session.execute(db.delete(KbnMaster))
+    db.session.bulk_save_objects([
+        KbnMaster(
+            kbn_code=r['kbn_code'],
+            kbn_name=r['kbn_name'],
+        )
+        for r in rows
+    ])
+    db.session.commit()
+
+
 # ---- Data Output ----
 
 _ALLOWED_TABLES = {
@@ -282,6 +503,7 @@ _ALLOWED_TABLES = {
     'section':        (SectionMaster,     ['section_code', 'section_name', 'district_code', 'cost_center_code']),
     'department':     (DepartmentMaster,  ['department_code', 'department_name', 'district_code', 'section_code', 'agg_section_code', 'kbn_code', 'account_code', 'cost_center_code']),
     'district':       (DistrictMaster,    ['district_code', 'district_name']),
+    'kbn':            (KbnMaster,         ['kbn_code', 'kbn_name']),
     'account':        (AccountMaster,     ['account_code', 'account_name']),
     'cost_center':    (CostCenterMaster,  ['cost_center_code', 'cost_center_name']),
 }

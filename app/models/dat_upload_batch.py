@@ -22,7 +22,7 @@ class UploadBatch(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     file_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    file_type: Mapped[str] = mapped_column(String(50), ForeignKey('mst_ファイルタイプ.filetype_code'), nullable=False)
+    file_type: Mapped[str] = mapped_column(String(50), ForeignKey('mst_ファイルタイプ.ファイルタイプコード'), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )

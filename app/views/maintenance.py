@@ -6,6 +6,8 @@ from . import main_bp
 from ..extensions import db
 from ..models.mst_section import SectionMaster
 from ..models.mst_department import DepartmentMaster
+from ..models.mst_district import DistrictMaster
+from ..models.mst_kbn import KbnMaster
 
 PER_PAGE = 30
 
@@ -41,6 +43,40 @@ def department_list():
         departments=pagination.items,
         pagination=pagination,
         department_import_uuid=department_import_uuid,
+    )
+
+
+# ---- Data Output ----
+
+@main_bp.route('/maintenance/district')
+@login_required
+def district_list():
+    page = request.args.get('page', 1, type=int)
+    query = select(DistrictMaster).order_by(DistrictMaster.district_code)
+    pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
+    district_import_uuid = session.get('district_import_uuid', '')
+    return render_template(
+        'maintenance_district.html',
+        districts=pagination.items,
+        pagination=pagination,
+        district_import_uuid=district_import_uuid,
+    )
+
+
+# ---- Kbn Master ----
+
+@main_bp.route('/maintenance/kbn')
+@login_required
+def kbn_list():
+    page = request.args.get('page', 1, type=int)
+    query = select(KbnMaster).order_by(KbnMaster.kbn_code)
+    pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
+    kbn_import_uuid = session.get('kbn_import_uuid', '')
+    return render_template(
+        'maintenance_kbn.html',
+        kbns=pagination.items,
+        pagination=pagination,
+        kbn_import_uuid=kbn_import_uuid,
     )
 
 

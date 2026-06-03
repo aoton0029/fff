@@ -19,9 +19,11 @@ import openpyxl
 from pydantic import ValidationError
 from werkzeug.datastructures import FileStorage
 
-from ..validators.master import DepartmentMasterRow, SectionMasterRow
+from ..validators.master import DepartmentMasterRow, DistrictMasterRow, KbnMasterRow, SectionMasterRow
 
 _SECTION_COLS = ['section_code', 'section_name', 'district_code', 'cost_center_code']
+_DISTRICT_COLS = ['district_code', 'district_name']
+_KBN_COLS = ['kbn_code', 'kbn_name']
 _DEPARTMENT_COLS = [
     'department_code',
     'department_name',
@@ -177,6 +179,16 @@ def read_and_validate_section(file_storage: FileStorage, current_count: int) -> 
 def read_and_validate_department(file_storage: FileStorage, current_count: int) -> MasterImportResult:
     """Validate the uploaded department master Excel file."""
     return _build_result(file_storage, _DEPARTMENT_COLS, DepartmentMasterRow, 'department_code', current_count)
+
+
+def read_and_validate_district(file_storage: FileStorage, current_count: int) -> MasterImportResult:
+    """Validate the uploaded district master Excel file."""
+    return _build_result(file_storage, _DISTRICT_COLS, DistrictMasterRow, 'district_code', current_count)
+
+
+def read_and_validate_kbn(file_storage: FileStorage, current_count: int) -> MasterImportResult:
+    """Validate the uploaded kbn master Excel file."""
+    return _build_result(file_storage, _KBN_COLS, KbnMasterRow, 'kbn_code', current_count)
 
 
 def save_pending(rows: list[dict[str, str]], master_type: str) -> str:

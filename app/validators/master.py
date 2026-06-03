@@ -97,3 +97,37 @@ class DepartmentMasterRow(BaseModel):
     @classmethod
     def v_cost_center_code(cls, v: object) -> str:
         return _require(v, 'cost_center_code', _MAX_CODE)
+
+
+class DistrictMasterRow(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    district_code: str
+    district_name: str
+
+    @field_validator('district_code', mode='before')
+    @classmethod
+    def v_district_code(cls, v: object) -> str:
+        return _require(v, 'district_code', _MAX_CODE)
+
+    @field_validator('district_name', mode='before')
+    @classmethod
+    def v_district_name(cls, v: object) -> str:
+        return _require(v, 'district_name', _MAX_NAME)
+
+
+class KbnMasterRow(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    kbn_code: str
+    kbn_name: str
+
+    @field_validator('kbn_code', mode='before')
+    @classmethod
+    def v_kbn_code(cls, v: object) -> str:
+        return _require(v, 'kbn_code', _MAX_CODE)
+
+    @field_validator('kbn_name', mode='before')
+    @classmethod
+    def v_kbn_name(cls, v: object) -> str:
+        return _require(v, 'kbn_name', _MAX_NAME)
