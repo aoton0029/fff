@@ -16,6 +16,10 @@ from app.models.mst_district import DistrictMaster
 from app.models.mst_account import AccountMaster
 from app.models.mst_cost_center import CostCenterMaster
 from app.models.mst_wbs import WBSMaster
+from app.models.mst_kbn import KbnMaster
+from app.models.mst_filetype import FileTypeMaster
+from app.models.mst_section import SectionMaster
+from app.models.mst_department import DepartmentMaster
 from app.models.mst_user import User
 
 # ---------------------------------------------------------------------------
@@ -60,6 +64,46 @@ WBS_LIST = [
     ('WBS003', '間接費'),
 ]
 
+KBN_LIST = [
+    ('K01', '正社員'),
+    ('K02', '嘱託社員'),
+    ('K03', 'パート・アルバイト'),
+]
+
+# filetype_code は api/*.py の _FILE_TYPE 定数と一致させること
+FILE_TYPES = [
+    ('salary',         '給与データ'),
+    ('allocation',     '工程配賦データ'),
+    ('labor_transfer', '労務費振替データ'),
+    ('ouen',           '応援連絡票'),
+]
+
+# (section_code, section_name, district_code, cost_center_code)
+SECTIONS = [
+    ('S0101', '東京製造課',   '01', 'CC0101'),
+    ('S0102', '東京営業課',   '01', 'CC0102'),
+    ('S0103', '東京管理課',   '01', 'CC0103'),
+    ('S0201', '大阪製造課',   '02', 'CC0201'),
+    ('S0202', '大阪営業課',   '02', 'CC0202'),
+    ('S0301', '名古屋製造課', '03', 'CC0301'),
+    ('S0401', '福岡製造課',   '04', 'CC0401'),
+    ('S0501', '札幌営業課',   '05', 'CC0501'),
+]
+
+# (department_code, department_name, district_code,
+#  section_code, agg_section_code, kbn_code, account_code, cost_center_code)
+DEPARTMENTS = [
+    ('01010101', '東京製造課・正社員・基本給',    '01', 'S0101', 'S0101', 'K01', '4101', 'CC0101'),
+    ('01010102', '東京製造課・正社員・能力給',    '01', 'S0101', 'S0101', 'K01', '4102', 'CC0101'),
+    ('01010201', '東京製造課・嘱託社員・基本給',  '01', 'S0101', 'S0101', 'K02', '4101', 'CC0101'),
+    ('01020101', '東京営業課・正社員・基本給',    '01', 'S0102', 'S0102', 'K01', '4101', 'CC0102'),
+    ('02010101', '大阪製造課・正社員・基本給',    '02', 'S0201', 'S0201', 'K01', '4101', 'CC0201'),
+    ('02010102', '大阪製造課・正社員・能力給',    '02', 'S0201', 'S0201', 'K01', '4102', 'CC0201'),
+    ('03010101', '名古屋製造課・正社員・基本給',  '03', 'S0301', 'S0301', 'K01', '4101', 'CC0301'),
+    ('04010101', '福岡製造課・正社員・基本給',    '04', 'S0401', 'S0401', 'K01', '4101', 'CC0401'),
+    ('05010101', '札幌営業課・正社員・基本給',    '05', 'S0501', 'S0501', 'K01', '4101', 'CC0501'),
+]
+
 # ---------------------------------------------------------------------------
 
 
@@ -69,6 +113,10 @@ def init(clear: bool) -> None:
         db.create_all()
 
         if clear:
+            db.session.query(DepartmentMaster).delete()
+            db.session.query(SectionMaster).delete()
+            db.session.query(FileTypeMaster).delete()
+            db.session.query(KbnMaster).delete()
             db.session.query(WBSMaster).delete()
             db.session.query(CostCenterMaster).delete()
             db.session.query(AccountMaster).delete()
@@ -76,7 +124,8 @@ def init(clear: bool) -> None:
             db.session.commit()
             print('[INFO] 既存データを削除しました。')
 
-        added = {'district': 0, 'account': 0, 'cost_center': 0, 'wbs': 0}
+        added = {'district': 0, 'account': 0, 'cost_center': 0, 'wbs': 0,
+                 'kbn': 0, 'filetype': 0, 'section': 0, 'department': 0}
 
         for code, name in DISTRICTS:
             if not db.session.get(DistrictMaster, code):
@@ -98,12 +147,54 @@ def init(clear: bool) -> None:
                 db.session.add(WBSMaster(wbs_code=code, wbs_name=name))
                 added['wbs'] += 1
 
+        for code, name in KBN_LIST:
+            if not db.session.get(KbnMaster, code):
+                db.session.add(KbnMaster(kbn_code=code, kbn_name=name))
+                added['kbn'] += 1
+
+        for code, name in FILE_TYPES:
+            if not db.session.get(FileTypeMaster, code):
+                db.session.add(FileTypeMaster(filetype_code=code, filetype_name=name))
+                added['filetype'] += 1
+
+        db.session.flush()  # District/CostCenter が確定してから Section を挿入
+
+        for code, name, district, cost_center in SECTIONS:
+            if not db.session.get(SectionMaster, code):
+                db.session.add(SectionMaster(
+                    section_code=code,
+                    section_name=name,
+                    district_code=district,
+                    cost_center_code=cost_center,
+                ))
+                added['section'] += 1
+
+        db.session.flush()  # Section が確定してから Department を挿入
+
+        for code, name, district, section, agg_section, kbn, account, cost_center in DEPARTMENTS:
+            if not db.session.get(DepartmentMaster, code):
+                db.session.add(DepartmentMaster(
+                    department_code=code,
+                    department_name=name,
+                    district_code=district,
+                    section_code=section,
+                    agg_section_code=agg_section,
+                    kbn_code=kbn,
+                    account_code=account,
+                    cost_center_code=cost_center,
+                ))
+                added['department'] += 1
+
         db.session.commit()
 
-        print(f'[OK] 地区マスタ        : {added["district"]} 件追加')
-        print(f'[OK] 勘定科目マスタ    : {added["account"]} 件追加')
-        print(f'[OK] 原価センタマスタ  : {added["cost_center"]} 件追加')
-        print(f'[OK] WBSマスタ         : {added["wbs"]} 件追加')
+        print(f'[OK] 地区マスタ            : {added["district"]} 件追加')
+        print(f'[OK] 勘定科目マスタ        : {added["account"]} 件追加')
+        print(f'[OK] 原価センタマスタ      : {added["cost_center"]} 件追加')
+        print(f'[OK] WBSマスタ             : {added["wbs"]} 件追加')
+        print(f'[OK] 区分マスタ            : {added["kbn"]} 件追加')
+        print(f'[OK] ファイルタイプマスタ  : {added["filetype"]} 件追加')
+        print(f'[OK] 課マスタ              : {added["section"]} 件追加')
+        print(f'[OK] 変換マスタ            : {added["department"]} 件追加')
         print('[INFO] ユーザーは create_admin.py で作成してください。')
 
 
