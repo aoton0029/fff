@@ -2,6 +2,10 @@
 {% from 'components/macros.html' import render_pagination %}
 {% block title %}課マスタ管理{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/styles/choices.min.css">
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
   <h4><i class="bi bi-building me-2 text-primary"></i>課マスタ管理</h4>
@@ -75,13 +79,21 @@
                     <div class="row mb-2 align-items-center">
                       <label class="col-4 col-form-label">地区コード<span class="text-danger">*</span></label>
                       <div class="col-8">
-                        <input type="text" name="district_code" class="form-control" value="{{ s.district_code }}" required>
+                        <select name="district_code" class="form-select" data-choices required>
+                          {% for d in districts %}
+                          <option value="{{ d.district_code }}" {% if d.district_code == s.district_code %}selected{% endif %}>{{ d.district_code }} - {{ d.district_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
                     </div>
                     <div class="row mb-2 align-items-center">
                       <label class="col-4 col-form-label">原価センタコード<span class="text-danger">*</span></label>
                       <div class="col-8">
-                        <input type="text" name="cost_center_code" class="form-control" value="{{ s.cost_center_code }}" required>
+                        <select name="cost_center_code" class="form-select" data-choices required>
+                          {% for c in cost_centers %}
+                          <option value="{{ c.cost_center_code }}" {% if c.cost_center_code == s.cost_center_code %}selected{% endif %}>{{ c.cost_center_code }} - {{ c.cost_center_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -224,13 +236,23 @@
           <div class="row mb-2 align-items-center">
             <label class="col-4 col-form-label">地区コード<span class="text-danger">*</span></label>
             <div class="col-8">
-              <input type="text" name="district_code" class="form-control" required>
+              <select name="district_code" class="form-select" data-choices required>
+                <option value="">-- 選択してください --</option>
+                {% for d in districts %}
+                <option value="{{ d.district_code }}">{{ d.district_code }} - {{ d.district_name }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
           <div class="row mb-2 align-items-center">
             <label class="col-4 col-form-label">原価センタコード<span class="text-danger">*</span></label>
             <div class="col-8">
-              <input type="text" name="cost_center_code" class="form-control" required>
+              <select name="cost_center_code" class="form-select" data-choices required>
+                <option value="">-- 選択してください --</option>
+                {% for c in cost_centers %}
+                <option value="{{ c.cost_center_code }}">{{ c.cost_center_code }} - {{ c.cost_center_name }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
         </div>
@@ -245,8 +267,26 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"></script>
 <script>
 (function () {
+  // Choices.js 遅延初期化 — モーダルが表示されるタイミングで初期化する
+  document.addEventListener('show.bs.modal', function (event) {
+    event.target.querySelectorAll('select[data-choices]').forEach(function (el) {
+      if (!el.dataset.choicesInit) {
+        new Choices(el, {
+          searchEnabled: true,
+          shouldSort: false,
+          itemSelectText: '',
+          noResultsText: '見つかりません',
+          noChoicesText: '選択肢がありません',
+        });
+        el.dataset.choicesInit = 'true';
+      }
+    });
+  });
+
+  // インポート確認モーダルの自動表示
   const params = new URLSearchParams(window.location.search);
   if (params.get('confirm') === 'section') {
     document.getElementById('importConfirmUuid').value = '{{ section_import_uuid }}';

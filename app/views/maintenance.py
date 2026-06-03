@@ -8,6 +8,8 @@ from ..models.mst_section import SectionMaster
 from ..models.mst_department import DepartmentMaster
 from ..models.mst_district import DistrictMaster
 from ..models.mst_kbn import KbnMaster
+from ..models.mst_cost_center import CostCenterMaster
+from ..models.mst_account import AccountMaster
 
 PER_PAGE = 30
 
@@ -21,11 +23,15 @@ def section_list():
     query = select(SectionMaster).order_by(SectionMaster.section_code)
     pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
     section_import_uuid = session.get('section_import_uuid', '')
+    districts = db.session.scalars(select(DistrictMaster).order_by(DistrictMaster.district_code)).all()
+    cost_centers = db.session.scalars(select(CostCenterMaster).order_by(CostCenterMaster.cost_center_code)).all()
     return render_template(
         'maintenance_section.html',
         sections=pagination.items,
         pagination=pagination,
         section_import_uuid=section_import_uuid,
+        districts=districts,
+        cost_centers=cost_centers,
     )
 
 
@@ -38,11 +44,21 @@ def department_list():
     query = select(DepartmentMaster).order_by(DepartmentMaster.department_code)
     pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
     department_import_uuid = session.get('department_import_uuid', '')
+    districts = db.session.scalars(select(DistrictMaster).order_by(DistrictMaster.district_code)).all()
+    sections = db.session.scalars(select(SectionMaster).order_by(SectionMaster.section_code)).all()
+    kbns = db.session.scalars(select(KbnMaster).order_by(KbnMaster.kbn_code)).all()
+    accounts = db.session.scalars(select(AccountMaster).order_by(AccountMaster.account_code)).all()
+    cost_centers = db.session.scalars(select(CostCenterMaster).order_by(CostCenterMaster.cost_center_code)).all()
     return render_template(
         'maintenance_department.html',
         departments=pagination.items,
         pagination=pagination,
         department_import_uuid=department_import_uuid,
+        districts=districts,
+        sections=sections,
+        kbns=kbns,
+        accounts=accounts,
+        cost_centers=cost_centers,
     )
 
 

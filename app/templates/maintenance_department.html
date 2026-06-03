@@ -2,6 +2,10 @@
 {% from 'components/macros.html' import render_pagination %}
 {% block title %}変換マスタ管理{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/styles/choices.min.css">
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
   <h4><i class="bi bi-person-badge me-2 text-primary"></i>変換マスタ管理</h4>
@@ -73,37 +77,61 @@
                     <div class="row mb-2 align-items-center">
                       <label class="col-4 col-form-label">地区コード<span class="text-danger">*</span></label>
                       <div class="col-8">
-                        <input type="text" name="district_code" class="form-control" value="{{ d.district_code }}" required>
+                        <select name="district_code" class="form-select" data-choices required>
+                          {% for dist in districts %}
+                          <option value="{{ dist.district_code }}" {% if dist.district_code == d.district_code %}selected{% endif %}>{{ dist.district_code }} - {{ dist.district_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
                     </div>
                     <div class="row mb-2 align-items-center">
                       <label class="col-4 col-form-label">課コード<span class="text-danger">*</span></label>
                       <div class="col-8">
-                        <input type="text" name="section_code" class="form-control" value="{{ d.section_code }}" required>
+                        <select name="section_code" class="form-select" data-choices required>
+                          {% for sec in sections %}
+                          <option value="{{ sec.section_code }}" {% if sec.section_code == d.section_code %}selected{% endif %}>{{ sec.section_code }} - {{ sec.section_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
                     </div>
                     <div class="row mb-2 align-items-center">
                       <label class="col-4 col-form-label">集約課コード<span class="text-danger">*</span></label>
                       <div class="col-8">
-                        <input type="text" name="agg_section_code" class="form-control" value="{{ d.agg_section_code }}" required>
+                        <select name="agg_section_code" class="form-select" data-choices required>
+                          {% for sec in sections %}
+                          <option value="{{ sec.section_code }}" {% if sec.section_code == d.agg_section_code %}selected{% endif %}>{{ sec.section_code }} - {{ sec.section_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
                     </div>
                     <div class="row mb-2 align-items-center">
                       <label class="col-4 col-form-label">区分コード<span class="text-danger">*</span></label>
                       <div class="col-8">
-                        <input type="text" name="kbn_code" class="form-control" value="{{ d.kbn_code }}" required>
+                        <select name="kbn_code" class="form-select" data-choices required>
+                          {% for k in kbns %}
+                          <option value="{{ k.kbn_code }}" {% if k.kbn_code == d.kbn_code %}selected{% endif %}>{{ k.kbn_code }} - {{ k.kbn_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
                     </div>
                     <div class="row mb-2 align-items-center">
                       <label class="col-4 col-form-label">勘定科目コード<span class="text-danger">*</span></label>
                       <div class="col-8">
-                        <input type="text" name="account_code" class="form-control" value="{{ d.account_code }}" required>
+                        <select name="account_code" class="form-select" data-choices required>
+                          {% for acc in accounts %}
+                          <option value="{{ acc.account_code }}" {% if acc.account_code == d.account_code %}selected{% endif %}>{{ acc.account_code }} - {{ acc.account_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
                     </div>
                     <div class="row mb-2 align-items-center">
                       <label class="col-4 col-form-label">原価センタコード<span class="text-danger">*</span></label>
                       <div class="col-8">
-                        <input type="text" name="cost_center_code" class="form-control" value="{{ d.cost_center_code }}" required>
+                        <select name="cost_center_code" class="form-select" data-choices required>
+                          {% for cc in cost_centers %}
+                          <option value="{{ cc.cost_center_code }}" {% if cc.cost_center_code == d.cost_center_code %}selected{% endif %}>{{ cc.cost_center_code }} - {{ cc.cost_center_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -238,37 +266,67 @@
           <div class="row mb-2 align-items-center">
             <label class="col-4 col-form-label">地区コード<span class="text-danger">*</span></label>
             <div class="col-8">
-              <input type="text" name="district_code" class="form-control" required>
+              <select name="district_code" class="form-select" data-choices required>
+                <option value="">-- 選択してください --</option>
+                {% for dist in districts %}
+                <option value="{{ dist.district_code }}">{{ dist.district_code }} - {{ dist.district_name }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
           <div class="row mb-2 align-items-center">
             <label class="col-4 col-form-label">課コード<span class="text-danger">*</span></label>
             <div class="col-8">
-              <input type="text" name="section_code" class="form-control" required>
+              <select name="section_code" class="form-select" data-choices required>
+                <option value="">-- 選択してください --</option>
+                {% for sec in sections %}
+                <option value="{{ sec.section_code }}">{{ sec.section_code }} - {{ sec.section_name }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
           <div class="row mb-2 align-items-center">
             <label class="col-4 col-form-label">集約課コード<span class="text-danger">*</span></label>
             <div class="col-8">
-              <input type="text" name="agg_section_code" class="form-control" required>
+              <select name="agg_section_code" class="form-select" data-choices required>
+                <option value="">-- 選択してください --</option>
+                {% for sec in sections %}
+                <option value="{{ sec.section_code }}">{{ sec.section_code }} - {{ sec.section_name }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
           <div class="row mb-2 align-items-center">
             <label class="col-4 col-form-label">区分コード<span class="text-danger">*</span></label>
             <div class="col-8">
-              <input type="text" name="kbn_code" class="form-control" required>
+              <select name="kbn_code" class="form-select" data-choices required>
+                <option value="">-- 選択してください --</option>
+                {% for k in kbns %}
+                <option value="{{ k.kbn_code }}">{{ k.kbn_code }} - {{ k.kbn_name }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
           <div class="row mb-2 align-items-center">
             <label class="col-4 col-form-label">勘定科目コード<span class="text-danger">*</span></label>
             <div class="col-8">
-              <input type="text" name="account_code" class="form-control" required>
+              <select name="account_code" class="form-select" data-choices required>
+                <option value="">-- 選択してください --</option>
+                {% for acc in accounts %}
+                <option value="{{ acc.account_code }}">{{ acc.account_code }} - {{ acc.account_name }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
           <div class="row mb-2 align-items-center">
             <label class="col-4 col-form-label">原価センタコード<span class="text-danger">*</span></label>
             <div class="col-8">
-              <input type="text" name="cost_center_code" class="form-control" required>
+              <select name="cost_center_code" class="form-select" data-choices required>
+                <option value="">-- 選択してください --</option>
+                {% for cc in cost_centers %}
+                <option value="{{ cc.cost_center_code }}">{{ cc.cost_center_code }} - {{ cc.cost_center_name }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
         </div>
@@ -283,8 +341,26 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"></script>
 <script>
 (function () {
+  // Choices.js 遅延初期化 — モーダルが表示されるタイミングで初期化する
+  document.addEventListener('show.bs.modal', function (event) {
+    event.target.querySelectorAll('select[data-choices]').forEach(function (el) {
+      if (!el.dataset.choicesInit) {
+        new Choices(el, {
+          searchEnabled: true,
+          shouldSort: false,
+          itemSelectText: '',
+          noResultsText: '見つかりません',
+          noChoicesText: '選択肢がありません',
+        });
+        el.dataset.choicesInit = 'true';
+      }
+    });
+  });
+
+  // インポート確認モーダルの自動表示
   const params = new URLSearchParams(window.location.search);
   if (params.get('confirm') === 'department') {
     document.getElementById('importConfirmUuid').value = '{{ department_import_uuid }}';
