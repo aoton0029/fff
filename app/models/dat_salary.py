@@ -11,6 +11,7 @@ from ..extensions import db
 if TYPE_CHECKING:
     from .mst_department import DepartmentMaster
     from .dat_upload_batch import UploadBatch
+    from .mst_user import User
 
 
 class SalaryData(db.Model):
@@ -56,9 +57,10 @@ class SalaryData(db.Model):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    created_by: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
 
     batch: Mapped[UploadBatch] = relationship(back_populates='salary_records')
+    creator: Mapped[User] = relationship('User', foreign_keys=[created_by], viewonly=True)
 
     @property
     def chiku_ka_code(self) -> Optional[str]:

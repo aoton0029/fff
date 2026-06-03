@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from .mst_account import AccountMaster
     from .mst_cost_center import CostCenterMaster
     from .mst_district import DistrictMaster
+    from .mst_kbn import KbnMaster
     from .mst_section import SectionMaster
 
 
@@ -19,16 +20,21 @@ class DepartmentMaster(db.Model):
 
     department_code: Mapped[str] = mapped_column('行ラベル', String(20), primary_key=True)
     department_name: Mapped[str] = mapped_column('行名', String(100), nullable=False)
-    district_code: Mapped[str] = mapped_column('地区コード', String(20), nullable=False)
+    district_code: Mapped[str] = mapped_column('地区コード', String(20), ForeignKey('mst_地区.district_code'), nullable=False)
     section_code: Mapped[str] = mapped_column(
         '課コード', String(20), ForeignKey('mst_課コード.課コード'), nullable=False
     )
     agg_section_code: Mapped[str] = mapped_column(
         '集約課コード', String(20), ForeignKey('mst_課コード.課コード'), nullable=False
     )
-    kbn_code: Mapped[str] = mapped_column('区分コード', String(20), nullable=False)
-    account_code: Mapped[str] = mapped_column('勘定科目コード', String(20), nullable=False)
-    cost_center_code: Mapped[str] = mapped_column('原価センタコード', String(20), nullable=False)
+    kbn_code: Mapped[str] = mapped_column('区分コード', String(20), ForeignKey('mst_区分.kbn_code'), nullable=False)
+    account_code: Mapped[str] = mapped_column('勘定科目コード', String(20), ForeignKey('mst_勘定科目.account_code'), nullable=False)
+    cost_center_code: Mapped[str] = mapped_column('原価センタコード', String(20), ForeignKey('mst_原価センタ.cost_center_code'), nullable=False)
+
+    district: Mapped[DistrictMaster] = relationship('DistrictMaster', foreign_keys=[district_code], viewonly=True)
+    account: Mapped[AccountMaster] = relationship('AccountMaster', foreign_keys=[account_code], viewonly=True)
+    cost_center: Mapped[CostCenterMaster] = relationship('CostCenterMaster', foreign_keys=[cost_center_code], viewonly=True)
+    kbn: Mapped[KbnMaster] = relationship('KbnMaster', foreign_keys=[kbn_code], viewonly=True)
 
     def __repr__(self) -> str:
         return f'<DepartmentMaster {self.department_code} {self.department_name}>'

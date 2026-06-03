@@ -8,7 +8,6 @@ from ..extensions import db
 
 class DistrictMaster(db.Model):
     __tablename__ = 'mst_地区'
-    __bind_key__ = 'master_db'
 
     district_code: Mapped[str] = mapped_column('地区コード', String(20), primary_key=True)
     district_name: Mapped[str] = mapped_column('地区名', String(100), nullable=False)

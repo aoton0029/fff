@@ -1,33 +1,11 @@
 salary:
   display_name: 給与データ
   sheet_name: 給与データ
+  year_cell: null
+  month_cell: null
   header_row: 1
-  use_cols: A:AN
+  use_cols: I:AM
   columns:
-    - name: 地区
-      type: str
-      required: false
-    - name: 課コード
-      type: str
-      required: false
-    - name: 地区+課コード
-      type: str
-      required: false
-    - name: 集約課コード
-      type: str
-      required: false
-    - name: 地区+集約課コード
-      type: str
-      required: false
-    - name: 原価センタ
-      type: str
-      required: false
-    - name: 区分
-      type: str
-      required: false
-    - name: 勘定科目
-      type: str
-      required: false
     - name: 行ラベル
       type: str
       required: true
@@ -49,92 +27,92 @@ salary:
       required: true
     - name: 合計/(明細1)報酬
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)本俸
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)基本賃金
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)国内給与
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)駐在員給与調整
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)家族手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)資格手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)交替勤務加算給
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)振替勤務就業手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)早出残業手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)休日出勤手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)特定休日出勤手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)交替勤務手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)守衛手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)深夜業手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)単身赴任手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)一時帰省旅費
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)夜間呼出手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)出向補償時間
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)その他手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)前月育介金額
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)公的資格手当
       type: int
-      required: false
+      required: true
     - name: 合計/(明細1)賃金控除
       type: int
-      required: false
+      required: true
     - name: 合計/(明細2)職場離脱(会計)
       type: int
-      required: false
+      required: true
     - name: 合計/(明細2)人件費人数(会計)
       type: int
-      required: false
-    - name: 合計
-      type: int
-      required: false
+      required: true
+
 
 allocation:
   display_name: 工程配賦データ
   sheet_name: 工程配賦
-  header_row: 1
-  use_cols: A:I
+  year_cell: null
+  month_cell: null
+  header_row: 7
+  use_cols: B:I
   columns:
     - name: 事業部
       type: str
-      required: true
+      required: false
     - name: 地区
       type: str
       required: true
@@ -143,13 +121,13 @@ allocation:
       required: true
     - name: 原価区分
       type: str
-      required: true
+      required: false
     - name: 工程
       type: str
       required: true
     - name: 日数
       type: float
-      required: true
+      required: false
     - name: 工程名
       type: str
       required: false
@@ -163,8 +141,10 @@ allocation:
 labor_transfer:
   display_name: 労務費振替データ
   sheet_name: 労務費振替依頼書
-  header_row: 1
-  use_cols: A:J
+  year_cell: null
+  month_cell: C6
+  header_row: 8
+  use_cols: B:K
   columns:
     - name: 勘定科目コード
       type: str
@@ -181,7 +161,7 @@ labor_transfer:
       required: true
     - name: 工事名
       type: str
-      required: false
+      required: true
     - name: 作業時間
       type: float
       required: true
@@ -201,33 +181,43 @@ labor_transfer:
 ouen:
   display_name: 応援連絡票
   sheet_name: 応援連絡票
-  header_row: 1
-  use_cols: A:I
+  year_cell: C1
+  month_cell: C1
+  header_row: 6
+  use_cols: A:J
   columns:
-    - name: 送り出し地区
+    - name: 課コード
       type: str
       required: true
-    - name: 送り出し課コード
+      description: 送り出し課コード（4桁）
+    - name: 課名
+      type: str
+      required: false
+      description: 送り出し課名
+    - name: 課コード
       type: str
       required: true
-    - name: 受け入れ地区
+      description: 受け入れ課コード（4桁）
+    - name: 課名
       type: str
-      required: true
-    - name: 受け入れ課コード
-      type: str
+      required: false
+      description: 受け入れ課名
+    - name: 人数
+      type: int
       required: true
     - name: 出課日
       type: date
-      required: false
+      required: true
     - name: 帰課日
       type: date
-      required: false
+      required: true
     - name: 日数
       type: int
       required: true
     - name: 延日数
       type: int
       required: true
-    - name: 備考
+      description: 日数×人数
+    - name: 氏名
       type: str
       required: false

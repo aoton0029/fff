@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..extensions import db
@@ -17,17 +17,17 @@ class SectionMaster(db.Model):
 
     section_code: Mapped[str] = mapped_column('課コード', String(20), primary_key=True)
     section_name: Mapped[str] = mapped_column('課名', String(100), nullable=False)
-    district_code: Mapped[str] = mapped_column('地区コード', String(20), nullable=False)
-    cost_center_code: Mapped[str] = mapped_column('原価センタコード', String(20), nullable=False)
+    district_code: Mapped[str] = mapped_column('地区コード', String(20), ForeignKey('mst_地区.district_code'), nullable=False)
+    cost_center_code: Mapped[str] = mapped_column('原価センタコード', String(20), ForeignKey('mst_原価センタ.cost_center_code'), nullable=False)
 
     district: Mapped[DistrictMaster] = relationship(
         'DistrictMaster',
-        primaryjoin='foreign(SectionMaster.district_code) == DistrictMaster.district_code',
+        foreign_keys=[district_code],
         viewonly=True,
     )
     cost_center: Mapped[CostCenterMaster] = relationship(
         'CostCenterMaster',
-        primaryjoin='foreign(SectionMaster.cost_center_code) == CostCenterMaster.cost_center_code',
+        foreign_keys=[cost_center_code],
         viewonly=True,
     )
 

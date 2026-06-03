@@ -1,7 +1,4 @@
-"""app.db（マスタ用SQLite）の初期化・シードスクリプト（開発・テスト用）
-
-別DBサーバーに存在するマスタテーブル（地区・勘定科目・原価センタ・WBS・ユーザー）を
-SQLiteファイル（instance/app.db）に作成してサンプルデータを投入します。
+"""app.dbの初期化・シードスクリプト（開発・テスト用）
 
 使い方:
     uv run python scripts/init_app_db.py
@@ -69,7 +66,7 @@ WBS_LIST = [
 def init(clear: bool) -> None:
     app = create_app('development')
     with app.app_context():
-        db.create_all(bind_key='master_db')
+        db.create_all()
 
         if clear:
             db.session.query(WBSMaster).delete()

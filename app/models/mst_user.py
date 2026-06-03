@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
-    __bind_key__ = 'master_db'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)

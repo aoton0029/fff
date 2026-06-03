@@ -16,5 +16,3 @@ wheels/
 /docs/sql/
 
 /app/static/
-
-/scripts/_seed_masters.py
