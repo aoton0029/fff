@@ -58,13 +58,17 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
-                    <div class="mb-2">
-                      <label class="form-label">区分コード</label>
-                      <input type="text" class="form-control" value="{{ k.kbn_code }}" disabled>
+                    <div class="row mb-2 align-items-center">
+                      <label class="col-4 col-form-label">区分コード</label>
+                      <div class="col-8">
+                        <input type="text" class="form-control" value="{{ k.kbn_code }}" disabled>
+                      </div>
                     </div>
-                    <div class="mb-2">
-                      <label class="form-label">区分名<span class="text-danger">*</span></label>
-                      <input type="text" name="kbn_name" class="form-control" value="{{ k.kbn_name }}" required>
+                    <div class="row mb-2 align-items-center">
+                      <label class="col-4 col-form-label">区分名<span class="text-danger">*</span></label>
+                      <div class="col-8">
+                        <input type="text" name="kbn_name" class="form-control" value="{{ k.kbn_name }}" required>
+                      </div>
                     </div>
                   </div>
                   <div class="modal-footer">
@@ -191,13 +195,17 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="mb-2">
-            <label class="form-label">区分コード<span class="text-danger">*</span></label>
-            <input type="text" name="kbn_code" class="form-control" required>
+          <div class="row mb-2 align-items-center">
+            <label class="col-4 col-form-label">区分コード<span class="text-danger">*</span></label>
+            <div class="col-8">
+              <input type="text" name="kbn_code" class="form-control" required>
+            </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label">区分名<span class="text-danger">*</span></label>
-            <input type="text" name="kbn_name" class="form-control" required>
+          <div class="row mb-2 align-items-center">
+            <label class="col-4 col-form-label">区分名<span class="text-danger">*</span></label>
+            <div class="col-8">
+              <input type="text" name="kbn_name" class="form-control" required>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
