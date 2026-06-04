@@ -28,6 +28,7 @@ class UploadBatch(db.Model):
     )
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
     record_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    error_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     salary_records: Mapped[list[SalaryData]] = relationship(back_populates='batch')
     allocation_records: Mapped[list[AllocationData]] = relationship(back_populates='batch')

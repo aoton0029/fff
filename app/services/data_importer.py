@@ -31,6 +31,7 @@ class ImportResult:
     saved_count: int = 0
     errors: list[dict] = field(default_factory=list)
     batch_id: int | None = None
+    validation_error_count: int = 0
 
 
 def _validate_rows(rows: list[dict], file_type: str) -> tuple[list[Any], list[dict]]:
@@ -160,7 +161,7 @@ def import_excel_file(file_storage, file_type: str, user_id: int) -> ImportResul
 
         valid_models, errors = _validate_rows(rows, file_type)
         if errors:
-            return ImportResult(success=False, errors=errors)
+            return ImportResult(success=False, errors=errors, validation_error_count=len(errors))
 
         # Persist
         batch = UploadBatch(

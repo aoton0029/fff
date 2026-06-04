@@ -1,13 +1,14 @@
 from dataclasses import dataclass, field
-from sqlalchemy import func, select
 
-from ..extensions import db
 from ..forms.upload import UploadForm
-from ..models.dat_salary import SalaryData
-from ..models.dat_upload_batch import UploadBatch
+from ..repositories.batch_repository import UploadBatchRepository
+from ..repositories.salary_repository import SalaryRepository
 
 _PER_PAGE = 20
 _FILE_TYPE = 'ouen'
+
+_batch_repo = UploadBatchRepository()
+_salary_repo = SalaryRepository()
 
 
 @dataclass
@@ -20,7 +21,6 @@ class OuenIndexViewModel:
 
     def __post_init__(self):
         self.form = UploadForm()
-        query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-        self.pagination = db.paginate(query, page=self.page, per_page=_PER_PAGE, error_out=False)
+        self.pagination = _batch_repo.get_paginated(_FILE_TYPE, self.page, _PER_PAGE)
         self.batches = self.pagination.items
-        self.salary_count = db.session.scalar(select(func.count()).select_from(SalaryData))
+        self.salary_count = _salary_repo.count_all()

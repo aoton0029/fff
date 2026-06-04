@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from sqlalchemy import select
 
-from ..extensions import db
 from ..forms.upload import UploadForm
-from ..models.dat_upload_batch import UploadBatch
+from ..repositories.batch_repository import UploadBatchRepository
 
 _FILE_TYPE = 'salary'
+
+_batch_repo = UploadBatchRepository()
 
 
 @dataclass
@@ -17,8 +17,4 @@ class SalaryIndexViewModel:
     def __post_init__(self):
         self.form = UploadForm()
         self.file_type = _FILE_TYPE
-        self.batch = db.session.scalar(
-            select(UploadBatch)
-            .filter_by(file_type=_FILE_TYPE)
-            .order_by(UploadBatch.created_at.desc())
-        )
+        self.batch = _batch_repo.get_latest(_FILE_TYPE)

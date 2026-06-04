@@ -1,15 +1,15 @@
 from flask import render_template, request
 from flask_login import login_required
-from sqlalchemy import select
 
 from . import main_bp
-from ..extensions import db, htmx
-from ..models.dat_labor_unit_price import LaborUnitPrice
-from ..models.dat_processing_month import ProcessingMonth
+from ..extensions import htmx
+from ..repositories.labor_repository import LaborRepository
 from ..services.excel_reader import get_format_config
 from ..view_models.labor import LaborIndexViewModel
 
 FILE_TYPE = 'labor_transfer'
+
+_labor_repo = LaborRepository()
 
 
 @main_bp.route('/labor/')
@@ -24,11 +24,9 @@ def labor_index():
             pagination=vm.pagination,
             file_type=vm.file_type,
         )
-    setting = db.session.scalar(select(ProcessingMonth))
+    setting = _labor_repo.get_current_processing_month()
     yr_mo = setting.year_month if setting else None
-    current_unit_price = (
-        db.session.scalar(select(LaborUnitPrice).filter_by(year_month=yr_mo)) if yr_mo else None
-    )
+    current_unit_price = _labor_repo.get_unit_price(yr_mo) if yr_mo else None
     return render_template(
         'labor.html',
         form=vm.form,

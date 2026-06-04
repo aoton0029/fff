@@ -7,9 +7,12 @@ from ..extensions import htmx, db
 from ..forms.upload import UploadForm
 from ..models.dat_upload_batch import UploadBatch
 from ..models.dat_salary import SalaryData
+from ..repositories.salary_repository import SalaryRepository
 from ..services.data_importer import import_excel_file
 
 _FILE_TYPE = 'salary'
+
+_salary_repo = SalaryRepository()
 
 
 @main_bp.route('/salary/upload', methods=['POST'])
@@ -71,8 +74,21 @@ def salary_upload():
 
     result = import_excel_file(form.file.data, _FILE_TYPE, current_user.id)
 
+    # バリデーションエラー（行レベル）があった場合はエラーバッチをDBに保存して状態を永続化
+    error_batch = None
+    if not result.success and result.validation_error_count > 0:
+        error_batch = UploadBatch(
+            file_name=form.file.data.filename,
+            file_type=_FILE_TYPE,
+            created_by=current_user.id,
+            record_count=0,
+            error_count=result.validation_error_count,
+        )
+        db.session.add(error_batch)
+        db.session.commit()
+
     if htmx:
-        batch = db.session.get(UploadBatch, result.batch_id) if result.success else None
+        batch = db.session.get(UploadBatch, result.batch_id) if result.success else error_batch
         return render_template(
             'partials/salary_upload_result.html',
             success=result.success,
@@ -83,6 +99,8 @@ def salary_upload():
 
     if result.success:
         flash(f'{result.saved_count} 件のデータを保存しました。', 'success')
+    elif result.validation_error_count > 0:
+        flash(f'バリデーションエラーが {result.validation_error_count} 件あります。データを修正して再アップロードしてください。', 'danger')
     else:
         flash('アップロードに失敗しました。', 'danger')
     return redirect(url_for('main.salary_index'))
@@ -92,7 +110,7 @@ def salary_upload():
 @login_required
 def salary_detail(batch_id: int):
     batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
-    records = db.session.scalars(select(SalaryData).filter_by(batch_id=batch_id)).all()
+    records = _salary_repo.get_records_by_batch(batch_id)
     return render_template('partials/salary_detail_modal.html', batch=batch, records=records)
 
 

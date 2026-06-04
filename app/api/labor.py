@@ -12,12 +12,17 @@ from ..models.dat_processing_month import ProcessingMonth
 from ..models.dat_upload_batch import UploadBatch
 from ..models.dat_labor_transfer import LaborTransferData
 from ..models.dat_labor_unit_price import LaborUnitPrice
+from ..repositories.batch_repository import UploadBatchRepository
+from ..repositories.labor_repository import LaborRepository
 from ..services.data_importer import import_excel_file
 from ..services.sap_exporter import build_labor_tsv
 
 _PER_PAGE = 20
 _FILE_TYPE = 'labor_transfer'
 _ALLOWED_EXT = {'.xlsx', '.xls'}
+
+_batch_repo = UploadBatchRepository()
+_labor_repo = LaborRepository()
 
 
 @main_bp.route('/labor/upload', methods=['POST'])
@@ -46,8 +51,7 @@ def labor_upload():
 
     if htmx:
         page = request.args.get('page', 1, type=int)
-        query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-        pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
+        pagination = _batch_repo.get_paginated(_FILE_TYPE, page, _PER_PAGE)
         return render_template(
             'partials/upload_result.html',
             file_results=file_results,
@@ -75,7 +79,7 @@ def labor_upload():
 @login_required
 def labor_detail(batch_id: int):
     batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
-    records = db.session.scalars(select(LaborTransferData).filter_by(batch_id=batch_id)).all()
+    records = _labor_repo.get_records_by_batch(batch_id)
     return render_template('partials/labor_detail_modal.html', batch=batch, records=records)
 
 
@@ -109,8 +113,7 @@ def labor_delete(batch_id: int):
     db.session.commit()
 
     page = request.args.get('page', 1, type=int)
-    query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-    pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
+    pagination = _batch_repo.get_paginated(_FILE_TYPE, page, _PER_PAGE)
     return render_template(
         'partials/batch_table.html',
         batches=pagination.items,
@@ -130,16 +133,14 @@ _MOCK_LABOR_CALC_ROWS = [
 @main_bp.route('/labor/calc-preview')
 @login_required
 def labor_calc_preview():
-    # TODO: SQLビュー（v_労務費計算）実装後、rows をDBクエリに置換
-    rows = _MOCK_LABOR_CALC_ROWS
+    rows = _labor_repo.get_calc_rows()
     return render_template('partials/labor_calc_modal.html', rows=rows)
 
 
 @main_bp.route('/labor/calc-download')
 @login_required
 def labor_calc_download():
-    # TODO: SQLビュー実装後、rows をDBクエリに置換
-    rows = _MOCK_LABOR_CALC_ROWS
+    rows = _labor_repo.get_calc_rows()
 
     wb = openpyxl.Workbook()
     ws = wb.active

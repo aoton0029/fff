@@ -4,19 +4,23 @@ import os
 import openpyxl
 from flask import render_template, request, flash, redirect, send_file, url_for
 from flask_login import login_required, current_user
-from sqlalchemy import delete, distinct, select
+from sqlalchemy import delete, select
 
 from ..views import main_bp
 from ..extensions import htmx, db
-from ..models.mst_district import DistrictMaster
 from ..models.dat_upload_batch import UploadBatch
 from ..models.dat_ouen import OuenData
+from ..repositories.batch_repository import UploadBatchRepository
+from ..repositories.ouen_repository import OuenRepository
 from ..services.data_importer import import_excel_file
 from ..services.sap_exporter import build_labor_tran_mock_excel
 
 _PER_PAGE = 20
 _FILE_TYPE = 'ouen'
 _ALLOWED_EXT = {'.xlsx', '.xls'}
+
+_batch_repo = UploadBatchRepository()
+_ouen_repo = OuenRepository()
 
 
 @main_bp.route('/ouen/upload', methods=['POST'])
@@ -45,8 +49,7 @@ def ouen_upload():
 
     if htmx:
         page = request.args.get('page', 1, type=int)
-        query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-        pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
+        pagination = _batch_repo.get_paginated(_FILE_TYPE, page, _PER_PAGE)
         return render_template(
             'partials/ouen_upload_result.html',
             file_results=file_results,
@@ -73,7 +76,7 @@ def ouen_upload():
 @login_required
 def ouen_detail(batch_id: int):
     batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
-    records = db.session.scalars(select(OuenData).filter_by(batch_id=batch_id)).all()
+    records = _ouen_repo.get_records_by_batch(batch_id)
     return render_template('partials/ouen_detail_modal.html', batch=batch, records=records)
 
 
@@ -86,8 +89,7 @@ def ouen_delete(batch_id: int):
     db.session.commit()
 
     page = request.args.get('page', 1, type=int)
-    query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-    pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
+    pagination = _batch_repo.get_paginated(_FILE_TYPE, page, _PER_PAGE)
     return render_template(
         'partials/ouen_batch_table.html',
         batches=pagination.items,
@@ -95,27 +97,17 @@ def ouen_delete(batch_id: int):
     )
 
 
-_MOCK_OUEN_CALC_ROWS = [
-    {"district_code": "D01", "section_code": "A01", "process_code": "P001", "from_section": "B02", "to_section": "A01", "days": 5.0, "amount": 300_000},
-    {"district_code": "D01", "section_code": "A01", "process_code": "P002", "from_section": "C03", "to_section": "A01", "days": 3.0, "amount": 180_000},
-    {"district_code": "D02", "section_code": "B02", "process_code": "P001", "from_section": "A01", "to_section": "B02", "days": 8.0, "amount": 480_000},
-    {"district_code": "D02", "section_code": "C03", "process_code": "P003", "from_section": "B02", "to_section": "C03", "days": 2.0, "amount": 120_000},
-]
-
-
 @main_bp.route('/ouen/calc-preview')
 @login_required
 def ouen_calc_preview():
-    # TODO: SQLビュー（v_応援計算）実装後、rows をDBクエリに置換
-    rows = _MOCK_OUEN_CALC_ROWS
+    rows = _ouen_repo.get_calc_rows()
     return render_template('partials/ouen_calc_modal.html', rows=rows)
 
 
 @main_bp.route('/ouen/calc-download')
 @login_required
 def ouen_calc_download():
-    # TODO: SQLビュー実装後、rows をDBクエリに置換
-    rows = _MOCK_OUEN_CALC_ROWS
+    rows = _ouen_repo.get_calc_rows()
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -142,22 +134,7 @@ def ouen_calc_download():
 @login_required
 def ouen_labor_tran_modal():
     """HTMX: 労務費トランモーダルのボディを返す。"""
-    district_codes = db.session.scalars(
-        select(distinct(OuenData.from_district)).order_by(OuenData.from_district)
-    ).all()
-
-    # DistrictMaster から地区名を取得（存在しない場合は None）
-    district_map: dict[str, str | None] = {code: None for code in district_codes}
-    masters = db.session.scalars(
-        select(DistrictMaster).where(DistrictMaster.district_code.in_(district_codes))
-    ).all()
-    for m in masters:
-        district_map[m.district_code] = m.district_name
-
-    districts = [
-        {'code': code, 'name': district_map.get(code)}
-        for code in district_codes
-    ]
+    districts = _ouen_repo.get_district_list()
     return render_template('partials/ouen_labor_tran_modal.html', districts=districts)
 
 

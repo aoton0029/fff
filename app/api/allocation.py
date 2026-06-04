@@ -11,12 +11,17 @@ from ..extensions import htmx, db
 from ..models.dat_processing_month import ProcessingMonth
 from ..models.dat_upload_batch import UploadBatch
 from ..models.dat_allocation import AllocationData
+from ..repositories.batch_repository import UploadBatchRepository
+from ..repositories.allocation_repository import AllocationRepository
 from ..services.data_importer import import_excel_file
 from ..services.sap_exporter import build_allocation_tsv
 
 _PER_PAGE = 20
 _FILE_TYPE = 'allocation'
 _ALLOWED_EXT = {'.xlsx', '.xls'}
+
+_batch_repo = UploadBatchRepository()
+_allocation_repo = AllocationRepository()
 
 
 @main_bp.route('/allocation/upload', methods=['POST'])
@@ -45,8 +50,7 @@ def allocation_upload():
 
     if htmx:
         page = request.args.get('page', 1, type=int)
-        query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-        pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
+        pagination = _batch_repo.get_paginated(_FILE_TYPE, page, _PER_PAGE)
         return render_template(
             'partials/upload_result.html',
             file_results=file_results,
@@ -74,7 +78,7 @@ def allocation_upload():
 @login_required
 def allocation_detail(batch_id: int):
     batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
-    records = db.session.scalars(select(AllocationData).filter_by(batch_id=batch_id)).all()
+    records = _allocation_repo.get_records_by_batch(batch_id)
     return render_template('partials/allocation_detail_modal.html', batch=batch, records=records)
 
 
@@ -93,27 +97,17 @@ def allocation_sap_output():
     )
 
 
-_MOCK_CALC_ROWS = [
-    {"section_code": "A01", "process_code": "P001", "process_name": "工程A", "formation": 10.0, "fixed_count": 2.0, "days": 20.0, "amount": 1_200_000},
-    {"section_code": "A01", "process_code": "P002", "process_name": "工程B", "formation": 8.0,  "fixed_count": 1.0, "days": 18.0, "amount":   980_000},
-    {"section_code": "B02", "process_code": "P003", "process_name": "工程C", "formation": 12.0, "fixed_count": 3.0, "days": 22.0, "amount": 1_450_000},
-    {"section_code": "B02", "process_code": "P004", "process_name": "工程D", "formation": 6.0,  "fixed_count": 0.0, "days": 15.0, "amount":   670_000},
-]
-
-
 @main_bp.route('/allocation/calc-preview')
 @login_required
 def allocation_calc_preview():
-    # TODO: SQLビュー（v_工程配賦計算）実装後、rows をDBクエリに置換
-    rows = _MOCK_CALC_ROWS
+    rows = _allocation_repo.get_calc_rows()
     return render_template('partials/allocation_calc_modal.html', rows=rows)
 
 
 @main_bp.route('/allocation/calc-download')
 @login_required
 def allocation_calc_download():
-    # TODO: SQLビュー実装後、rows をDBクエリに置換
-    rows = _MOCK_CALC_ROWS
+    rows = _allocation_repo.get_calc_rows()
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -146,8 +140,7 @@ def allocation_delete(batch_id: int):
     db.session.commit()
 
     page = request.args.get('page', 1, type=int)
-    query = select(UploadBatch).filter_by(file_type=_FILE_TYPE).order_by(UploadBatch.created_at.desc())
-    pagination = db.paginate(query, page=page, per_page=_PER_PAGE, error_out=False)
+    pagination = _batch_repo.get_paginated(_FILE_TYPE, page, _PER_PAGE)
     return render_template(
         'partials/batch_table.html',
         batches=pagination.items,
