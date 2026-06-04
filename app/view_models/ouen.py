@@ -14,6 +14,8 @@ _salary_repo = SalaryRepository()
 @dataclass
 class OuenIndexViewModel:
     page: int
+    sort_by: str = 'created_at'
+    sort_dir: str = 'desc'
     form: UploadForm = field(init=False)
     pagination: object = field(init=False)
     batches: list = field(init=False)
@@ -21,6 +23,6 @@ class OuenIndexViewModel:
 
     def __post_init__(self):
         self.form = UploadForm()
-        self.pagination = _batch_repo.get_paginated(_FILE_TYPE, self.page, _PER_PAGE)
+        self.pagination = _batch_repo.get_paginated(_FILE_TYPE, self.page, _PER_PAGE, self.sort_by, self.sort_dir)
         self.batches = self.pagination.items
         self.salary_count = _salary_repo.count_all()

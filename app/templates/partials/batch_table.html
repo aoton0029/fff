@@ -1,6 +1,6 @@
 {# Partial: batch_table.html
    Shared by salary / allocation / labor views.
-   Variables: batches, pagination, file_type
+   Variables: batches, pagination, file_type, sort_by, sort_dir
 #}
 {% from 'components/macros.html' import render_pagination %}
 
@@ -15,14 +15,33 @@
   'labor_transfer': 'main.labor_delete',
 } %}
 
+{% set sort_by = sort_by | default('created_at') %}
+{% set sort_dir = sort_dir | default('desc') %}
+
+{% macro sort_link(col, label) %}
+{% set next_dir = 'asc' if (sort_by == col and sort_dir == 'desc') else 'desc' if (sort_by == col and sort_dir == 'asc') else 'asc' %}
+<a class="text-decoration-none text-dark d-inline-flex align-items-center gap-1"
+   href="?sort={{ col }}&order={{ next_dir }}"
+   hx-get="?sort={{ col }}&order={{ next_dir }}"
+   hx-target="#table-area"
+   hx-push-url="true">
+  {{ label }}
+  {% if sort_by == col %}
+    {% if sort_dir == 'asc' %}<i class="bi bi-sort-up"></i>{% else %}<i class="bi bi-sort-down"></i>{% endif %}
+  {% else %}
+    <i class="bi bi-arrow-down-up text-muted small"></i>
+  {% endif %}
+</a>
+{% endmacro %}
+
 <div id="table-area">
   {% if batches %}
   <div class="table-scroll-wrapper">
   <table class="table table-hover table-sm align-middle mb-0">
     <thead class="table-light">
       <tr>
-        <th>ファイル名</th>
-        <th>アップロード日時</th>
+        <th>{{ sort_link('file_name', 'ファイル名') }}</th>
+        <th>{{ sort_link('created_at', 'アップロード日時') }}</th>
         <th>アップロード者</th>
         <th class="text-end">操作</th>
       </tr>
@@ -76,7 +95,7 @@
     </tbody>
   </table>
   </div>
-  {{ render_pagination(pagination, '', hx_target='#table-area') }}
+  {{ render_pagination(pagination, '', hx_target='#table-area', extra_qs='&sort=' ~ sort_by ~ '&order=' ~ sort_dir) }}
   {% else %}
   <p class="text-muted text-center py-4">アップロードされたファイルはありません。</p>
   {% endif %}

@@ -13,12 +13,16 @@ _PER_PAGE = 20
 @login_required
 def ouen_index():
     page = request.args.get('page', 1, type=int)
-    vm = OuenIndexViewModel(page)
+    sort_by = request.args.get('sort', 'created_at')
+    sort_dir = request.args.get('order', 'desc')
+    vm = OuenIndexViewModel(page, sort_by, sort_dir)
     if htmx:
         return render_template(
             'partials/ouen_batch_table.html',
             batches=vm.batches,
             pagination=vm.pagination,
+            sort_by=sort_by,
+            sort_dir=sort_dir,
         )
     return render_template(
         'ouen.html',
@@ -27,4 +31,6 @@ def ouen_index():
         pagination=vm.pagination,
         salary_count=vm.salary_count,
         excel_format=get_format_config('ouen'),
+        sort_by=sort_by,
+        sort_dir=sort_dir,
     )

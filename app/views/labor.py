@@ -16,13 +16,17 @@ _labor_repo = LaborRepository()
 @login_required
 def labor_index():
     page = request.args.get('page', 1, type=int)
-    vm = LaborIndexViewModel(page)
+    sort_by = request.args.get('sort', 'created_at')
+    sort_dir = request.args.get('order', 'desc')
+    vm = LaborIndexViewModel(page, sort_by, sort_dir)
     if htmx:
         return render_template(
             'partials/batch_table.html',
             batches=vm.batches,
             pagination=vm.pagination,
             file_type=vm.file_type,
+            sort_by=sort_by,
+            sort_dir=sort_dir,
         )
     setting = _labor_repo.get_current_processing_month()
     yr_mo = setting.year_month if setting else None
@@ -35,4 +39,6 @@ def labor_index():
         file_type=vm.file_type,
         excel_format=get_format_config('labor_transfer'),
         current_unit_price=current_unit_price,
+        sort_by=sort_by,
+        sort_dir=sort_dir,
     )
