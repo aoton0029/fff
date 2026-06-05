@@ -113,32 +113,29 @@ allocation:
   header_cell_range: B7:I7
   columns:
     - name: 事業部
-      type: str
+      type: int
       required: false
     - name: 地区
-      type: str
+      type: int
       required: true
     - name: 課コード
-      type: str
+      type: int
       required: true
     - name: 原価区分
-      type: str
+      type: int
       required: false
     - name: 工程
-      type: str
+      type: int
       required: true
     - name: 日数
       type: float
       required: false
-    - name: 工程名
-      type: str
-      required: false
     - name: 編成
       type: float
-      required: true
+      required: false
     - name: 固定
       type: float
-      required: true
+      required: false
 
 labor_transfer:
   display_name: 労務費振替データ

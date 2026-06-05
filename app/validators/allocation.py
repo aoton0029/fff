@@ -27,7 +27,7 @@ class AllocationRow(BaseModel):
             "fixed_count": self.固定,
         }
 
-    @field_validator('事業部', '地区', '課コード', '原価区分', '工程')
+    @field_validator('地区', '課コード', '工程')
     @classmethod
     def code_not_empty(cls, v: str) -> str:
         v = str(v).strip()
@@ -35,11 +35,22 @@ class AllocationRow(BaseModel):
             raise ValueError('コードは空にできません')
         return v
 
+    @field_validator('事業部', '原価区分', mode='before')
+    @classmethod
+    def coerce_optional_code(cls, v: object) -> str:
+        if v is None:
+            return ''
+        return str(v).strip()
+
     @field_validator('日数', '編成', '固定', mode='before')
     @classmethod
     def coerce_numeric(cls, v: object) -> float:
+        if v is None:
+            return 0.0
         if isinstance(v, str):
             v = v.replace(',', '').strip()
+            if not v:
+                return 0.0
         try:
             return float(str(v))
         except (ValueError, TypeError):

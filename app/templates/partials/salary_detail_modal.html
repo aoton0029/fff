@@ -88,35 +88,35 @@
         <tr>
           <td>{{ r.row_label }}</td>
           <td>{{ r.section_name or '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.honkyu) }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.nouryoku_kyu) }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shokumu_yakuwari_kyu) }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.yakuwari_gyoseki_kyu) }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.hoshu) if r.hoshu is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.honpo) if r.honpo is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kihon_chingin) if r.kihon_chingin is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kokunai_kyuyo) if r.kokunai_kyuyo is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.chuzaiin_kyuyo_chosei) if r.chuzaiin_kyuyo_chosei is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kazoku_teate) if r.kazoku_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shikaku_teate) if r.shikaku_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.koutai_kinmu_kazan_kyu) if r.koutai_kinmu_kazan_kyu is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.furikae_kinmu_shugyo_teate) if r.furikae_kinmu_shugyo_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.hayade_zangyou_teate) if r.hayade_zangyou_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kyujitsu_shukkin_teate) if r.kyujitsu_shukkin_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.tokutei_kyujitsu_shukkin_teate) if r.tokutei_kyujitsu_shukkin_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.koutai_kinmu_teate) if r.koutai_kinmu_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.keibi_teate) if r.keibi_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shinya_teate) if r.shinya_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.tanshin_funin_teate) if r.tanshin_funin_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.ichiji_kisei_ryohi) if r.ichiji_kisei_ryohi is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.yakan_yobidate_teate) if r.yakan_yobidate_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shukkou_hoshou_jikan) if r.shukkou_hoshou_jikan is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.sonota_teate) if r.sonota_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.zengetsu_ikukai_kingaku) if r.zengetsu_ikukai_kingaku is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kouteki_shikaku_teate) if r.kouteki_shikaku_teate is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.chingin_koujyo) if r.chingin_koujyo is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shokuba_ridatsu_kaikei) if r.shokuba_ridatsu_kaikei is not none else '' }}</td>
-          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.jinkenhi_ninzuu_kaikei) if r.jinkenhi_ninzuu_kaikei is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.honkyu < 0 else '' }}">{{ '{:,}'.format(r.honkyu) }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.nouryoku_kyu < 0 else '' }}">{{ '{:,}'.format(r.nouryoku_kyu) }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.shokumu_yakuwari_kyu < 0 else '' }}">{{ '{:,}'.format(r.shokumu_yakuwari_kyu) }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.yakuwari_gyoseki_kyu < 0 else '' }}">{{ '{:,}'.format(r.yakuwari_gyoseki_kyu) }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.hoshu is not none and r.hoshu < 0 else '' }}">{{ '{:,}'.format(r.hoshu) if r.hoshu is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.honpo is not none and r.honpo < 0 else '' }}">{{ '{:,}'.format(r.honpo) if r.honpo is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.kihon_chingin is not none and r.kihon_chingin < 0 else '' }}">{{ '{:,}'.format(r.kihon_chingin) if r.kihon_chingin is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.kokunai_kyuyo is not none and r.kokunai_kyuyo < 0 else '' }}">{{ '{:,}'.format(r.kokunai_kyuyo) if r.kokunai_kyuyo is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.chuzaiin_kyuyo_chosei is not none and r.chuzaiin_kyuyo_chosei < 0 else '' }}">{{ '{:,}'.format(r.chuzaiin_kyuyo_chosei) if r.chuzaiin_kyuyo_chosei is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.kazoku_teate is not none and r.kazoku_teate < 0 else '' }}">{{ '{:,}'.format(r.kazoku_teate) if r.kazoku_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.shikaku_teate is not none and r.shikaku_teate < 0 else '' }}">{{ '{:,}'.format(r.shikaku_teate) if r.shikaku_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.koutai_kinmu_kazan_kyu is not none and r.koutai_kinmu_kazan_kyu < 0 else '' }}">{{ '{:,}'.format(r.koutai_kinmu_kazan_kyu) if r.koutai_kinmu_kazan_kyu is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.furikae_kinmu_shugyo_teate is not none and r.furikae_kinmu_shugyo_teate < 0 else '' }}">{{ '{:,}'.format(r.furikae_kinmu_shugyo_teate) if r.furikae_kinmu_shugyo_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.hayade_zangyou_teate is not none and r.hayade_zangyou_teate < 0 else '' }}">{{ '{:,}'.format(r.hayade_zangyou_teate) if r.hayade_zangyou_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.kyujitsu_shukkin_teate is not none and r.kyujitsu_shukkin_teate < 0 else '' }}">{{ '{:,}'.format(r.kyujitsu_shukkin_teate) if r.kyujitsu_shukkin_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.tokutei_kyujitsu_shukkin_teate is not none and r.tokutei_kyujitsu_shukkin_teate < 0 else '' }}">{{ '{:,}'.format(r.tokutei_kyujitsu_shukkin_teate) if r.tokutei_kyujitsu_shukkin_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.koutai_kinmu_teate is not none and r.koutai_kinmu_teate < 0 else '' }}">{{ '{:,}'.format(r.koutai_kinmu_teate) if r.koutai_kinmu_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.keibi_teate is not none and r.keibi_teate < 0 else '' }}">{{ '{:,}'.format(r.keibi_teate) if r.keibi_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.shinya_teate is not none and r.shinya_teate < 0 else '' }}">{{ '{:,}'.format(r.shinya_teate) if r.shinya_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.tanshin_funin_teate is not none and r.tanshin_funin_teate < 0 else '' }}">{{ '{:,}'.format(r.tanshin_funin_teate) if r.tanshin_funin_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.ichiji_kisei_ryohi is not none and r.ichiji_kisei_ryohi < 0 else '' }}">{{ '{:,}'.format(r.ichiji_kisei_ryohi) if r.ichiji_kisei_ryohi is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.yakan_yobidate_teate is not none and r.yakan_yobidate_teate < 0 else '' }}">{{ '{:,}'.format(r.yakan_yobidate_teate) if r.yakan_yobidate_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.shukkou_hoshou_jikan is not none and r.shukkou_hoshou_jikan < 0 else '' }}">{{ '{:,}'.format(r.shukkou_hoshou_jikan) if r.shukkou_hoshou_jikan is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.sonota_teate is not none and r.sonota_teate < 0 else '' }}">{{ '{:,}'.format(r.sonota_teate) if r.sonota_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.zengetsu_ikukai_kingaku is not none and r.zengetsu_ikukai_kingaku < 0 else '' }}">{{ '{:,}'.format(r.zengetsu_ikukai_kingaku) if r.zengetsu_ikukai_kingaku is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.kouteki_shikaku_teate is not none and r.kouteki_shikaku_teate < 0 else '' }}">{{ '{:,}'.format(r.kouteki_shikaku_teate) if r.kouteki_shikaku_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.chingin_koujyo is not none and r.chingin_koujyo < 0 else '' }}">{{ '{:,}'.format(r.chingin_koujyo) if r.chingin_koujyo is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.shokuba_ridatsu_kaikei is not none and r.shokuba_ridatsu_kaikei < 0 else '' }}">{{ '{:,}'.format(r.shokuba_ridatsu_kaikei) if r.shokuba_ridatsu_kaikei is not none else '' }}</td>
+          <td class="text-end salary-detail-col {{ 'text-danger' if r.jinkenhi_ninzuu_kaikei is not none and r.jinkenhi_ninzuu_kaikei < 0 else '' }}">{{ '{:,}'.format(r.jinkenhi_ninzuu_kaikei) if r.jinkenhi_ninzuu_kaikei is not none else '' }}</td>
         </tr>
         {% else %}
         <tr><td colspan="32" class="text-center text-muted">データがありません</td></tr>
