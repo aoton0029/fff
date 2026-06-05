@@ -1,0 +1,174 @@
+{% from 'components/macros.html' import render_pagination %}
+{% set extra_qs = '&sort=' ~ sort ~ '&order=' ~ order ~ '&q=' ~ (q or '') %}
+
+{% macro sort_th(col, label) %}
+{% set next_order = 'desc' if sort == col and order == 'asc' else 'asc' %}
+<th>
+  <a href="?sort={{ col }}&order={{ next_order }}&page=1&q={{ q or '' }}"
+     hx-get="?sort={{ col }}&order={{ next_order }}&page=1&q={{ q or '' }}"
+     hx-target="#table-area" hx-swap="outerHTML" hx-push-url="true"
+     class="text-decoration-none text-reset">
+    {{ label }}
+    {% if sort == col %}
+      <i class="bi bi-caret-{{ 'up' if order == 'asc' else 'down' }}-fill small"></i>
+    {% else %}
+      <i class="bi bi-caret-up small text-muted opacity-50"></i>
+    {% endif %}
+  </a>
+</th>
+{% endmacro %}
+
+<div id="table-area">
+<div class="table-responsive">
+<table class="table table-hover table-sm align-middle mb-0" style="margin-bottom: 3rem !important;">
+  <thead class="table-light">
+    <tr>
+      {{ sort_th('department_code', '人事所属コード') }}
+      {{ sort_th('department_name', '部署名') }}
+      {{ sort_th('district_code', '地区コード') }}
+      {{ sort_th('section_code', '課コード') }}
+      {{ sort_th('account_code', '勘定科目コード') }}
+      {{ sort_th('cost_center_code', '原価センタコード') }}
+      <th class="text-end">操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for d in departments %}
+    <tr>
+      <td>{{ d.department_code }}</td>
+      <td>{{ d.department_name }}</td>
+      <td>{{ d.district_code }}</td>
+      <td>{{ d.section_code }}</td>
+      <td>{{ d.account_code }}</td>
+      <td>{{ d.cost_center_code }}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#editModal{{ loop.index }}"
+                title="編集"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-outline-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#delModal{{ loop.index }}"
+                title="削除"><i class="bi bi-trash"></i></button>
+
+        {# Edit modal #}
+        <div class="modal fade" id="editModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <form method="POST" action="{{ url_for('main.department_update', department_code=d.department_code) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                  <h5 class="modal-title">編集
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">人事所属コード</label>
+                    <div class="col-8">
+                      <input type="text" class="form-control" value="{{ d.department_code }}" disabled>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">部署名<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <input type="text" name="department_name" class="form-control" value="{{ d.department_name }}" required>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">地区コード<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <select name="district_code" class="form-select" data-choices required>
+                        {% for dist in districts %}
+                        <option value="{{ dist.district_code }}" {% if dist.district_code == d.district_code %}selected{% endif %}>{{ dist.district_code }} - {{ dist.district_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">課コード<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <select name="section_code" class="form-select" data-choices required>
+                        {% for sec in sections %}
+                        <option value="{{ sec.section_code }}" {% if sec.section_code == d.section_code %}selected{% endif %}>{{ sec.section_code }} - {{ sec.section_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">集約課コード<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <select name="agg_section_code" class="form-select" data-choices required>
+                        {% for sec in sections %}
+                        <option value="{{ sec.section_code }}" {% if sec.section_code == d.agg_section_code %}selected{% endif %}>{{ sec.section_code }} - {{ sec.section_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">区分コード<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <select name="kbn_code" class="form-select" data-choices required>
+                        {% for k in kbns %}
+                        <option value="{{ k.kbn_code }}" {% if k.kbn_code == d.kbn_code %}selected{% endif %}>{{ k.kbn_code }} - {{ k.kbn_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">勘定科目コード<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <select name="account_code" class="form-select" data-choices required>
+                        {% for acc in accounts %}
+                        <option value="{{ acc.account_code }}" {% if acc.account_code == d.account_code %}selected{% endif %}>{{ acc.account_code }} - {{ acc.account_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">原価センタコード<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <select name="cost_center_code" class="form-select" data-choices required>
+                        {% for cc in cost_centers %}
+                        <option value="{{ cc.cost_center_code }}" {% if cc.cost_center_code == d.cost_center_code %}selected{% endif %}>{{ cc.cost_center_code }} - {{ cc.cost_center_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                  <button type="submit" class="btn btn-primary">更新</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {# Delete modal #}
+        <div class="modal fade" id="delModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <form method="POST" action="{{ url_for('main.department_delete', department_code=d.department_code) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header"><h5 class="modal-title">削除の確認<button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body"><strong>{{ d.department_code }} / {{ d.department_name }}</strong> を削除します。よろしいですか?</div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                  <button type="submit" class="btn btn-danger">削除</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted py-4">データがありません</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+<div class="sticky-pagination border-top bg-white py-2 px-1">
+{{ render_pagination(pagination, 'main.department_list', extra_qs=extra_qs) }}
+</div>
+</div>

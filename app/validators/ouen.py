@@ -5,17 +5,29 @@ from pydantic import BaseModel, field_validator
 
 
 class OuenRow(BaseModel):
-    送り出し地区: str
-    送り出し課コード: str
-    受け入れ地区: str
-    受け入れ課コード: str
+    課コード: int
+    課名: Optional[str] = None
+    課コード_2: int
+    課名_2: Optional[str] = None
+    人数: int
     出課日: Optional[date_type] = None
     帰課日: Optional[date_type] = None
     日数: int
     延日数: int
-    備考: Optional[str] = None
+    氏名: Optional[str] = None
 
-    @field_validator('送り出し地区', '送り出し課コード', '受け入れ地区', '受け入れ課コード')
+    def to_db_kwargs(self) -> dict:
+        return {
+            "from_section_code": self.課コード,
+            "to_section_code": self.課コード_2,
+            "departure_date": self.出課日,
+            "return_date": self.帰課日,
+            "days": self.日数,
+            "extended_days": self.延日数,
+            "note": self.氏名,
+        }
+
+    @field_validator('課コード', '課コード_2')
     @classmethod
     def code_not_empty(cls, v: str) -> str:
         v = str(v).strip()
@@ -41,7 +53,7 @@ class OuenRow(BaseModel):
         except Exception:
             raise ValueError(f'日付に変換できません: {v!r}')
 
-    @field_validator('日数', '延日数', mode='before')
+    @field_validator('人数', '日数', '延日数', mode='before')
     @classmethod
     def coerce_int(cls, v: object) -> int:
         if isinstance(v, str):
@@ -51,7 +63,7 @@ class OuenRow(BaseModel):
         except (ValueError, TypeError):
             raise ValueError(f'数値に変換できません: {v!r}')
 
-    @field_validator('備考', mode='before')
+    @field_validator('課名', '課名_2', '氏名', mode='before')
     @classmethod
     def coerce_str_optional(cls, v: object) -> Optional[str]:
         if v is None:

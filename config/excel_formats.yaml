@@ -1,10 +1,11 @@
 salary:
   display_name: 給与データ
-  sheet_name: 給与データ
+  sheet_name: 人事データ
   year_cell: null
   month_cell: null
   header_row: 1
   use_cols: I:AM
+  header_cell_range: A1:AM1
   columns:
     - name: 行ラベル
       type: str
@@ -109,6 +110,7 @@ allocation:
   month_cell: null
   header_row: 7
   use_cols: B:I
+  header_cell_range: B7:I7
   columns:
     - name: 事業部
       type: str
@@ -145,6 +147,7 @@ labor_transfer:
   month_cell: C6
   header_row: 8
   use_cols: B:K
+  header_cell_range: B8:K8
   columns:
     - name: 勘定科目コード
       type: str
@@ -180,14 +183,15 @@ labor_transfer:
 
 ouen:
   display_name: 応援連絡票
-  sheet_name: 応援連絡票
+  sheet_name: 応援連絡　2025年2月度
   year_cell: C1
   month_cell: C1
   header_row: 6
   use_cols: A:J
+  header_cell_range: A6:J6
   columns:
     - name: 課コード
-      type: str
+      type: int
       required: true
       description: 送り出し課コード（4桁）
     - name: 課名
@@ -195,7 +199,7 @@ ouen:
       required: false
       description: 送り出し課名
     - name: 課コード
-      type: str
+      type: int
       required: true
       description: 受け入れ課コード（4桁）
     - name: 課名

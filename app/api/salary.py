@@ -110,8 +110,13 @@ def salary_upload():
 @login_required
 def salary_detail(batch_id: int):
     batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
-    records = _salary_repo.get_records_by_batch(batch_id)
-    return render_template('partials/salary_detail_modal.html', batch=batch, records=records)
+    q = request.args.get('q', '').strip()
+    sort = request.args.get('sort', 'row_label')
+    order = request.args.get('order', 'asc')
+    records = _salary_repo.get_records_by_batch(batch_id, page=None, q=q, sort=sort, order=order)
+    return render_template('partials/salary_detail_modal.html', batch=batch,
+                           records=records,
+                           q=q, sort=sort, order=order, batch_id=batch_id)
 
 
 @main_bp.route('/salary/delete/<int:batch_id>', methods=['DELETE', 'POST'])

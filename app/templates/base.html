@@ -110,6 +110,11 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
+	<script>
+		document.addEventListener('htmx:configRequest', function(e) {
+			e.detail.headers['X-CSRFToken'] = '{{ csrf_token() }}';
+		});
+	</script>
 	{% block scripts %}{% endblock %}
 </body>
 </html>

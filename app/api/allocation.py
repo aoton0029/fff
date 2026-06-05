@@ -78,8 +78,14 @@ def allocation_upload():
 @login_required
 def allocation_detail(batch_id: int):
     batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
-    records = _allocation_repo.get_records_by_batch(batch_id)
-    return render_template('partials/allocation_detail_modal.html', batch=batch, records=records)
+    page = request.args.get('page', 1, type=int)
+    q = request.args.get('q', '').strip()
+    sort = request.args.get('sort', 'division_code')
+    order = request.args.get('order', 'asc')
+    pagination = _allocation_repo.get_records_by_batch(batch_id, page=page, per_page=30, q=q, sort=sort, order=order)
+    return render_template('partials/allocation_detail_modal.html', batch=batch,
+                           pagination=pagination, records=pagination.items,
+                           q=q, sort=sort, order=order, batch_id=batch_id)
 
 
 @main_bp.route('/allocation/sap-output')

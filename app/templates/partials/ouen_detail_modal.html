@@ -1,6 +1,6 @@
 {# Partial: ouen_detail_modal.html
    Loaded via HTMX into #detail-modal-body.
-   Variables: batch, records
+   Variables: batch, records, pagination, q, sort, order, batch_id
 #}
 <div class="mb-3">
   <span class="badge bg-secondary me-1">{{ batch.district_code }}</span>
@@ -8,9 +8,46 @@
   <span class="text-muted small">{{ batch.file_name }}</span>
 </div>
 
+{# Search form #}
+{% set base_url = url_for('main.ouen_detail', batch_id=batch_id) %}
+<form hx-get="{{ base_url }}"
+      hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+      class="d-flex gap-2 mb-3">
+  <input type="hidden" name="sort" value="{{ sort }}">
+  <input type="hidden" name="order" value="{{ order }}">
+  <input type="text" name="q" value="{{ q or '' }}"
+         placeholder="送り出し・受け入れ課コードで検索"
+         class="form-control form-control-sm" style="max-width:280px">
+  <button type="submit" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-search"></i>
+  </button>
+  {% if q %}
+  <a hx-get="{{ base_url }}?sort={{ sort }}&order={{ order }}&page=1"
+     hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+     class="btn btn-sm btn-outline-danger">✕</a>
+  {% endif %}
+</form>
+
+{% macro modal_sort_th(col, label, cls='') %}
+{% set next_order = 'desc' if sort == col and order == 'asc' else 'asc' %}
+<th class="{{ cls }}">
+  <a href="{{ base_url }}?sort={{ col }}&order={{ next_order }}&page=1&q={{ q or '' }}"
+     hx-get="{{ base_url }}?sort={{ col }}&order={{ next_order }}&page=1&q={{ q or '' }}"
+     hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+     class="text-decoration-none text-reset">
+    {{ label }}
+    {% if sort == col %}
+      <i class="bi bi-caret-{{ 'up' if order == 'asc' else 'down' }}-fill small"></i>
+    {% else %}
+      <i class="bi bi-caret-up small text-muted opacity-50"></i>
+    {% endif %}
+  </a>
+</th>
+{% endmacro %}
+
 {% if records %}
-<div class="table-scroll-wrapper">
-<table class="table table-sm table-bordered table-hover align-middle mb-0">
+<div class="table-responsive">
+<table class="table table-sm table-bordered table-hover align-middle mb-0 table-detail">
   <thead class="table-light sticky-top">
     <tr>
       <th colspan="2" class="text-center">送り出し</th>
@@ -22,10 +59,10 @@
       <th>備考</th>
     </tr>
     <tr>
-      <th>地区</th>
-      <th>課コード</th>
-      <th>地区</th>
-      <th>課コード</th>
+      {{ modal_sort_th('from_district', '地区') }}
+      {{ modal_sort_th('from_section_code', '課コード') }}
+      {{ modal_sort_th('to_district', '地区') }}
+      {{ modal_sort_th('to_section_code', '課コード') }}
       <th></th>
       <th></th>
       <th></th>
@@ -52,4 +89,34 @@
 </div>
 {% else %}
 <p class="text-muted text-center py-3">データがありません。</p>
+{% endif %}
+
+{# Pagination #}
+{% set extra = '&sort=' ~ sort ~ '&order=' ~ order ~ '&q=' ~ (q or '') %}
+{% if pagination.pages > 1 %}
+<nav aria-label="ページネーション" class="mt-2">
+  <ul class="pagination pagination-sm justify-content-end mb-0">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link"
+         hx-get="{{ base_url }}?page={{ pagination.prev_num }}{{ extra }}"
+         hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false">前へ</a>
+    </li>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link"
+             hx-get="{{ base_url }}?page={{ p }}{{ extra }}"
+             hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false">{{ p }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link"
+         hx-get="{{ base_url }}?page={{ pagination.next_num }}{{ extra }}"
+         hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false">次へ</a>
+    </li>
+  </ul>
+</nav>
 {% endif %}

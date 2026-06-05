@@ -20,18 +20,37 @@ PER_PAGE = 30
 @login_required
 def section_list():
     page = request.args.get('page', 1, type=int)
-    query = select(SectionMaster).order_by(SectionMaster.section_code)
+    sort = request.args.get('sort', 'section_code')
+    order = request.args.get('order', 'asc')
+    q = request.args.get('q', '').strip()
+    col_map = {
+        'section_code': SectionMaster.section_code,
+        'section_name': SectionMaster.section_name,
+        'district_code': SectionMaster.district_code,
+        'cost_center_code': SectionMaster.cost_center_code,
+    }
+    col = col_map.get(sort, SectionMaster.section_code)
+    query = select(SectionMaster).order_by(col.desc() if order == 'desc' else col.asc())
+    if q:
+        query = query.where(
+            SectionMaster.section_code.ilike(f'%{q}%') |
+            SectionMaster.section_name.ilike(f'%{q}%')
+        )
     pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
     section_import_uuid = session.get('section_import_uuid', '')
     districts = db.session.scalars(select(DistrictMaster).order_by(DistrictMaster.district_code)).all()
     cost_centers = db.session.scalars(select(CostCenterMaster).order_by(CostCenterMaster.cost_center_code)).all()
+    template = 'partials/section_table.html' if request.headers.get('HX-Request') else 'maintenance_section.html'
     return render_template(
-        'maintenance_section.html',
+        template,
         sections=pagination.items,
         pagination=pagination,
         section_import_uuid=section_import_uuid,
         districts=districts,
         cost_centers=cost_centers,
+        sort=sort,
+        order=order,
+        q=q,
     )
 
 
@@ -41,7 +60,24 @@ def section_list():
 @login_required
 def department_list():
     page = request.args.get('page', 1, type=int)
-    query = select(DepartmentMaster).order_by(DepartmentMaster.department_code)
+    sort = request.args.get('sort', 'department_code')
+    order = request.args.get('order', 'asc')
+    col_map = {
+        'department_code': DepartmentMaster.department_code,
+        'department_name': DepartmentMaster.department_name,
+        'district_code': DepartmentMaster.district_code,
+        'section_code': DepartmentMaster.section_code,
+        'account_code': DepartmentMaster.account_code,
+        'cost_center_code': DepartmentMaster.cost_center_code,
+    }
+    col = col_map.get(sort, DepartmentMaster.department_code)
+    query = select(DepartmentMaster).order_by(col.desc() if order == 'desc' else col.asc())
+    q = request.args.get('q', '').strip()
+    if q:
+        query = query.where(
+            DepartmentMaster.department_code.ilike(f'%{q}%') |
+            DepartmentMaster.department_name.ilike(f'%{q}%')
+        )
     pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
     department_import_uuid = session.get('department_import_uuid', '')
     districts = db.session.scalars(select(DistrictMaster).order_by(DistrictMaster.district_code)).all()
@@ -49,8 +85,9 @@ def department_list():
     kbns = db.session.scalars(select(KbnMaster).order_by(KbnMaster.kbn_code)).all()
     accounts = db.session.scalars(select(AccountMaster).order_by(AccountMaster.account_code)).all()
     cost_centers = db.session.scalars(select(CostCenterMaster).order_by(CostCenterMaster.cost_center_code)).all()
+    template = 'partials/department_table.html' if request.headers.get('HX-Request') else 'maintenance_department.html'
     return render_template(
-        'maintenance_department.html',
+        template,
         departments=pagination.items,
         pagination=pagination,
         department_import_uuid=department_import_uuid,
@@ -59,6 +96,9 @@ def department_list():
         kbns=kbns,
         accounts=accounts,
         cost_centers=cost_centers,
+        sort=sort,
+        order=order,
+        q=q,
     )
 
 
@@ -68,14 +108,31 @@ def department_list():
 @login_required
 def district_list():
     page = request.args.get('page', 1, type=int)
-    query = select(DistrictMaster).order_by(DistrictMaster.district_code)
+    sort = request.args.get('sort', 'district_code')
+    order = request.args.get('order', 'asc')
+    q = request.args.get('q', '').strip()
+    col_map = {
+        'district_code': DistrictMaster.district_code,
+        'district_name': DistrictMaster.district_name,
+    }
+    col = col_map.get(sort, DistrictMaster.district_code)
+    query = select(DistrictMaster).order_by(col.desc() if order == 'desc' else col.asc())
+    if q:
+        query = query.where(
+            DistrictMaster.district_code.ilike(f'%{q}%') |
+            DistrictMaster.district_name.ilike(f'%{q}%')
+        )
     pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
     district_import_uuid = session.get('district_import_uuid', '')
+    template = 'partials/district_table.html' if request.headers.get('HX-Request') else 'maintenance_district.html'
     return render_template(
-        'maintenance_district.html',
+        template,
         districts=pagination.items,
         pagination=pagination,
         district_import_uuid=district_import_uuid,
+        sort=sort,
+        order=order,
+        q=q,
     )
 
 
@@ -85,14 +142,31 @@ def district_list():
 @login_required
 def kbn_list():
     page = request.args.get('page', 1, type=int)
-    query = select(KbnMaster).order_by(KbnMaster.kbn_code)
+    sort = request.args.get('sort', 'kbn_code')
+    order = request.args.get('order', 'asc')
+    q = request.args.get('q', '').strip()
+    col_map = {
+        'kbn_code': KbnMaster.kbn_code,
+        'kbn_name': KbnMaster.kbn_name,
+    }
+    col = col_map.get(sort, KbnMaster.kbn_code)
+    query = select(KbnMaster).order_by(col.desc() if order == 'desc' else col.asc())
+    if q:
+        query = query.where(
+            KbnMaster.kbn_code.ilike(f'%{q}%') |
+            KbnMaster.kbn_name.ilike(f'%{q}%')
+        )
     pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
     kbn_import_uuid = session.get('kbn_import_uuid', '')
+    template = 'partials/kbn_table.html' if request.headers.get('HX-Request') else 'maintenance_kbn.html'
     return render_template(
-        'maintenance_kbn.html',
+        template,
         kbns=pagination.items,
         pagination=pagination,
         kbn_import_uuid=kbn_import_uuid,
+        sort=sort,
+        order=order,
+        q=q,
     )
 
 

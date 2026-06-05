@@ -4,10 +4,52 @@
     ファイル名: <strong>{{ batch.file_name }}</strong> &nbsp;|&nbsp;
     アップロード: {{ batch.created_at.strftime('%Y-%m-%d %H:%M') }} by {{ batch.creator.username }}
   </p>
-  <table class="table table-sm table-striped">
+
+  {# Search form #}
+  {% set base_url = url_for('main.allocation_detail', batch_id=batch_id) %}
+  <form hx-get="{{ base_url }}"
+        hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+        class="d-flex gap-2 mb-3">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <input type="text" name="q" value="{{ q or '' }}"
+           placeholder="事業部・課コードで検索"
+           class="form-control form-control-sm" style="max-width:280px">
+    <button type="submit" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-search"></i>
+    </button>
+    {% if q %}
+    <a hx-get="{{ base_url }}?sort={{ sort }}&order={{ order }}&page=1"
+       hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+       class="btn btn-sm btn-outline-danger">✕</a>
+    {% endif %}
+  </form>
+
+  <table class="table table-sm table-striped table-detail">
     <thead class="table-light">
       <tr>
-        <th>事業部</th><th>地区</th><th>課コード</th><th>原価区分</th><th>工程</th><th>工程名</th>
+        {% macro modal_sort_th(col, label, cls='') %}
+        {% set next_order = 'desc' if sort == col and order == 'asc' else 'asc' %}
+        <th class="{{ cls }}">
+          <a href="{{ base_url }}?sort={{ col }}&order={{ next_order }}&page=1&q={{ q or '' }}"
+             hx-get="{{ base_url }}?sort={{ col }}&order={{ next_order }}&page=1&q={{ q or '' }}"
+             hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+             class="text-decoration-none text-reset">
+            {{ label }}
+            {% if sort == col %}
+              <i class="bi bi-caret-{{ 'up' if order == 'asc' else 'down' }}-fill small"></i>
+            {% else %}
+              <i class="bi bi-caret-up small text-muted opacity-50"></i>
+            {% endif %}
+          </a>
+        </th>
+        {% endmacro %}
+        {{ modal_sort_th('division_code', '事業部') }}
+        {{ modal_sort_th('district_code', '地区') }}
+        {{ modal_sort_th('section_code', '課コード') }}
+        <th>原価区分</th>
+        {{ modal_sort_th('process_code', '工程') }}
+        <th>工程名</th>
         <th class="text-end">日数</th><th class="text-end">編成</th><th class="text-end">固定</th><th class="text-end">人員計</th>
       </tr>
     </thead>
@@ -30,4 +72,34 @@
       {% endfor %}
     </tbody>
   </table>
+
+  {# Pagination #}
+  {% set extra = '&sort=' ~ sort ~ '&order=' ~ order ~ '&q=' ~ (q or '') %}
+  {% if pagination.pages > 1 %}
+  <nav aria-label="ページネーション" class="mt-2">
+    <ul class="pagination pagination-sm justify-content-end mb-0">
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link"
+           hx-get="{{ base_url }}?page={{ pagination.prev_num }}{{ extra }}"
+           hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false">前へ</a>
+      </li>
+      {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+          <li class="page-item {% if p == pagination.page %}active{% endif %}">
+            <a class="page-link"
+               hx-get="{{ base_url }}?page={{ p }}{{ extra }}"
+               hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false">{{ p }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        <a class="page-link"
+           hx-get="{{ base_url }}?page={{ pagination.next_num }}{{ extra }}"
+           hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false">次へ</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
 </div>

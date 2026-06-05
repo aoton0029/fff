@@ -14,10 +14,26 @@ _MOCK_CALC_ROWS = [
 
 
 class OuenRepository:
-    def get_records_by_batch(self, batch_id: int) -> list[OuenData]:
-        return db.session.scalars(
-            select(OuenData).filter_by(batch_id=batch_id)
-        ).all()
+    def get_records_by_batch(self, batch_id: int, page: int = None, per_page: int = 30,
+                             q: str = '', sort: str = 'from_district', order: str = 'asc'):
+        col_map = {
+            'from_district': OuenData.from_district,
+            'from_section_code': OuenData.from_section_code,
+            'to_district': OuenData.to_district,
+            'to_section_code': OuenData.to_section_code,
+        }
+        col = col_map.get(sort, OuenData.from_district)
+        query = select(OuenData).filter_by(batch_id=batch_id).order_by(
+            col.desc() if order == 'desc' else col.asc()
+        )
+        if q:
+            query = query.where(
+                OuenData.from_section_code.ilike(f'%{q}%') |
+                OuenData.to_section_code.ilike(f'%{q}%')
+            )
+        if page is None:
+            return db.session.scalars(query).all()
+        return db.paginate(query, page=page, per_page=per_page, error_out=False)
 
     def get_calc_rows(self) -> list[dict]:
         return _MOCK_CALC_ROWS

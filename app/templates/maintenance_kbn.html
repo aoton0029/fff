@@ -9,9 +9,26 @@
 </div>
 
 <div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <span><i class="bi bi-table me-1"></i>区分マスタ</span>
-    <div>
+    <form hx-get="" hx-target="#table-area" hx-swap="outerHTML" hx-push-url="true"
+          class="d-flex gap-2 align-items-center">
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <input type="hidden" name="order" value="{{ order }}">
+      <input type="text" name="q" value="{{ q or '' }}"
+             placeholder="コード・名称で検索"
+             class="form-control form-control-sm" style="max-width:220px">
+      <button type="submit" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-search"></i>
+      </button>
+      {% if q %}
+      <a href="?sort={{ sort }}&order={{ order }}&page=1"
+         hx-get="?sort={{ sort }}&order={{ order }}&page=1"
+         hx-target="#table-area" hx-swap="outerHTML" hx-push-url="true"
+         class="btn btn-sm btn-outline-danger">✕</a>
+      {% endif %}
+    </form>
+    <div class="d-flex gap-2">
       <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#excelModal">
         <i class="bi bi-file-earmark-excel me-1"></i>Excel操作
       </button>
@@ -21,97 +38,9 @@
     </div>
   </div>
   <div class="card-body p-0">
-  <div class="table-scroll-wrapper">
-  <table class="table table-hover table-sm align-middle mb-0">
-    <thead class="table-light">
-      <tr>
-        <th>区分コード</th><th>区分名</th><th class="text-end">操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for k in kbns %}
-      <tr>
-        <td>{{ k.kbn_code }}</td>
-        <td>{{ k.kbn_name }}</td>
-        <td class="text-end">
-          <button class="btn btn-sm btn-outline-secondary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#editModal{{ loop.index }}"
-                  title="編集">
-            <i class="bi bi-pencil"></i>
-          </button>
-          <button class="btn btn-sm btn-outline-danger"
-                  data-bs-toggle="modal"
-                  data-bs-target="#delModal{{ loop.index }}"
-                  title="削除">
-            <i class="bi bi-trash"></i>
-          </button>
-
-          {# Edit modal #}
-          <div class="modal fade" id="editModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <form method="POST" action="{{ url_for('main.kbn_update', kbn_code=k.kbn_code) }}">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <div class="modal-header">
-                    <h5 class="modal-title">区分マスタ編集</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="row mb-2 align-items-center">
-                      <label class="col-4 col-form-label">区分コード</label>
-                      <div class="col-8">
-                        <input type="text" class="form-control" value="{{ k.kbn_code }}" disabled>
-                      </div>
-                    </div>
-                    <div class="row mb-2 align-items-center">
-                      <label class="col-4 col-form-label">区分名<span class="text-danger">*</span></label>
-                      <div class="col-8">
-                        <input type="text" name="kbn_name" class="form-control" value="{{ k.kbn_name }}" required>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="submit" class="btn btn-primary">更新</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          {# Delete modal #}
-          <div class="modal fade" id="delModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <form method="POST" action="{{ url_for('main.kbn_delete', kbn_code=k.kbn_code) }}">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <div class="modal-header">
-                    <h5 class="modal-title">削除の確認</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <strong>{{ k.kbn_code }} / {{ k.kbn_name }}</strong> を削除します。よろしいですか?
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="submit" class="btn btn-danger">削除</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="3" class="text-center text-muted py-4">データがありません</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  </div>
+  {% include 'partials/kbn_table.html' %}
   </div>
 </div>
-{{ render_pagination(pagination, 'main.kbn_list') }}
 
 {# Excel operations modal #}
 <div class="modal fade" id="excelModal" tabindex="-1" aria-hidden="true">

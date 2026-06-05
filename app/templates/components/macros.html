@@ -59,7 +59,7 @@
 {# ================================================================
    Macro: render_pagination
    ================================================================ #}
-{% macro render_pagination(pagination, endpoint, file_type=None, hx_target='#table-area', extra_qs='') %}
+{% macro render_pagination(pagination, endpoint, file_type=None, hx_target='#table-area', extra_qs='', hx_push_url='true') %}
 {% if pagination.pages > 1 %}
 <nav aria-label="ページネーション">
   <ul class="pagination pagination-sm justify-content-end mb-0">
@@ -68,7 +68,7 @@
          href="?page={{ pagination.prev_num }}{{ extra_qs }}"
          hx-get="?page={{ pagination.prev_num }}{{ extra_qs }}"
          hx-target="{{ hx_target }}"
-         hx-push-url="true">前へ</a>
+         hx-push-url="{{ hx_push_url }}">前へ</a>
     </li>
     {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
       {% if p %}
@@ -77,7 +77,7 @@
              href="?page={{ p }}{{ extra_qs }}"
              hx-get="?page={{ p }}{{ extra_qs }}"
              hx-target="{{ hx_target }}"
-             hx-push-url="true">{{ p }}</a>
+             hx-push-url="{{ hx_push_url }}">{{ p }}</a>
         </li>
       {% else %}
         <li class="page-item disabled"><span class="page-link">…</span></li>
@@ -88,7 +88,7 @@
          href="?page={{ pagination.next_num }}{{ extra_qs }}"
          hx-get="?page={{ pagination.next_num }}{{ extra_qs }}"
          hx-target="{{ hx_target }}"
-         hx-push-url="true">次へ</a>
+         hx-push-url="{{ hx_push_url }}">次へ</a>
     </li>
   </ul>
 </nav>

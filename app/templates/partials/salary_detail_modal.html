@@ -1,104 +1,136 @@
 {# Detail modal body: salary (40 columns) #}
-<div class="table-scroll-wrapper-modal">
-  <p class="text-muted small mb-2">
+<div>
+  <!-- <p class="text-muted small mb-2">
     ファイル名: <strong>{{ batch.file_name }}</strong> &nbsp;|&nbsp;
     アップロード: {{ batch.created_at.strftime('%Y-%m-%d %H:%M') }} by {{ batch.creator.username }}
-  </p>
-  <div class="table-responsive">
-    <table class="table table-sm table-striped table-bordered">
+  </p> -->
+
+  {# Search form #}
+  <form hx-get="{{ url_for('main.salary_detail', batch_id=batch_id) }}"
+        hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+        class="d-flex gap-2 mb-3">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <input type="text" name="q" value="{{ q or '' }}"
+           placeholder="コード・名称で検索"
+           class="form-control form-control-sm" style="max-width:280px">
+    <button type="submit" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-search"></i>
+    </button>
+    {% if q %}
+    <a hx-get="{{ url_for('main.salary_detail', batch_id=batch_id) }}?sort={{ sort }}&order={{ order }}"
+       hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+       class="btn btn-sm btn-outline-danger">✕</a>
+    {% endif %}
+    <div class="form-check form-switch ms-auto">
+      <input class="form-check-input" type="checkbox" id="salaryDetailToggle" onchange="toggleSalaryDetail(this)">
+      <label class="form-check-label small" for="salaryDetailToggle">詳細列を表示</label>
+    </div>
+  </form>
+
+  <div class="table-responsive" style="max-height:60vh; overflow-y:auto;">
+    <table class="table table-sm table-striped table-bordered table-detail">
       <thead class="table-light">
         <tr>
-          <th class="text-nowrap">地区</th>
-          <th class="text-nowrap">課コード</th>
-          <th class="text-nowrap">地区+課コード</th>
-          <th class="text-nowrap">集約課コード</th>
-          <th class="text-nowrap">地区+集約課コード</th>
-          <th class="text-nowrap">原価センタ</th>
-          <th class="text-nowrap">区分</th>
-          <th class="text-nowrap">勘定科目</th>
-          <th class="text-nowrap">行ラベル</th>
-          <th class="text-nowrap">所属名</th>
-          <th class="text-nowrap text-end">合計/(明細1)本給</th>
-          <th class="text-nowrap text-end">合計/(明細1)能力給</th>
-          <th class="text-nowrap text-end">合計/(明細1)職務・役割給</th>
-          <th class="text-nowrap text-end">合計/(明細1)役割業績給</th>
-          <th class="text-nowrap text-end">合計/(明細1)報酬</th>
-          <th class="text-nowrap text-end">合計/(明細1)本俸</th>
-          <th class="text-nowrap text-end">合計/(明細1)基本賃金</th>
-          <th class="text-nowrap text-end">合計/(明細1)国内給与</th>
-          <th class="text-nowrap text-end">合計/(明細1)駐在員給与調整</th>
-          <th class="text-nowrap text-end">合計/(明細1)家族手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)資格手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)交替勤務加算給</th>
-          <th class="text-nowrap text-end">合計/(明細1)振替勤務就業手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)早出残業手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)休日出勤手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)特定休日出勤手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)交替勤務手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)守衛手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)深夜業手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)単身赴任手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)一時帰省旅費</th>
-          <th class="text-nowrap text-end">合計/(明細1)夜間呼出手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)出向補償時間</th>
-          <th class="text-nowrap text-end">合計/(明細1)その他手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)前月育介金額</th>
-          <th class="text-nowrap text-end">合計/(明細1)公的資格手当</th>
-          <th class="text-nowrap text-end">合計/(明細1)賃金控除</th>
-          <th class="text-nowrap text-end">合計/(明細2)職場離脱(会計)</th>
-          <th class="text-nowrap text-end">合計/(明細2)人件費人数(会計)</th>
+          {% set base_url = url_for('main.salary_detail', batch_id=batch_id) %}
+          {% macro modal_sort_th(col, label) %}
+          {% set next_order = 'desc' if sort == col and order == 'asc' else 'asc' %}
+          <th class="text-nowrap">
+            <a href="{{ base_url }}?sort={{ col }}&order={{ next_order }}&q={{ q or '' }}"
+               hx-get="{{ base_url }}?sort={{ col }}&order={{ next_order }}&q={{ q or '' }}"
+               hx-target="#detail-modal-body" hx-swap="innerHTML" hx-push-url="false"
+               class="text-decoration-none text-reset">
+              {{ label }}
+              {% if sort == col %}
+                <i class="bi bi-caret-{{ 'up' if order == 'asc' else 'down' }}-fill small"></i>
+              {% else %}
+                <i class="bi bi-caret-up small text-muted opacity-50"></i>
+              {% endif %}
+            </a>
+          </th>
+          {% endmacro %}
+          {{ modal_sort_th('row_label', '人事所属コード') }}
+          {{ modal_sort_th('section_name', '所属名') }}
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)本給</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)能力給</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)職務・役割給</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)役割業績給</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)報酬</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)本俸</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)基本賃金</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)国内給与</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)駐在員給与調整</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)家族手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)資格手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)交替勤務加算給</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)振替勤務就業手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)早出残業手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)休日出勤手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)特定休日出勤手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)交替勤務手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)守衛手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)深夜業手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)単身赴任手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)一時帰省旅費</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)夜間呼出手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)出向補償時間</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)その他手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)前月育介金額</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)公的資格手当</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細1)賃金控除</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細2)職場離脱(会計)</th>
+          <th class="text-nowrap text-end salary-detail-col">合計/(明細2)人件費人数(会計)</th>
           <th class="text-nowrap text-end">合計</th>
         </tr>
       </thead>
       <tbody>
         {% for r in records %}
         <tr>
-          <td>{{ r.department.district_code if r.department else '' }}</td>
-          <td>{{ r.department.section_code if r.department else '' }}</td>
-          <td>{{ r.chiku_ka_code or '' }}</td>
-          <td>{{ r.department.agg_section_code if r.department else '' }}</td>
-          <td>{{ r.chiku_shuuyaku_ka_code or '' }}</td>
-          <td>{{ r.department.cost_center_code if r.department else '' }}</td>
-          <td>{{ r.department.kbn_code if r.department else '' }}</td>
-          <td>{{ r.department.account_code if r.department else '' }}</td>
           <td>{{ r.row_label }}</td>
           <td>{{ r.section_name or '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.honkyu) }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.nouryoku_kyu) }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.shokumu_yakuwari_kyu) }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.yakuwari_gyoseki_kyu) }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.hoshu) if r.hoshu is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.honpo) if r.honpo is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.kihon_chingin) if r.kihon_chingin is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.kokunai_kyuyo) if r.kokunai_kyuyo is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.chuzaiin_kyuyo_chosei) if r.chuzaiin_kyuyo_chosei is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.kazoku_teate) if r.kazoku_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.shikaku_teate) if r.shikaku_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.koutai_kinmu_kazan_kyu) if r.koutai_kinmu_kazan_kyu is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.furikae_kinmu_shugyo_teate) if r.furikae_kinmu_shugyo_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.hayade_zangyou_teate) if r.hayade_zangyou_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.kyujitsu_shukkin_teate) if r.kyujitsu_shukkin_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.tokutei_kyujitsu_shukkin_teate) if r.tokutei_kyujitsu_shukkin_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.koutai_kinmu_teate) if r.koutai_kinmu_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.keibi_teate) if r.keibi_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.shinya_teate) if r.shinya_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.tanshin_funin_teate) if r.tanshin_funin_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.ichiji_kisei_ryohi) if r.ichiji_kisei_ryohi is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.yakan_yobidate_teate) if r.yakan_yobidate_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.shukkou_hoshou_jikan) if r.shukkou_hoshou_jikan is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.sonota_teate) if r.sonota_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.zengetsu_ikukai_kingaku) if r.zengetsu_ikukai_kingaku is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.kouteki_shikaku_teate) if r.kouteki_shikaku_teate is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.chingin_koujyo) if r.chingin_koujyo is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.shokuba_ridatsu_kaikei) if r.shokuba_ridatsu_kaikei is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.jinkenhi_ninzuu_kaikei) if r.jinkenhi_ninzuu_kaikei is not none else '' }}</td>
-          <td class="text-end">{{ '{:,}'.format(r.total) if r.total is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.honkyu) }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.nouryoku_kyu) }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shokumu_yakuwari_kyu) }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.yakuwari_gyoseki_kyu) }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.hoshu) if r.hoshu is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.honpo) if r.honpo is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kihon_chingin) if r.kihon_chingin is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kokunai_kyuyo) if r.kokunai_kyuyo is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.chuzaiin_kyuyo_chosei) if r.chuzaiin_kyuyo_chosei is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kazoku_teate) if r.kazoku_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shikaku_teate) if r.shikaku_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.koutai_kinmu_kazan_kyu) if r.koutai_kinmu_kazan_kyu is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.furikae_kinmu_shugyo_teate) if r.furikae_kinmu_shugyo_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.hayade_zangyou_teate) if r.hayade_zangyou_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kyujitsu_shukkin_teate) if r.kyujitsu_shukkin_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.tokutei_kyujitsu_shukkin_teate) if r.tokutei_kyujitsu_shukkin_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.koutai_kinmu_teate) if r.koutai_kinmu_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.keibi_teate) if r.keibi_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shinya_teate) if r.shinya_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.tanshin_funin_teate) if r.tanshin_funin_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.ichiji_kisei_ryohi) if r.ichiji_kisei_ryohi is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.yakan_yobidate_teate) if r.yakan_yobidate_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shukkou_hoshou_jikan) if r.shukkou_hoshou_jikan is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.sonota_teate) if r.sonota_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.zengetsu_ikukai_kingaku) if r.zengetsu_ikukai_kingaku is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.kouteki_shikaku_teate) if r.kouteki_shikaku_teate is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.chingin_koujyo) if r.chingin_koujyo is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.shokuba_ridatsu_kaikei) if r.shokuba_ridatsu_kaikei is not none else '' }}</td>
+          <td class="text-end salary-detail-col">{{ '{:,}'.format(r.jinkenhi_ninzuu_kaikei) if r.jinkenhi_ninzuu_kaikei is not none else '' }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="40" class="text-center text-muted">データがありません</td></tr>
+        <tr><td colspan="32" class="text-center text-muted">データがありません</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
 
+<script>
+function toggleSalaryDetail(cb) {
+  document.querySelectorAll('#detail-modal-body .salary-detail-col')
+    .forEach(function(el) { el.classList.toggle('d-none', !cb.checked); });
+}
+document.querySelectorAll('#detail-modal-body .salary-detail-col')
+  .forEach(function(el) { el.classList.add('d-none'); });
+</script>

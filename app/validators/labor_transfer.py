@@ -15,6 +15,20 @@ class LaborTransferRow(BaseModel):
     指図: Optional[str] = None
     備考: Optional[str] = None
 
+    def to_db_kwargs(self) -> dict:
+        return {
+            "account_code": self.勘定科目コード,
+            "cost_center": self.原価センタ,
+            "burden_section": self.負担課,
+            "charge_section": self.担当課,
+            "construction_name": self.工事名,
+            "work_hours": self.作業時間,
+            "wbs": self.WBS,
+            "asset_number": self.資産集約番号,
+            "order_number": self.指図,
+            "note": self.備考,
+        }
+
     @field_validator('勘定科目コード', '担当課')
     @classmethod
     def code_not_empty(cls, v: str) -> str:

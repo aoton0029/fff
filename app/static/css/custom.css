@@ -268,6 +268,10 @@ body {
 .table-sm td {
   font-size: 0.85rem;
 }
+.table-detail th,
+.table-detail td {
+  white-space: nowrap;
+}
 .table thead th {
   font-size: 0.78rem;
   font-weight: 600;
@@ -388,4 +392,14 @@ tr[data-bs-toggle="collapse"]:hover td{
   z-index: 2;
   background-color: #f8f9fa;
   border-top: 2px solid #dee2e6;
+}
+
+/* ==========================================
+   Sticky Pagination Bar
+   ========================================== */
+.sticky-pagination {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background-color: #fff;
 }

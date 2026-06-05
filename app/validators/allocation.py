@@ -14,6 +14,19 @@ class AllocationRow(BaseModel):
     編成: float
     固定: float
 
+    def to_db_kwargs(self) -> dict:
+        return {
+            "division_code": self.事業部,
+            "district_code": self.地区,
+            "section_code": self.課コード,
+            "cost_category": self.原価区分,
+            "process_code": self.工程,
+            "days": self.日数,
+            "process_name": self.工程名,
+            "formation": self.編成,
+            "fixed_count": self.固定,
+        }
+
     @field_validator('事業部', '地区', '課コード', '原価区分', '工程')
     @classmethod
     def code_not_empty(cls, v: str) -> str:

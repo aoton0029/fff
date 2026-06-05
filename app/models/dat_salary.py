@@ -17,11 +17,10 @@ if TYPE_CHECKING:
 class SalaryData(db.Model):
     __tablename__ = 'dat_人事給与データ'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    batch_id: Mapped[int] = mapped_column(ForeignKey('dat_ファイル.id'), nullable=False)
-
-    row_label: Mapped[str] = mapped_column('行ラベル', String(20), comment="", nullable=False)
+    row_label: Mapped[str] = mapped_column('行ラベル', String(20), comment="", primary_key=True)
     section_name: Mapped[Optional[str]] = mapped_column('所属名', String(100))
+
+    batch_id: Mapped[int] = mapped_column(ForeignKey('dat_ファイル.id'), nullable=False)
 
     honkyu: Mapped[int] = mapped_column('合計_明細1_本給', Integer, nullable=False)
     nouryoku_kyu: Mapped[int] = mapped_column('合計_明細1_能力給', Integer, nullable=False)
@@ -52,7 +51,6 @@ class SalaryData(db.Model):
     chingin_koujyo: Mapped[Optional[int]] = mapped_column('合計_明細1_賃金控除', Integer, nullable=False)
     shokuba_ridatsu_kaikei: Mapped[Optional[int]] = mapped_column('合計_明細2_職場離脱会計', Integer, nullable=False)
     jinkenhi_ninzuu_kaikei: Mapped[Optional[int]] = mapped_column('合計_明細2_人件費人数会計', Integer, nullable=False)
-    total: Mapped[Optional[int]] = mapped_column('合計', Integer, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False

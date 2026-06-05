@@ -76,8 +76,14 @@ def ouen_upload():
 @login_required
 def ouen_detail(batch_id: int):
     batch = db.first_or_404(select(UploadBatch).filter_by(id=batch_id, file_type=_FILE_TYPE))
-    records = _ouen_repo.get_records_by_batch(batch_id)
-    return render_template('partials/ouen_detail_modal.html', batch=batch, records=records)
+    page = request.args.get('page', 1, type=int)
+    q = request.args.get('q', '').strip()
+    sort = request.args.get('sort', 'from_district')
+    order = request.args.get('order', 'asc')
+    pagination = _ouen_repo.get_records_by_batch(batch_id, page=page, per_page=30, q=q, sort=sort, order=order)
+    return render_template('partials/ouen_detail_modal.html', batch=batch,
+                           pagination=pagination, records=pagination.items,
+                           q=q, sort=sort, order=order, batch_id=batch_id)
 
 
 @main_bp.route('/ouen/delete/<int:batch_id>', methods=['DELETE', 'POST'])

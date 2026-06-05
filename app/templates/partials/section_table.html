@@ -1,0 +1,139 @@
+{% from 'components/macros.html' import render_pagination %}
+{% set extra_qs = '&sort=' ~ sort ~ '&order=' ~ order ~ '&q=' ~ (q or '') %}
+
+{% macro sort_th(col, label) %}
+{% set next_order = 'desc' if sort == col and order == 'asc' else 'asc' %}
+<th>
+  <a href="?sort={{ col }}&order={{ next_order }}&page=1&q={{ q or '' }}"
+     hx-get="?sort={{ col }}&order={{ next_order }}&page=1&q={{ q or '' }}"
+     hx-target="#table-area" hx-swap="outerHTML" hx-push-url="true"
+     class="text-decoration-none text-reset">
+    {{ label }}
+    {% if sort == col %}
+      <i class="bi bi-caret-{{ 'up' if order == 'asc' else 'down' }}-fill small"></i>
+    {% else %}
+      <i class="bi bi-caret-up small text-muted opacity-50"></i>
+    {% endif %}
+  </a>
+</th>
+{% endmacro %}
+
+<div id="table-area">
+<div class="table-responsive">
+<table class="table table-hover table-sm align-middle mb-0" style="margin-bottom: 3rem !important;">
+  <thead class="table-light">
+    <tr>
+      {{ sort_th('section_code', '課コード') }}
+      {{ sort_th('section_name', '課名') }}
+      {{ sort_th('district_code', '地区コード') }}
+      {{ sort_th('cost_center_code', '原価センタコード') }}
+      <th class="text-end">操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in sections %}
+    <tr>
+      <td>{{ s.section_code }}</td>
+      <td>{{ s.section_name }}</td>
+      <td>{{ s.district_code }}</td>
+      <td>{{ s.cost_center_code }}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#editModal{{ loop.index }}"
+                title="編集">
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#delModal{{ loop.index }}"
+                title="削除">
+          <i class="bi bi-trash"></i>
+        </button>
+
+        {# Edit modal #}
+        <div class="modal fade" id="editModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <form method="POST" action="{{ url_for('main.section_update', section_code=s.section_code) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                  <h5 class="modal-title">課マスタ編集
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">課コード</label>
+                    <div class="col-8">
+                      <input type="text" class="form-control" value="{{ s.section_code }}" disabled>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">課名<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <input type="text" name="section_name" class="form-control" value="{{ s.section_name }}" required>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">地区コード<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <select name="district_code" class="form-select" data-choices required>
+                        {% for d in districts %}
+                        <option value="{{ d.district_code }}" {% if d.district_code == s.district_code %}selected{% endif %}>{{ d.district_code }} - {{ d.district_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row mb-2 align-items-center">
+                    <label class="col-4 col-form-label">原価センタコード<span class="text-danger">*</span></label>
+                    <div class="col-8">
+                      <select name="cost_center_code" class="form-select" data-choices required>
+                        {% for c in cost_centers %}
+                        <option value="{{ c.cost_center_code }}" {% if c.cost_center_code == s.cost_center_code %}selected{% endif %}>{{ c.cost_center_code }} - {{ c.cost_center_name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                  <button type="submit" class="btn btn-primary">更新</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {# Delete modal #}
+        <div class="modal fade" id="delModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <form method="POST" action="{{ url_for('main.section_delete', section_code=s.section_code) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                  <h5 class="modal-title">削除の確認
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <strong>{{ s.section_code }} / {{ s.section_name }}</strong> を削除します。よろしいですか?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                  <button type="submit" class="btn btn-danger">削除</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="text-center text-muted py-4">データがありません</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+<div class="sticky-pagination border-top bg-white py-2 px-1">
+  {{ render_pagination(pagination, 'main.section_list', extra_qs=extra_qs) }}
+</div>
+</div>
