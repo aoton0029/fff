@@ -1,19 +1,24 @@
 """
-config/excel_formats.yaml の定義に基づいてアップロード用サンプルExcelを生成する。
+app/validators の定義に基づいてアップロード用サンプルExcelを生成する。
 出力先: instance/upload/
 """
 
 from __future__ import annotations
 
 import re
+import sys
 from datetime import date
 from pathlib import Path
 
 import openpyxl
-import yaml
+from openpyxl.utils import column_index_from_string
 
 ROOT = Path(__file__).resolve().parent.parent
-CONFIG_PATH = ROOT / "config" / "excel_formats.yaml"
+sys.path.insert(0, str(ROOT))
+
+from app.validators import get_format_config, registered_types
+from app.validators.format_config import ExcelFormatConfig
+
 OUTPUT_DIR = ROOT / "instance" / "upload"
 
 SAMPLE_DATA: dict[str, list[dict]] = {
@@ -177,64 +182,54 @@ SAMPLE_DATA: dict[str, list[dict]] = {
 MONTH_CELL_VALUE = "2026/05"
 OUEN_YEAR_MONTH_VALUE = "2026年5月"
 
-
-def col_letter_to_index(letter: str) -> int:
-    """列記号（A, B, ..., AM）を1始まりのインデックスに変換する。"""
-    result = 0
-    for ch in letter.upper():
-        result = result * 26 + (ord(ch) - ord("A") + 1)
-    return result
+_RANGE_RE = re.compile(r"^([A-Z]+)(\d+):([A-Z]+)(\d+)$", re.IGNORECASE)
 
 
-def parse_use_cols(use_cols: str) -> tuple[int, int]:
-    """'B:I' のような文字列を (start_col_index, end_col_index) に変換する。"""
-    parts = use_cols.split(":")
-    start = col_letter_to_index(re.sub(r"\d", "", parts[0]))
-    end = col_letter_to_index(re.sub(r"\d", "", parts[1]))
-    return start, end
+def _parse_header_range(header_cell_range: str) -> tuple[int, int]:
+    """header_cell_range から (start_col_index, header_row) を返す。"""
+    m = _RANGE_RE.match(header_cell_range.strip())
+    if not m:
+        raise ValueError(f"header_cell_range の形式が不正です: {header_cell_range!r}")
+    return column_index_from_string(m.group(1)), int(m.group(2))
 
 
 def write_sheet(
     ws: openpyxl.worksheet.worksheet.Worksheet,
-    fmt: dict,
+    config: ExcelFormatConfig,
     rows: list[dict],
     *,
     extra_cells: dict[str, object] | None = None,
 ) -> None:
-    """ワークシートにヘッダーとサンプルデータを書き込む。"""
     if extra_cells:
         for cell_ref, value in extra_cells.items():
             ws[cell_ref] = value
 
-    start_col, _ = parse_use_cols(fmt["use_cols"])
-    header_row: int = fmt["header_row"]
-    col_names = [c["name"] for c in fmt["columns"]]
+    start_col, header_row = _parse_header_range(config.header_cell_range)
+    col_names = [c.name for c in config.columns]
 
-    # ヘッダー行
     for i, name in enumerate(col_names):
         ws.cell(row=header_row, column=start_col + i, value=name)
 
-    # データ行（ouenは課コードが重複するため values() の順序で書き込む）
     for row_offset, row_data in enumerate(rows, start=1):
         values = list(row_data.values())
         for i, value in enumerate(values):
             ws.cell(row=header_row + row_offset, column=start_col + i, value=value)
 
 
-def generate(fmt_key: str, fmt: dict, rows: list[dict], filename: str) -> None:
+def generate(fmt_key: str, config: ExcelFormatConfig, rows: list[dict], filename: str) -> None:
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = fmt["sheet_name"]
+    ws.title = config.sheet_name
 
     extra_cells: dict[str, object] = {}
-    if fmt.get("month_cell"):
-        extra_cells[fmt["month_cell"]] = MONTH_CELL_VALUE
-    if fmt.get("year_cell") and fmt["year_cell"] != fmt.get("month_cell"):
-        extra_cells[fmt["year_cell"]] = OUEN_YEAR_MONTH_VALUE
+    if config.month_cell:
+        extra_cells[config.month_cell] = MONTH_CELL_VALUE
+    if config.year_cell and config.year_cell != config.month_cell:
+        extra_cells[config.year_cell] = OUEN_YEAR_MONTH_VALUE
     if fmt_key == "ouen":
         extra_cells["C1"] = OUEN_YEAR_MONTH_VALUE
 
-    write_sheet(ws, fmt, rows, extra_cells=extra_cells or None)
+    write_sheet(ws, config, rows, extra_cells=extra_cells or None)
 
     out_path = OUTPUT_DIR / filename
     wb.save(out_path)
@@ -242,9 +237,6 @@ def generate(fmt_key: str, fmt: dict, rows: list[dict], filename: str) -> None:
 
 
 def main() -> None:
-    with open(CONFIG_PATH, encoding="utf-8") as f:
-        config: dict = yaml.safe_load(f)
-
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     mapping = {
@@ -255,9 +247,9 @@ def main() -> None:
     }
 
     for key, filename in mapping.items():
-        fmt = config[key]
+        config = get_format_config(key)
         rows = SAMPLE_DATA[key]
-        generate(key, fmt, rows, filename)
+        generate(key, config, rows, filename)
 
     print("完了")
 

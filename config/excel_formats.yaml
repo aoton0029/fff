@@ -1,224 +1,114 @@
 salary:
-  display_name: 給与データ
-  sheet_name: 人事データ
-  year_cell: null
-  month_cell: null
+  sheet: Sheet1
   header_row: 1
-  use_cols: I:AM
-  header_cell_range: A1:AM1
   columns:
-    - name: 行ラベル
-      type: str
-      required: true
-      description: 人事所属コード（8桁）
-    - name: 所属名
-      type: str
-      required: false
-    - name: 合計/(明細1)本給
-      type: int
-      required: true
-    - name: 合計/(明細1)能力給
-      type: int
-      required: true
-    - name: 合計/(明細1)職務・役割給
-      type: int
-      required: true
-    - name: 合計/(明細1)役割業績給
-      type: int
-      required: true
-    - name: 合計/(明細1)報酬
-      type: int
-      required: true
-    - name: 合計/(明細1)本俸
-      type: int
-      required: true
-    - name: 合計/(明細1)基本賃金
-      type: int
-      required: true
-    - name: 合計/(明細1)国内給与
-      type: int
-      required: true
-    - name: 合計/(明細1)駐在員給与調整
-      type: int
-      required: true
-    - name: 合計/(明細1)家族手当
-      type: int
-      required: true
-    - name: 合計/(明細1)資格手当
-      type: int
-      required: true
-    - name: 合計/(明細1)交替勤務加算給
-      type: int
-      required: true
-    - name: 合計/(明細1)振替勤務就業手当
-      type: int
-      required: true
-    - name: 合計/(明細1)早出残業手当
-      type: int
-      required: true
-    - name: 合計/(明細1)休日出勤手当
-      type: int
-      required: true
-    - name: 合計/(明細1)特定休日出勤手当
-      type: int
-      required: true
-    - name: 合計/(明細1)交替勤務手当
-      type: int
-      required: true
-    - name: 合計/(明細1)守衛手当
-      type: int
-      required: true
-    - name: 合計/(明細1)深夜業手当
-      type: int
-      required: true
-    - name: 合計/(明細1)単身赴任手当
-      type: int
-      required: true
-    - name: 合計/(明細1)一時帰省旅費
-      type: int
-      required: true
-    - name: 合計/(明細1)夜間呼出手当
-      type: int
-      required: true
-    - name: 合計/(明細1)出向補償時間
-      type: int
-      required: true
-    - name: 合計/(明細1)その他手当
-      type: int
-      required: true
-    - name: 合計/(明細1)前月育介金額
-      type: int
-      required: true
-    - name: 合計/(明細1)公的資格手当
-      type: int
-      required: true
-    - name: 合計/(明細1)賃金控除
-      type: int
-      required: true
-    - name: 合計/(明細2)職場離脱(会計)
-      type: int
-      required: true
-    - name: 合計/(明細2)人件費人数(会計)
-      type: int
-      required: true
-
-
-allocation:
-  display_name: 工程配賦データ
-  sheet_name: 工程配賦
-  year_cell: null
-  month_cell: null
-  header_row: 7
-  use_cols: B:I
-  header_cell_range: B7:I7
-  columns:
-    - name: 事業部
-      type: int
-      required: false
-    - name: 地区
-      type: int
-      required: true
-    - name: 課コード
-      type: int
-      required: true
-    - name: 原価区分
-      type: int
-      required: false
-    - name: 工程
-      type: int
-      required: true
-    - name: 日数
-      type: float
-      required: false
-    - name: 編成
-      type: float
-      required: false
-    - name: 固定
-      type: float
-      required: false
-
-labor_transfer:
-  display_name: 労務費振替データ
-  sheet_name: 労務費振替依頼書
-  year_cell: null
-  month_cell: C6
-  header_row: 8
-  use_cols: B:K
-  header_cell_range: B8:K8
-  columns:
-    - name: 勘定科目コード
-      type: str
-      required: true
-      description: 数字8桁
-    - name: 原価センタ
-      type: str
-      required: false
-    - name: 負担課
-      type: str
-      required: false
-    - name: 担当課
-      type: str
-      required: true
-    - name: 工事名
-      type: str
-      required: true
-    - name: 作業時間
-      type: float
-      required: true
-    - name: WBS
-      type: str
-      required: false
-    - name: 資産集約番号
-      type: str
-      required: false
-    - name: 指図
-      type: str
-      required: false
-    - name: 備考
-      type: str
-      required: false
+    - {label: 行ラベル,                    field: row_label,                   type: str,   required: true}
+    - {label: 所属名,                      field: section_name,                type: str}
+    - {label: 合計_明細1_本給,             field: honkyu,                      type: int,   required: true}
+    - {label: 合計_明細1_能力給,           field: nouryoku_kyu,                type: int,   required: true}
+    - {label: 合計_明細1_職務役割給,       field: shokumu_yakuwari_kyu,        type: int,   required: true}
+    - {label: 合計_明細1_役割業績給,       field: yakuwari_gyoseki_kyu,        type: int,   required: true}
+    - {label: 合計_明細1_報酬,             field: hoshu,                       type: int,   required: true}
+    - {label: 合計_明細1_本俸,             field: honpo,                       type: int,   required: true}
+    - {label: 合計_明細1_基本賃金,         field: kihon_chingin,               type: int,   required: true}
+    - {label: 合計_明細1_国内給与,         field: kokunai_kyuyo,               type: int,   required: true}
+    - {label: 合計_明細1_駐在員給与調整,   field: chuzaiin_kyuyo_chosei,       type: int,   required: true}
+    - {label: 合計_明細1_家族手当,         field: kazoku_teate,                type: int,   required: true}
+    - {label: 合計_明細1_資格手当,         field: shikaku_teate,               type: int,   required: true}
+    - {label: 合計_明細1_交替勤務加算給,   field: koutai_kinmu_kazan_kyu,      type: int,   required: true}
+    - {label: 合計_明細1_振替勤務就業手当, field: furikae_kinmu_shugyo_teate,  type: int,   required: true}
+    - {label: 合計_明細1_早出残業手当,     field: hayade_zangyou_teate,        type: int,   required: true}
+    - {label: 合計_明細1_休日出勤手当,     field: kyujitsu_shukkin_teate,      type: int,   required: true}
+    - {label: 合計_明細1_特定休日出勤手当, field: tokutei_kyujitsu_shukkin_teate, type: int, required: true}
+    - {label: 合計_明細1_交替勤務手当,     field: koutai_kinmu_teate,          type: int,   required: true}
+    - {label: 合計_明細1_守衛手当,         field: keibi_teate,                 type: int,   required: true}
+    - {label: 合計_明細1_深夜業手当,       field: shinya_teate,                type: int,   required: true}
+    - {label: 合計_明細1_単身赴任手当,     field: tanshin_funin_teate,         type: int,   required: true}
+    - {label: 合計_明細1_一時帰省旅費,     field: ichiji_kisei_ryohi,          type: int,   required: true}
+    - {label: 合計_明細1_夜間呼出手当,     field: yakan_yobidate_teate,        type: int,   required: true}
+    - {label: 合計_明細1_出向補償時間,     field: shukkou_hoshou_jikan,        type: int,   required: true}
+    - {label: 合計_明細1_その他手当,       field: sonota_teate,                type: int,   required: true}
+    - {label: 合計_明細1_前月育介金額,     field: zengetsu_ikukai_kingaku,     type: int,   required: true}
+    - {label: 合計_明細1_公的資格手当,     field: kouteki_shikaku_teate,       type: int,   required: true}
+    - {label: 合計_明細1_賃金控除,         field: chingin_koujyo,              type: int,   required: true}
+    - {label: 合計_明細2_職場離脱会計,     field: shokuba_ridatsu_kaikei,      type: int,   required: true}
+    - {label: 合計_明細2_人件費人数会計,   field: jinkenhi_ninzuu_kaikei,      type: int,   required: true}
 
 ouen:
-  display_name: 応援連絡票
-  sheet_name: 応援連絡　2025年2月度
-  year_cell: C1
-  month_cell: C1
-  header_row: 6
-  use_cols: A:J
-  header_cell_range: A6:J6
+  sheet: Sheet1
+  header_row: 1
   columns:
-    - name: 課コード
-      type: int
-      required: true
-      description: 送り出し課コード（4桁）
-    - name: 課名
-      type: str
-      required: false
-      description: 送り出し課名
-    - name: 課コード
-      type: int
-      required: true
-      description: 受け入れ課コード（4桁）
-    - name: 課名
-      type: str
-      required: false
-      description: 受け入れ課名
-    - name: 人数
-      type: int
-      required: true
-    - name: 出課日
-      type: date
-      required: true
-    - name: 帰課日
-      type: date
-      required: true
-    - name: 日数
-      type: int
-      required: true
-    - name: 延日数
-      type: int
-      required: true
-      description: 日数×人数
-    - name: 氏名
-      type: str
-      required: false
+    - {label: 送り出し_地区,    field: from_district,     type: str,  required: true}
+    - {label: 送り出し_課コード, field: from_section_code, type: str,  required: true}
+    - {label: 受け入れ_地区,    field: to_district,       type: str,  required: true}
+    - {label: 受け入れ_課コード, field: to_section_code,   type: str,  required: true}
+    - {label: 出課日,           field: departure_date,    type: date}
+    - {label: 帰課日,           field: return_date,       type: date}
+    - {label: 日数,             field: days,              type: int,  required: true}
+    - {label: 延日数,           field: extended_days,     type: int,  required: true}
+    - {label: 備考,             field: note,              type: str}
+
+allocation:
+  sheet: Sheet1
+  header_row: 1
+  columns:
+    - {label: 事業部,  field: division_code,  type: str,   required: true}
+    - {label: 地区,    field: district_code,  type: str,   required: true}
+    - {label: 課コード, field: section_code,   type: str,   required: true}
+    - {label: 原価区分, field: cost_category,  type: str,   required: true}
+    - {label: 工程,    field: process_code,   type: str,   required: true}
+    - {label: 日数,    field: days,           type: float, required: true}
+    - {label: 工程名,  field: process_name,   type: str}
+    - {label: 編成,    field: formation,      type: float, required: true}
+    - {label: 固定,    field: fixed_count,    type: float, required: true}
+
+labor_transfer:
+  sheet: Sheet1
+  header_row: 1
+  columns:
+    - {label: 勘定科目コード, field: account_code,       type: str,   required: true}
+    - {label: 原価センタ,     field: cost_center,        type: str}
+    - {label: 負担課,        field: burden_section,     type: str}
+    - {label: 担当課,        field: charge_section,     type: str,   required: true}
+    - {label: 工事名,        field: construction_name,  type: str}
+    - {label: 作業時間,      field: work_hours,         type: float, required: true}
+    - {label: WBS,           field: wbs,                type: str}
+    - {label: 資産集約番号,  field: asset_number,       type: str}
+    - {label: 指図,          field: order_number,       type: str}
+    - {label: 備考,          field: note,               type: str}
+
+department:
+  sheet: Sheet1
+  header_row: 1
+  columns:
+    - {label: 行ラベル,        field: department_code,  type: str, required: true}
+    - {label: 行名,            field: department_name,  type: str, required: true}
+    - {label: 地区コード,      field: district_code,    type: str, required: true}
+    - {label: 課コード,        field: section_code,     type: str, required: true}
+    - {label: 集約課コード,    field: agg_section_code, type: str, required: true}
+    - {label: 区分コード,      field: kbn_code,         type: str, required: true}
+    - {label: 勘定科目コード,  field: account_code,     type: str, required: true}
+    - {label: 原価センタコード, field: cost_center_code, type: str, required: true}
+
+section:
+  sheet: Sheet1
+  header_row: 1
+  columns:
+    - {label: 課コード,        field: section_code,     type: str, required: true}
+    - {label: 課名,            field: section_name,     type: str, required: true}
+    - {label: 地区コード,      field: district_code,    type: str, required: true}
+    - {label: 原価センタコード, field: cost_center_code, type: str, required: true}
+
+district:
+  sheet: Sheet1
+  header_row: 1
+  columns:
+    - {label: 地区コード, field: district_code, type: str, required: true}
+    - {label: 地区名,     field: district_name, type: str, required: true}
+
+kbn:
+  sheet: Sheet1
+  header_row: 1
+  columns:
+    - {label: 区分コード, field: kbn_code,  type: str, required: true}
+    - {label: 区分名,     field: kbn_name,  type: str, required: true}

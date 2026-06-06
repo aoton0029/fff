@@ -9,7 +9,7 @@ from ..views import main_bp
 from ..extensions import db
 from ..models.mst_section import SectionMaster
 from ..models.mst_department import DepartmentMaster
-from ..services.master_importer import (
+from ..services.data_importer import (
     read_and_validate_section,
     read_and_validate_department,
     read_and_validate_district,
