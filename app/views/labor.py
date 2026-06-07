@@ -4,7 +4,7 @@ from flask_login import login_required
 from . import main_bp
 from ..extensions import htmx
 from ..repositories.labor_repository import LaborRepository
-from ..services.excel_reader import get_format_config
+from ..services.data_importer import load_excel_format
 from ..view_models.labor import LaborIndexViewModel
 
 FILE_TYPE = 'labor_transfer'
@@ -37,7 +37,7 @@ def labor_index():
         batches=vm.batches,
         pagination=vm.pagination,
         file_type=vm.file_type,
-        excel_format=get_format_config('labor_transfer'),
+        excel_format=load_excel_format('labor_transfer'),
         current_unit_price=current_unit_price,
         sort_by=sort_by,
         sort_dir=sort_dir,

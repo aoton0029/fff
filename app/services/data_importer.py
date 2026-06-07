@@ -14,6 +14,8 @@ from pathlib import Path
 import yaml
 from werkzeug.datastructures import FileStorage
 
+from app.utils.excel.types import ColumnConfig, ExcelConfig
+
 from ..extensions import db
 from ..utils.excel import import_header_cell, import_table
 from ..models.dat_upload_batch import UploadBatch
@@ -242,6 +244,29 @@ def read_and_validate_district(file_storage: FileStorage, current_count: int) ->
 
 def read_and_validate_kbn(file_storage: FileStorage, current_count: int) -> MasterReadResult:
     return _read_and_validate_master(file_storage, 'kbn', current_count)
+
+def load_excel_format(fmt_key: str) -> ExcelConfig:
+    """Excelフォーマット設定を読み込む。"""
+    formats = _load_formats()
+    if fmt_key not in formats:
+        raise ValueError(f"不明なフォーマットキー: {fmt_key}")
+    config_dict = formats[fmt_key]
+    columns = [
+        ColumnConfig(
+            label=col["label"],
+            field=col["field"],
+            type=col.get("type", "str"),
+            required=col.get("required", False),
+            description=col.get("description"),
+        )
+        for col in config_dict["columns"]
+    ]
+    return ExcelConfig(
+        columns=columns,
+        header_row=config_dict.get("header_row", 1),
+        sheet=config_dict.get("sheet"),
+    )
+
 
 
 # ---------------------------------------------------------------------------

@@ -3,7 +3,7 @@ from flask_login import login_required
 
 from . import main_bp
 from ..extensions import htmx
-from ..services.excel_reader import get_format_config
+from ..services.data_importer import load_excel_format
 from ..view_models.allocation import AllocationIndexViewModel
 
 FILE_TYPE = 'allocation'
@@ -32,7 +32,7 @@ def allocation_index():
         pagination=vm.pagination,
         file_type=vm.file_type,
         salary_count=vm.salary_count,
-        excel_format=get_format_config('allocation'),
+        excel_format=load_excel_format('allocation'),
         sort_by=sort_by,
         sort_dir=sort_dir,
     )

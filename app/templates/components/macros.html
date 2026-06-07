@@ -165,11 +165,9 @@
       <div class="modal-body">
         <dl class="row small mb-3">
           <dt class="col-sm-4">シート名</dt>
-          <dd class="col-sm-8"><code>{{ format_config.sheet_name }}</code></dd>
+          <dd class="col-sm-8"><code>{{ format_config.sheet }}</code></dd>
           <dt class="col-sm-4">ヘッダー行</dt>
           <dd class="col-sm-8">{{ format_config.header_row }}行目</dd>
-          <dt class="col-sm-4">使用列</dt>
-          <dd class="col-sm-8">{{ format_config.use_cols }}列</dd>
         </dl>
         <div class="table-responsive">
           <table class="table table-sm table-bordered small mb-0">
@@ -186,7 +184,7 @@
               {% for col in format_config.columns %}
               <tr>
                 <td class="text-center">{{ loop.index }}</td>
-                <td>{{ col.name }}</td>
+                <td>{{ col.label }}</td>
                 <td>{{ type_labels.get(col.type, col.type) }}</td>
                 <td class="text-center">
                   {% if col.required %}

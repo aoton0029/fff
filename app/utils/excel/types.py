@@ -26,7 +26,7 @@ class ColumnConfig:
     type: ColumnType = "str"
     required: bool = False
     validators: list[Callable[[Any], str | None]] = field(default_factory=list)
-
+    description: str | None = None
 
 @dataclass
 class ExcelConfig:
