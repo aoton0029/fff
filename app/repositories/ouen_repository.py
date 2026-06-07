@@ -3,14 +3,8 @@ from sqlalchemy import distinct, select
 from ..extensions import db
 from ..models.dat_ouen import OuenData
 from ..models.mst_district import DistrictMaster
-
-# TODO: SQLビュー（v_応援計算）実装後、get_calc_rows をDBクエリに置換
-_MOCK_CALC_ROWS = [
-    {"district_code": "D01", "section_code": "A01", "process_code": "P001", "from_section": "B02", "to_section": "A01", "days": 5.0, "amount": 300_000},
-    {"district_code": "D01", "section_code": "A01", "process_code": "P002", "from_section": "C03", "to_section": "A01", "days": 3.0, "amount": 180_000},
-    {"district_code": "D02", "section_code": "B02", "process_code": "P001", "from_section": "A01", "to_section": "B02", "days": 8.0, "amount": 480_000},
-    {"district_code": "D02", "section_code": "C03", "process_code": "P003", "from_section": "B02", "to_section": "C03", "days": 2.0, "amount": 120_000},
-]
+from ..models.view_ouen_keisan import VOuenKeisanData
+from .view_queries import OUEN_KEISAN_SQL
 
 
 class OuenRepository:
@@ -35,8 +29,9 @@ class OuenRepository:
             return db.session.scalars(query).all()
         return db.paginate(query, page=page, per_page=per_page, error_out=False)
 
-    def get_calc_rows(self) -> list[dict]:
-        return _MOCK_CALC_ROWS
+    def get_calc_rows(self, days_of_month: int = 31) -> list[VOuenKeisanData]:
+        result = db.session.execute(OUEN_KEISAN_SQL, {'days_of_month': days_of_month})
+        return [VOuenKeisanData.from_row(row) for row in result]
 
     def get_district_list(self) -> list[dict]:
         district_codes = db.session.scalars(

@@ -14,6 +14,11 @@ from .dat_processing_month import ProcessingMonth
 from .mst_wbs import WBSMaster
 from .mst_filetype import FileTypeMaster
 from .mst_kbn import KbnMaster
+from .view_salary import VSalaryData
+from .view_ouen_renrakuhyo import VOuenRenrakuhyo
+from .view_ouen_keisan import VOuenKeisanData
+from .view_koutei_haifu import VKouteiHaifu
+from .view_roumuhi_furikae import VRoumuhiFurikae
 
 __all__ = [
     'User',
@@ -32,4 +37,9 @@ __all__ = [
     'WBSMaster',
     'FileTypeMaster',
     'KbnMaster',
+    'VSalaryData',
+    'VOuenRenrakuhyo',
+    'VOuenKeisanData',
+    'VKouteiHaifu',
+    'VRoumuhiFurikae',
 ]
