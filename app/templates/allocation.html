@@ -30,11 +30,11 @@
   <div class="card-body p-0" id="upload-result">
     {% include 'partials/batch_table.html' %}
   </div>
-  <div class="card-footer text-end d-flex justify-content-end gap-2">
+  <div class="card-footer py-2 d-flex gap-2">
     <a href="{{ url_for('main.allocation_sap_output') }}" class="btn btn-sm btn-success">
       <i class="bi bi-download me-1"></i>SAP出力
     </a>
-    <button type="button" class="btn btn-outline-primary"
+    <button type="button" class="btn btn-sm btn-outline-secondary"
             hx-get="{{ url_for('main.allocation_calc_preview') }}"
             hx-target="#calc-modal-body"
             hx-swap="innerHTML"
