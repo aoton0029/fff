@@ -52,11 +52,8 @@
   <div class="card-body p-0" id="upload-result">
     {% include 'partials/batch_table.html' %}
   </div>
-  <div class="card-footer text-end d-flex justify-content-end gap-2">
-    <a href="{{ url_for('main.labor_sap_output') }}" class="btn btn-sm btn-success">
-      <i class="bi bi-download me-1"></i>SAP出力
-    </a>
-    <button type="button" class="btn btn-outline-primary"
+  <div class="card-footer py-2 d-flex gap-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary"
             hx-get="{{ url_for('main.labor_calc_preview') }}"
             hx-target="#labor-calc-modal-body"
             hx-swap="innerHTML"
@@ -64,6 +61,9 @@
             data-bs-target="#laborCalcModal">
       <i class="bi bi-calculator me-1"></i>労務費計算データ
     </button>
+    <a href="{{ url_for('main.labor_sap_output') }}" class="btn btn-sm btn-success ms-auto">
+      <i class="bi bi-download me-1"></i>SAP出力
+    </a>
   </div>
 </div>
 
