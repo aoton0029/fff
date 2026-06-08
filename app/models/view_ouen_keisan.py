@@ -6,10 +6,10 @@ from typing import Optional
 
 @dataclass
 class VOuenKeisanData:
-    地区: str
+    地区コード: str
     課コード: str
-    区分: Optional[str]
-    課コード名: Optional[str]
+    区分コード: Optional[str]
+    課名: Optional[str]
     応援単価: Optional[float]
     集約課コード: Optional[str]
     送出金額: float
@@ -23,10 +23,10 @@ class VOuenKeisanData:
     def from_row(cls, row) -> VOuenKeisanData:
         m = row._mapping
         return cls(
-            地区=m['地区'],
+            地区コード=m['地区コード'],
             課コード=m['課コード'],
-            区分=m.get('区分'),
-            課コード名=m.get('課コード名'),
+            区分コード=m.get('区分コード'),
+            課名=m.get('課名'),
             応援単価=m.get('応援単価'),
             集約課コード=m.get('集約課コード'),
             送出金額=m['送出金額'],

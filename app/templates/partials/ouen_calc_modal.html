@@ -6,7 +6,6 @@
 #}
 <p class="text-muted small mb-2">
   <i class="bi bi-info-circle me-1"></i>
-  ※ 計算ロジックは実装中です。以下はモックデータです。
 </p>
 {% if rows %}
 <div class="table-responsive">
@@ -15,23 +14,27 @@
       <tr>
         <th>地区</th>
         <th>課コード</th>
-        <th>工程コード</th>
-        <th>応援元</th>
-        <th>応援先</th>
-        <th class="text-end">日数</th>
-        <th class="text-end">按分額</th>
+        <th>課名</th>
+        <th>応援単価</th>
+        <th class="text-end">送出人員数</th>
+        <th class="text-end">送出金額</th>
+        <th class="text-end">受入人員数</th>
+        <th class="text-end">受入金額</th>
       </tr>
     </thead>
     <tbody>
       {% for row in rows %}
       <tr>
-        <td>{{ row.district_code }}</td>
-        <td>{{ row.section_code }}</td>
-        <td>{{ row.process_code }}</td>
-        <td>{{ row.from_section }}</td>
-        <td>{{ row.to_section }}</td>
-        <td class="text-end">{{ '{:,.1f}'.format(row.days) }}</td>
-        <td class="text-end">{{ '{:,.0f}'.format(row.amount) }}</td>
+        <td>{{ row.地区コード }}</td>
+        <td>{{ row.課コード }}</td>
+        <td>{{ row.課名 }}</td>
+        <td class="text-end salary-detail-col {{ 'text-danger' if row.応援単価 < 0 else '' }}">{{ '{:,}'.format(row.応援単価) }}</td>
+        <td class="text-end salary-detail-col {{ 'text-danger' if row.送出人員数 < 0 else '' }}">{{ '{:,}'.format(row.送出人員数) }}</td>
+        <td class="text-end salary-detail-col {{ 'text-danger' if row.送出金額 < 0 else '' }}">{{ '{:,}'.format(row.送出金額) }}</td>
+        <td class="text-end salary-detail-col {{ 'text-danger' if row.受入人員数 < 0 else '' }}">{{ '{:,}'.format(row.受入人員数) }}</td>
+        <td class="text-end salary-detail-col {{ 'text-danger' if row.受入金額 < 0 else '' }}">{{ '{:,}'.format(row.受入金額) }}</td>
+        <td class="text-end salary-detail-col {{ 'text-danger' if row.応援後人員数 < 0 else '' }}">{{ '{:,}'.format(row.応援後人員数) }}</td>
+        <td class="text-end salary-detail-col {{ 'text-danger' if row.応援後人件費 < 0 else '' }}">{{ '{:,}'.format(row.応援後人件費) }}</td>        
       </tr>
       {% endfor %}
     </tbody>

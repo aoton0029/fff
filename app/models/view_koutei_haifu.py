@@ -22,7 +22,7 @@ class VKouteiHaifu:
     def from_row(cls, row) -> VKouteiHaifu:
         m = row._mapping
         return cls(
-            地区=m['地区'],
+            地区=m['地区コード'],
             課コード=m['課コード'],
             工程コード=m['工程コード'],
             原価センタ=m.get('原価センタ'),

@@ -59,6 +59,24 @@ class MasterReadResult:
         return bool(self.warnings)
 
 
+def _resolve_ouen_districts(records: list) -> None:
+    """OuenData の from/to_section_code から地区コードを DepartmentMaster で引き当てる。"""
+    from ..models.mst_department import DepartmentMaster
+    from sqlalchemy import select
+
+    section_codes = {r.from_section_code for r in records} | {r.to_section_code for r in records}
+    rows = db.session.execute(
+        select(DepartmentMaster.section_code, DepartmentMaster.district_code)
+        .where(DepartmentMaster.section_code.in_(section_codes))
+        .distinct()
+    ).all()
+    code_map = {row.section_code: row.district_code for row in rows}
+
+    for rec in records:
+        rec.from_district = code_map.get(rec.from_section_code, '')
+        rec.to_district = code_map.get(rec.to_section_code, '')
+
+
 def import_excel_file(file_storage: FileStorage, file_type: str, user_id: int) -> ImportResult:
     """業務データ（給与/応援/工程配賦/労務費）をExcelからインポートする。"""
     formats = _load_formats()
@@ -80,6 +98,9 @@ def import_excel_file(file_storage: FileStorage, file_type: str, user_id: int) -
             file_storage.save(tmp_path)
 
         result = import_header_cell(tmp_path, config_dict, ModelClass, sheet_name=sheet_name)
+
+        if file_type == 'ouen' and result.data:
+            _resolve_ouen_districts(result.data)
 
         if not result.data and not result.errors:
             return ImportResult(
@@ -253,13 +274,14 @@ def load_excel_format(fmt_key: str) -> ExcelConfig:
     config_dict = formats[fmt_key]
     columns = [
         ColumnConfig(
+            col_no=col.get("col_no", i + 1),
             label=col["label"],
             field=col["field"],
             type=col.get("type", "str"),
             required=col.get("required", False),
             description=col.get("description"),
         )
-        for col in config_dict["columns"]
+        for i, col in enumerate(config_dict["columns"])
     ]
     return ExcelConfig(
         columns=columns,

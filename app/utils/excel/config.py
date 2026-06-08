@@ -25,8 +25,9 @@ def _validate_and_build(raw: dict) -> ExcelConfig:
         raise ValueError(f"'header_row' must be a positive integer, got {header_row!r}")
 
     columns = []
-    for col in raw["columns"]:
+    for i, col in enumerate(raw["columns"]):
         columns.append(ColumnConfig(
+            col_no=col.get("col_no", i + 1),
             label=col["label"],
             field=col["field"],
             type=col.get("type", "str"),

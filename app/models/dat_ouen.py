@@ -24,6 +24,7 @@ class OuenData(db.Model):
     from_section_code: Mapped[str] = mapped_column('送り出し_課コード', String(20), ForeignKey('mst_課コード.課コード'), nullable=False)
     to_district: Mapped[str] = mapped_column('受け入れ_地区', String(20), ForeignKey('mst_地区.地区コード'), nullable=False)
     to_section_code: Mapped[str] = mapped_column('受け入れ_課コード', String(20), ForeignKey('mst_課コード.課コード'), nullable=False)
+    # person_count: Mapped[Optional[int]] = mapped_column('人数', Integer)
     departure_date: Mapped[Optional[date]] = mapped_column('出課日', Date)
     return_date: Mapped[Optional[date]] = mapped_column('帰課日', Date)
     days: Mapped[int] = mapped_column('日数', Integer, nullable=False)

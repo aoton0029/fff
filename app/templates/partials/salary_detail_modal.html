@@ -117,6 +117,7 @@
           <td class="text-end salary-detail-col {{ 'text-danger' if r.chingin_koujyo is not none and r.chingin_koujyo < 0 else '' }}">{{ '{:,}'.format(r.chingin_koujyo) if r.chingin_koujyo is not none else '' }}</td>
           <td class="text-end salary-detail-col {{ 'text-danger' if r.shokuba_ridatsu_kaikei is not none and r.shokuba_ridatsu_kaikei < 0 else '' }}">{{ '{:,}'.format(r.shokuba_ridatsu_kaikei) if r.shokuba_ridatsu_kaikei is not none else '' }}</td>
           <td class="text-end salary-detail-col {{ 'text-danger' if r.jinkenhi_ninzuu_kaikei is not none and r.jinkenhi_ninzuu_kaikei < 0 else '' }}">{{ '{:,}'.format(r.jinkenhi_ninzuu_kaikei) if r.jinkenhi_ninzuu_kaikei is not none else '' }}</td>
+          <td class="text-end {{ 'text-danger' if r.total is not none and r.total < 0 else '' }}">{{ '{:,}'.format(r.total) if r.total is not none else '' }}</td>
         </tr>
         {% else %}
         <tr><td colspan="32" class="text-center text-muted">データがありません</td></tr>

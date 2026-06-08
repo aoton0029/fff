@@ -21,6 +21,7 @@ class ImportResult:
 
 @dataclass
 class ColumnConfig:
+    col_no: str | int
     label: str
     field: str
     type: ColumnType = "str"

@@ -13,23 +13,31 @@
   <table class="table table-sm table-striped align-middle">
     <thead class="table-light">
       <tr>
-        <th>課コード</th>
-        <th>振替先コード</th>
-        <th>振替区分</th>
-        <th class="text-end">時間</th>
-        <th class="text-end">単価</th>
-        <th class="text-end">金額</th>
+        <th>勘定科目コード</th>
+        <th>原価センタ</th>
+        <th>負担課</th>
+        <th>担当課</th>
+        <th>工事名</th>
+        <th>作業時間</th>
+        <th>WBS</th>
+        <th>資産集約番号</th>
+        <th>指図</th>
+        <th class="text-end">振替金額</th>
       </tr>
     </thead>
     <tbody>
       {% for row in rows %}
       <tr>
-        <td>{{ row.section_code }}</td>
-        <td>{{ row.transfer_code }}</td>
-        <td>{{ row.transfer_kbn }}</td>
-        <td class="text-end">{{ '{:,.1f}'.format(row.hours) }}</td>
-        <td class="text-end">{{ '{:,.2f}'.format(row.unit_price) }}</td>
-        <td class="text-end">{{ '{:,.0f}'.format(row.amount) }}</td>
+        <td>{{ row.勘定科目コード }}</td>
+        <td>{{ row.原価センタ or '' }}</td>
+        <td>{{ row.負担課 or '' }}</td>
+        <td>{{ row.担当課 or '' }}</td>
+        <td>{{ row.工事名 or '' }}</td>
+        <td class="text-end">{{ row.作業時間 or 0 }}</td>
+        <td>{{ row.WBS or '' }}</td>
+        <td>{{ row.資産集約番号 or '' }}</td>
+        <td>{{ row.指図 or '' }}</td>
+        <td class="text-end">{{ '{:,.0f}'.format(row.振替金額) }}</td>
       </tr>
       {% endfor %}
     </tbody>

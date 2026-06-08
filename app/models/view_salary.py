@@ -20,7 +20,7 @@ class VSalaryData:
     def from_row(cls, row) -> VSalaryData:
         m = row._mapping
         return cls(
-            地区=m['地区'],
+            地区=m['地区コード'],
             課コード=m['課コード'],
             集約課コード=m.get('集約課コード'),
             原価センタ=m.get('原価センタ'),

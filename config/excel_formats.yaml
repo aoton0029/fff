@@ -2,113 +2,110 @@ salary:
   sheet: Sheet1
   header_row: 1
   columns:
-    - {label: 行ラベル,                    field: row_label,                   type: str,   required: true}
-    - {label: 所属名,                      field: section_name,                type: str}
-    - {label: 合計_明細1_本給,             field: honkyu,                      type: int,   required: true}
-    - {label: 合計_明細1_能力給,           field: nouryoku_kyu,                type: int,   required: true}
-    - {label: 合計_明細1_職務役割給,       field: shokumu_yakuwari_kyu,        type: int,   required: true}
-    - {label: 合計_明細1_役割業績給,       field: yakuwari_gyoseki_kyu,        type: int,   required: true}
-    - {label: 合計_明細1_報酬,             field: hoshu,                       type: int,   required: true}
-    - {label: 合計_明細1_本俸,             field: honpo,                       type: int,   required: true}
-    - {label: 合計_明細1_基本賃金,         field: kihon_chingin,               type: int,   required: true}
-    - {label: 合計_明細1_国内給与,         field: kokunai_kyuyo,               type: int,   required: true}
-    - {label: 合計_明細1_駐在員給与調整,   field: chuzaiin_kyuyo_chosei,       type: int,   required: true}
-    - {label: 合計_明細1_家族手当,         field: kazoku_teate,                type: int,   required: true}
-    - {label: 合計_明細1_資格手当,         field: shikaku_teate,               type: int,   required: true}
-    - {label: 合計_明細1_交替勤務加算給,   field: koutai_kinmu_kazan_kyu,      type: int,   required: true}
-    - {label: 合計_明細1_振替勤務就業手当, field: furikae_kinmu_shugyo_teate,  type: int,   required: true}
-    - {label: 合計_明細1_早出残業手当,     field: hayade_zangyou_teate,        type: int,   required: true}
-    - {label: 合計_明細1_休日出勤手当,     field: kyujitsu_shukkin_teate,      type: int,   required: true}
-    - {label: 合計_明細1_特定休日出勤手当, field: tokutei_kyujitsu_shukkin_teate, type: int, required: true}
-    - {label: 合計_明細1_交替勤務手当,     field: koutai_kinmu_teate,          type: int,   required: true}
-    - {label: 合計_明細1_守衛手当,         field: keibi_teate,                 type: int,   required: true}
-    - {label: 合計_明細1_深夜業手当,       field: shinya_teate,                type: int,   required: true}
-    - {label: 合計_明細1_単身赴任手当,     field: tanshin_funin_teate,         type: int,   required: true}
-    - {label: 合計_明細1_一時帰省旅費,     field: ichiji_kisei_ryohi,          type: int,   required: true}
-    - {label: 合計_明細1_夜間呼出手当,     field: yakan_yobidate_teate,        type: int,   required: true}
-    - {label: 合計_明細1_出向補償時間,     field: shukkou_hoshou_jikan,        type: int,   required: true}
-    - {label: 合計_明細1_その他手当,       field: sonota_teate,                type: int,   required: true}
-    - {label: 合計_明細1_前月育介金額,     field: zengetsu_ikukai_kingaku,     type: int,   required: true}
-    - {label: 合計_明細1_公的資格手当,     field: kouteki_shikaku_teate,       type: int,   required: true}
-    - {label: 合計_明細1_賃金控除,         field: chingin_koujyo,              type: int,   required: true}
-    - {label: 合計_明細2_職場離脱会計,     field: shokuba_ridatsu_kaikei,      type: int,   required: true}
-    - {label: 合計_明細2_人件費人数会計,   field: jinkenhi_ninzuu_kaikei,      type: int,   required: true}
+    - {col_no: 1, label: 行ラベル,                    field: row_label,                   type: str,   required: true}
+    - {col_no: 2, label: 所属名,                      field: section_name,                type: str}
+    - {col_no: 3, label: 合計_明細1_本給,             field: honkyu,                      type: int,   required: true}
+    - {col_no: 4, label: 合計_明細1_能力給,           field: nouryoku_kyu,                type: int,   required: true}
+    - {col_no: 5, label: 合計_明細1_職務役割給,       field: shokumu_yakuwari_kyu,        type: int,   required: true}
+    - {col_no: 6, label: 合計_明細1_役割業績給,       field: yakuwari_gyoseki_kyu,        type: int,   required: true}
+    - {col_no: 7, label: 合計_明細1_報酬,             field: hoshu,                       type: int,   required: true}
+    - {col_no: 8, label: 合計_明細1_本俸,             field: honpo,                       type: int,   required: true}
+    - {col_no: 9, label: 合計_明細1_基本賃金,         field: kihon_chingin,               type: int,   required: true}
+    - {col_no: 10, label: 合計_明細1_国内給与,         field: kokunai_kyuyo,               type: int,   required: true}
+    - {col_no: 11, label: 合計_明細1_駐在員給与調整,   field: chuzaiin_kyuyo_chosei,       type: int,   required: true}
+    - {col_no: 12, label: 合計_明細1_家族手当,         field: kazoku_teate,                type: int,   required: true}
+    - {col_no: 13, label: 合計_明細1_資格手当,         field: shikaku_teate,               type: int,   required: true}
+    - {col_no: 14, label: 合計_明細1_交替勤務加算給,   field: koutai_kinmu_kazan_kyu,      type: int,   required: true}
+    - {col_no: 15, label: 合計_明細1_振替勤務就業手当, field: furikae_kinmu_shugyo_teate,  type: int,   required: true}
+    - {col_no: 16, label: 合計_明細1_早出残業手当,     field: hayade_zangyou_teate,        type: int,   required: true}
+    - {col_no: 17, label: 合計_明細1_休日出勤手当,     field: kyujitsu_shukkin_teate,      type: int,   required: true}
+    - {col_no: 18, label: 合計_明細1_特定休日出勤手当, field: tokutei_kyujitsu_shukkin_teate, type: int, required: true}
+    - {col_no: 19, label: 合計_明細1_交替勤務手当,     field: koutai_kinmu_teate,          type: int,   required: true}
+    - {col_no: 20, label: 合計_明細1_守衛手当,         field: keibi_teate,                 type: int,   required: true}
+    - {col_no: 21, label: 合計_明細1_深夜業手当,       field: shinya_teate,                type: int,   required: true}
+    - {col_no: 22, label: 合計_明細1_単身赴任手当,     field: tanshin_funin_teate,         type: int,   required: true}
+    - {col_no: 23, label: 合計_明細1_一時帰省旅費,     field: ichiji_kisei_ryohi,          type: int,   required: true}
+    - {col_no: 24, label: 合計_明細1_夜間呼出手当,     field: yakan_yobidate_teate,        type: int,   required: true}
+    - {col_no: 25, label: 合計_明細1_出向補償時間,     field: shukkou_hoshou_jikan,        type: int,   required: true}
+    - {col_no: 26, label: 合計_明細1_その他手当,       field: sonota_teate,                type: int,   required: true}
+    - {col_no: 27, label: 合計_明細1_前月育介金額,     field: zengetsu_ikukai_kingaku,     type: int,   required: true}
+    - {col_no: 28, label: 合計_明細1_公的資格手当,     field: kouteki_shikaku_teate,       type: int,   required: true}
+    - {col_no: 29, label: 合計_明細1_賃金控除,         field: chingin_koujyo,              type: int,   required: true}
+    - {col_no: 30, label: 合計_明細2_職場離脱会計,     field: shokuba_ridatsu_kaikei,      type: int,   required: true}
+    - {col_no: 31, label: 合計_明細2_人件費人数会計,   field: jinkenhi_ninzuu_kaikei,      type: int,   required: true}
 
 ouen:
-  sheet: Sheet1
-  header_row: 1
+  sheet: 応援連絡
+  header_row: 6
   columns:
-    - {label: 送り出し_地区,    field: from_district,     type: str,  required: true}
-    - {label: 送り出し_課コード, field: from_section_code, type: str,  required: true}
-    - {label: 受け入れ_地区,    field: to_district,       type: str,  required: true}
-    - {label: 受け入れ_課コード, field: to_section_code,   type: str,  required: true}
-    - {label: 出課日,           field: departure_date,    type: date}
-    - {label: 帰課日,           field: return_date,       type: date}
-    - {label: 日数,             field: days,              type: int,  required: true}
-    - {label: 延日数,           field: extended_days,     type: int,  required: true}
-    - {label: 備考,             field: note,              type: str}
+    - {col_no: 1, label: 課コード, field: from_section_code, type: str, required: true}
+    - {col_no: 3, label: 課コード, field: to_section_code,   type: str, required: true}
+    # - {col_no: 5, label: 人数,   field: person_count,    type: int,  required: true}
+    - {col_no: 6, label: 出課日,   field: departure_date,    type: date}
+    - {col_no: 7, label: 帰課日,   field: return_date,       type: date}
+    - {col_no: 8, label: 日数,     field: days,              type: int,  required: true}
+    - {col_no: 9, label: 延日数,   field: extended_days,     type: int,  required: true}
+    - {col_no: 10, label: 氏名,     field: note,              type: str}
 
 allocation:
-  sheet: Sheet1
-  header_row: 1
+  sheet: sheet1
+  header_row: 7
   columns:
-    - {label: 事業部,  field: division_code,  type: str,   required: true}
-    - {label: 地区,    field: district_code,  type: str,   required: true}
-    - {label: 課コード, field: section_code,   type: str,   required: true}
-    - {label: 原価区分, field: cost_category,  type: str,   required: true}
-    - {label: 工程,    field: process_code,   type: str,   required: true}
-    - {label: 日数,    field: days,           type: float, required: true}
-    - {label: 工程名,  field: process_name,   type: str}
-    - {label: 編成,    field: formation,      type: float, required: true}
-    - {label: 固定,    field: fixed_count,    type: float, required: true}
+    - {col_no: 3, label: 地区,    field: district_code,  type: int,   required: true}
+    - {col_no: 4, label: 課コード, field: section_code,   type: int,   required: true}
+    - {col_no: 5, label: 原価区分, field: cost_category,  type: str,   required: false}
+    - {col_no: 6, label: 工程,    field: process_code,   type: int,   required: true}
+    - {col_no: 7, label: 日数,    field: days,           type: float, required: false}
+    - {col_no: 8, label: 編成,    field: formation,      type: float, required: false}
+    - {col_no: 9, label: 固定,    field: fixed_count,    type: float, required: false}
 
 labor_transfer:
-  sheet: Sheet1
-  header_row: 1
+  sheet: NEG社員
+  header_row: 8
   columns:
-    - {label: 勘定科目コード, field: account_code,       type: str,   required: true}
-    - {label: 原価センタ,     field: cost_center,        type: str}
-    - {label: 負担課,        field: burden_section,     type: str}
-    - {label: 担当課,        field: charge_section,     type: str,   required: true}
-    - {label: 工事名,        field: construction_name,  type: str}
-    - {label: 作業時間,      field: work_hours,         type: float, required: true}
-    - {label: WBS,           field: wbs,                type: str}
-    - {label: 資産集約番号,  field: asset_number,       type: str}
-    - {label: 指図,          field: order_number,       type: str}
-    - {label: 備考,          field: note,               type: str}
+    - {col_no: 2, label: 勘定科目コード, field: account_code,       type: str,   required: true}
+    - {col_no: 3, label: 原価センタ,     field: cost_center,        type: str}
+    - {col_no: 4, label: 負担課,        field: burden_section,     type: str}
+    - {col_no: 5, label: 担当課,        field: charge_section,     type: str,   required: true}
+    - {col_no: 6, label: 工事名,        field: construction_name,  type: str}
+    - {col_no: 7, label: 作業時間,      field: work_hours,         type: float, required: true}
+    - {col_no: 8, label: WBS,           field: wbs,                type: str}
+    - {col_no: 9, label: 資産集約番号,  field: asset_number,       type: str}
+    - {col_no: 10, label: 指図,          field: order_number,       type: str}
+    - {col_no: 11, label: 備考,          field: note,               type: str}
 
 department:
   sheet: Sheet1
   header_row: 1
   columns:
-    - {label: 行ラベル,        field: department_code,  type: str, required: true}
-    - {label: 行名,            field: department_name,  type: str, required: true}
-    - {label: 地区コード,      field: district_code,    type: str, required: true}
-    - {label: 課コード,        field: section_code,     type: str, required: true}
-    - {label: 集約課コード,    field: agg_section_code, type: str, required: true}
-    - {label: 区分コード,      field: kbn_code,         type: str, required: true}
-    - {label: 勘定科目コード,  field: account_code,     type: str, required: true}
-    - {label: 原価センタコード, field: cost_center_code, type: str, required: true}
+    - {col_no: 1, label: 行ラベル,        field: department_code,  type: str, required: true}
+    - {col_no: 2, label: 行名,            field: department_name,  type: str, required: true}
+    - {col_no: 3, label: 地区コード,      field: district_code,    type: str, required: true}
+    - {col_no: 4, label: 課コード,        field: section_code,     type: str, required: true}
+    - {col_no: 5, label: 集約課コード,    field: agg_section_code, type: str, required: true}
+    - {col_no: 6, label: 区分コード,      field: kbn_code,         type: str, required: true}
+    - {col_no: 7, label: 勘定科目コード,  field: account_code,     type: str, required: true}
+    - {col_no: 8, label: 原価センタコード, field: cost_center_code, type: str, required: true}
 
 section:
   sheet: Sheet1
   header_row: 1
   columns:
-    - {label: 課コード,        field: section_code,     type: str, required: true}
-    - {label: 課名,            field: section_name,     type: str, required: true}
-    - {label: 地区コード,      field: district_code,    type: str, required: true}
-    - {label: 原価センタコード, field: cost_center_code, type: str, required: true}
+    - {col_no: 1, label: 課コード,        field: section_code,     type: str, required: true}
+    - {col_no: 2, label: 課名,            field: section_name,     type: str, required: true}
+    - {col_no: 3, label: 地区コード,      field: district_code,    type: str, required: true}
+    - {col_no: 4, label: 原価センタコード, field: cost_center_code, type: str, required: true}
 
 district:
   sheet: Sheet1
   header_row: 1
   columns:
-    - {label: 地区コード, field: district_code, type: str, required: true}
-    - {label: 地区名,     field: district_name, type: str, required: true}
+    - {col_no: 1, label: 地区コード, field: district_code, type: str, required: true}
+    - {col_no: 2, label: 地区名,     field: district_name, type: str, required: true}
 
 kbn:
   sheet: Sheet1
   header_row: 1
   columns:
-    - {label: 区分コード, field: kbn_code,  type: str, required: true}
-    - {label: 区分名,     field: kbn_name,  type: str, required: true}
+    - {col_no: 1, label: 区分コード, field: kbn_code,  type: str, required: true}
+    - {col_no: 2, label: 区分名,     field: kbn_name,  type: str, required: true}

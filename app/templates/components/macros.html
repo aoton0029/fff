@@ -183,7 +183,7 @@
             <tbody>
               {% for col in format_config.columns %}
               <tr>
-                <td class="text-center">{{ loop.index }}</td>
+                <td class="text-center">{{ col.col_no }}</td>
                 <td>{{ col.label }}</td>
                 <td>{{ type_labels.get(col.type, col.type) }}</td>
                 <td class="text-center">

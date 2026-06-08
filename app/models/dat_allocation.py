@@ -18,15 +18,14 @@ class AllocationData(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     batch_id: Mapped[int] = mapped_column(ForeignKey('dat_ファイル.id'), nullable=False)
-    division_code: Mapped[str] = mapped_column('事業部', String(20), nullable=False)
     district_code: Mapped[str] = mapped_column('地区', String(20), nullable=False)
     section_code: Mapped[str] = mapped_column('課コード', String(20), nullable=False)
-    cost_category: Mapped[str] = mapped_column('原価区分', String(20), nullable=False)
+    cost_category: Mapped[str] = mapped_column('原価区分', String(20), nullable=True)
     process_code: Mapped[str] = mapped_column('工程', String(20), nullable=False)
-    days: Mapped[float] = mapped_column('日数', Float, nullable=False)
+    days: Mapped[float] = mapped_column('日数', Float, nullable=True)
     process_name: Mapped[Optional[str]] = mapped_column('工程名', String(100))
-    formation: Mapped[float] = mapped_column('編成', Float, nullable=False)
-    fixed_count: Mapped[float] = mapped_column('固定', Float, nullable=False)
+    formation: Mapped[float] = mapped_column('編成', Float, nullable=True)
+    fixed_count: Mapped[float] = mapped_column('固定', Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )

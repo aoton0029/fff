@@ -87,7 +87,7 @@ class SalaryData(db.Model):
 
     @property
     def total(self) -> int:
-        return self.total_meisai1 + self.total_meisai2
+        return self.total_meisai1
 
     @property
     def chiku_ka_code(self) -> Optional[str]:
